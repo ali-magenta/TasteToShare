@@ -43,8 +43,4 @@ class AppNavigationActions(private val navCtrl: NavController) {
             ?.getStateFlow<String?>("returned_uri", null)
             ?: MutableStateFlow(null)
     }
-
-    fun sendRecommendationNotification() {
-        TODO("Not yet implemented")
-    }
 }

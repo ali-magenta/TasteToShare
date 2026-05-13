@@ -56,9 +56,6 @@ import java.time.format.DateTimeFormatter
 fun NotificationDestination(
     onNavigateToProfile: (userId: String) -> Unit,
     onNavigateToRecipeDetails: (recipeId: String) -> Unit,
-    onSendRecommendationNotification: () -> Unit,
-    onSendReviewNotification: () -> Unit,
-    onSendDuplicateNotification: () -> Unit,
     viewModel: NotificationViewModel = viewModel(factory = NotificationViewModel.Factory)
 )
 {
@@ -68,9 +65,9 @@ fun NotificationDestination(
         navigateToProfile = onNavigateToProfile,
         navigateToRecipeDetails = onNavigateToRecipeDetails,
         notifications = notifications,
-        sendRecommendationNotification = onSendRecommendationNotification,
-        sendReviewNotification = onSendReviewNotification,
-        sendDuplicateNotification = onSendDuplicateNotification
+        sendRecommendationNotification = { viewModel.sendRecommendationNotification() },
+        sendReviewNotification = { viewModel.sendReviewNotification() },
+        sendDuplicateNotification = { viewModel.sendDuplicateNotification() }
     )
 }
 
@@ -113,7 +110,7 @@ fun NotificationScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 )
                 {
-                    Button(onClick = {sendRecommendationNotification },
+                    Button(onClick = {sendRecommendationNotification() },
                         modifier = Modifier
                             .height(56.dp)
                             .weight(1f),
@@ -125,7 +122,7 @@ fun NotificationScreen(
                             fontSize = 12.sp,
                             maxLines = 1
                         )                    }
-                    Button(onClick = {sendReviewNotification },
+                    Button(onClick = {sendReviewNotification() },
                         modifier = Modifier
                             .height(56.dp)
                             .weight(1f),
@@ -136,7 +133,7 @@ fun NotificationScreen(
                             fontSize = 12.sp,
                             maxLines = 1)
                     }
-                    Button(onClick = {sendDuplicateNotification },
+                    Button(onClick = {sendDuplicateNotification() },
                         modifier = Modifier
                             .height(56.dp)
                             .weight(1f),

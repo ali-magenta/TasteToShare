@@ -2,6 +2,9 @@ package com.example.tastetoshare
 
 import android.Manifest
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -68,6 +71,30 @@ class TasteToShareApp : Application() {
             }
         }
         container = AppContainer()
+        createNotificationChannels()
+    }
+
+    private fun createNotificationChannels() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            val socialChannel = NotificationChannel(
+                "social_channel_id",
+                "Social & interractions",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Notifications for reviews and recipe duplicates"
+            }
+
+            val recommendationChannel = NotificationChannel(
+                "recommendations_channel_id",
+                "Recommendations",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Weekly recipe recommendations"
+            }
+
+            notificationManager.createNotificationChannels(listOf(socialChannel, recommendationChannel))        }
     }
 }
 
@@ -106,6 +133,9 @@ class MainActivity : ComponentActivity() {
                 Manifest.permission.CAMERA,
                 Manifest.permission.RECORD_AUDIO
             ).apply {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    add(Manifest.permission.POST_NOTIFICATIONS)
+                }
             }.toTypedArray()
     }
 }
