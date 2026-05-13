@@ -1,0 +1,542 @@
+{
+  "users": [
+    {
+      "userId": "101",
+      "fullName": "Mark Rivera",
+      "userName": "MarkCooks",
+      "email": "mark@gmail.com",
+      "role": "Professional Chef",
+      "description": "Former chef sharing his recipes with the world!",
+      "photoURI": "https://64.media.tumblr.com/2653eedb972547ca9a137c211da798f8/7f33a47ca9343bbe-0b/s1280x1920/80eeb32c7706daec25d952104ca4cd0c2d8d10d8.jpg",
+      "preferences": [
+        { "tagId": "2", "type": "Cuisine Type", "name": "Italian" },
+        { "tagId": "13", "type": "Cuisine Type", "name": "Japanese" },
+        { "tagId": "8", "type": "Cuisine Type", "name": "French" },
+        { "tagId": "3", "type": "Dietary Restrictions", "name": "Vegan" },
+        { "tagId": "43", "type": "Other", "name": "Healthy" },
+        { "tagId": "6", "type": "Other", "name": "Spicy" },
+        { "tagId": "5", "type": "Other", "name": "Quick" }
+      ],
+      "savedRecipeIds" : ["100", "102"],
+      "triedRecipeIds" : [],
+      "averageRating": "4.6",
+      "numberOfRatings": "107",
+      "numberOfRecipeTriedByOthers": "105",
+      "numberOfReviews": "15"
+    },
+    {
+      "userId": "102",
+      "fullName": "Sofia Martinez",
+      "userName": "SofiaBakes",
+      "email": "sofia.martinez@gmail.com",
+      "role": "Pastry Chef",
+      "description": "Pastry lover creating sweet treats and desserts for every occasion.",
+      "photoURI": "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+      "preferences": [
+        { "tagId": "21", "type": "Other", "name": "Dessert" },
+        { "tagId": "5", "type": "Other", "name": "Quick" }
+      ],
+      "savedRecipeIds" : [],
+      "triedRecipeIds" : []
+    },
+    {
+      "userId": "103",
+      "fullName": "Liam O'Connor",
+      "userName": "HomeCookLiam",
+      "email": "liam.oconnor@gmail.com",
+      "role": "Home Cook",
+      "description": "Simple, comforting meals anyone can cook at home.",
+      "photoURI": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
+      "preferences": [
+        { "tagId": "2", "type": "Cuisine Type", "name": "Italian" },
+        { "tagId": "8", "type": "Cuisine Type", "name": "French" },
+        { "tagId": "43", "type": "Other", "name": "Healthy" }
+      ],
+      "savedRecipeIds" : [],
+      "triedRecipeIds" : []
+    }
+  ],
+
+  "tags": [
+    { "tagId": "1", "type": "Cuisine Type", "name": "Asian" },
+    { "tagId": "2", "type": "Cuisine Type", "name": "Italian" },
+    { "tagId": "3", "type": "Dietary Restrictions", "name": "Vegan" },
+    { "tagId": "4", "type": "Other", "name": "Low Carb" },
+    { "tagId": "5", "type": "Other", "name": "Quick" },
+    { "tagId": "6", "type": "Other", "name": "Spicy" },
+    { "tagId": "7", "type": "Cuisine Type", "name": "Mexican" },
+    { "tagId": "8", "type": "Cuisine Type", "name": "French" },
+    { "tagId": "10", "type": "Cuisine Type", "name": "Mediterranean" },
+    { "tagId": "11", "type": "Other", "name": "Organic" },
+    { "tagId": "12", "type": "Cuisine Type", "name": "Indian" },
+    { "tagId": "13", "type": "Cuisine Type", "name": "Japanese" },
+    { "tagId": "14", "type": "Dietary Restrictions", "name": "Vegetarian" },
+    { "tagId": "15", "type": "Dietary Restrictions", "name": "Dairy-free" },
+    { "tagId": "16", "type": "Dietary Restrictions", "name": "Keto" },
+    { "tagId": "17", "type": "Dietary Restrictions", "name": "Nut-free" },
+    { "tagId": "19", "type": "Other", "name": "Budget-friendly" },
+    { "tagId": "20", "type": "Other", "name": "High Protein" },
+    { "tagId": "21", "type": "Other", "name": "Dessert" },
+    { "tagId": "22", "type": "Cuisine Type", "name": "Chinese" },
+    { "tagId": "23", "type": "Cuisine Type", "name": "Middle Eastern" },
+    { "tagId": "24", "type": "Cuisine Type", "name": "Korean" },
+    { "tagId": "25", "type": "Cuisine Type", "name": "Caribbean" },
+    { "tagId": "26", "type": "Dietary Restrictions", "name": "Kosher" },
+    { "tagId": "27", "type": "Dietary Restrictions", "name": "Egg-free" },
+    { "tagId": "28", "type": "Cuisine Type", "name": "Thai" },
+    { "tagId": "29", "type": "Cuisine Type", "name": "Vietnamese" },
+    { "tagId": "30", "type": "Cuisine Type", "name": "Spanish" },
+    { "tagId": "31", "type": "Cuisine Type", "name": "Greek" },
+    { "tagId": "32", "type": "Cuisine Type", "name": "Lebanese" },
+    { "tagId": "33", "type": "Cuisine Type", "name": "American" },
+    { "tagId": "34", "type": "Cuisine Type", "name": "British" },
+    { "tagId": "35", "type": "Cuisine Type", "name": "African" },
+    { "tagId": "36", "type": "Cuisine Type", "name": "Latin American" },
+    { "tagId": "37", "type": "Dietary Restrictions", "name": "Paleo" },
+    { "tagId": "38", "type": "Dietary Restrictions", "name": "Pescatarian" },
+    { "tagId": "39", "type": "Dietary Restrictions", "name": "Sugar-free" },
+    { "tagId": "40", "type": "Dietary Restrictions", "name": "Low-FODMAP" },
+    { "tagId": "41", "type": "Dietary Restrictions", "name": "Soy-free" },
+    { "tagId": "42", "type": "Other", "name": "Comfort Food" },
+    { "tagId": "43", "type": "Other", "name": "Healthy" },
+    { "tagId": "44", "type": "Other", "name": "Kid-friendly" },
+    { "tagId": "45", "type": "Other", "name": "One-pot" },
+    { "tagId": "46", "type": "Other", "name": "Meal Prep" },
+    { "tagId": "47", "type": "Other", "name": "Breakfast" },
+    { "tagId": "48", "type": "Other", "name": "Snack" },
+    { "tagId": "49", "type": "Other", "name": "Grill / BBQ" },
+    { "tagId": "50", "type": "Other", "name": "Air Fryer" },
+    { "tagId": "51", "type": "Other", "name": "Slow Cooker" },
+    { "tagId": "52", "type": "Other", "name": "Baking" },
+
+    { "tagId": "53", "type": "Country", "name": "France" },
+    { "tagId": "54", "type": "Country", "name": "Italy" },
+    { "tagId": "55", "type": "Country", "name": "Japan" },
+    { "tagId": "56", "type": "Country", "name": "Mexico" },
+    { "tagId": "57", "type": "Country", "name": "India" },
+    { "tagId": "58", "type": "Country", "name": "China" },
+    { "tagId": "59", "type": "Country", "name": "USA" },
+    { "tagId": "60", "type": "Country", "name": "Spain" },
+    { "tagId": "61", "type": "Country", "name": "Greece" },
+    { "tagId": "62", "type": "Country", "name": "Thailand" },
+    { "tagId": "63", "type": "Country", "name": "Brazil" },
+    { "tagId": "64", "type": "Country", "name": "Morocco" },
+    { "tagId": "65", "type": "Country", "name": "South Korea" },
+    { "tagId": "66", "type": "Country", "name": "Vietnam" },
+    { "tagId": "67", "type": "Dietary Restrictions", "name": "Halal" },
+    { "tagId": "68", "type": "Dietary Restrictions", "name": "Gluten-free" }
+  ],
+
+  "ingredients": [
+    {"ingredientId": "1", "name": "Quinoa", "unitOfMeasurementToCaloryPerUnit": {"g": 300}, "photoURL": null, "isUserCreated": false, "userId": null},
+    { "ingredientId": "2", "name": "Chickpeas", "unitOfMeasurementToCaloryPerUnit": {"g": 164}, "photoURL": null, "isUserCreated": false, "userId": null },
+    { "ingredientId": "3", "name": "Spinach", "unitOfMeasurementToCaloryPerUnit": {"g": 23}, "photoURL": null, "isUserCreated": false, "userId": null },
+    { "ingredientId": "4", "name": "Bell Pepper", "unitOfMeasurementToCaloryPerUnit": {"g": 31}, "photoURL": null, "isUserCreated": false, "userId": null },
+    { "ingredientId": "5", "name": "Carrot", "unitOfMeasurementToCaloryPerUnit": {"g": 41}, "photoURL": null, "isUserCreated": false, "userId": null },
+    { "ingredientId": "6", "name": "Olive Oil", "unitOfMeasurementToCaloryPerUnit": {"ml": 9}, "photoURL": null, "isUserCreated": false, "userId": null },
+    { "ingredientId": "7", "name": "Lemon Juice", "unitOfMeasurementToCaloryPerUnit": {"ml": 27}, "photoURL": null, "isUserCreated": false, "userId": null },
+    { "ingredientId": "8", "name": "Pasta", "unitOfMeasurementToCaloryPerUnit": {"g": 131}, "photoURL": null, "isUserCreated": false, "userId": null },
+    { "ingredientId": "9", "name": "Tomato Sauce", "unitOfMeasurementToCaloryPerUnit": {"g": 29}, "photoURL": null, "isUserCreated": false, "userId": null },
+    { "ingredientId": "10", "name": "Eggs", "unitOfMeasurementToCaloryPerUnit": {"NO UNIT": 72}, "photoURL": null, "isUserCreated": false, "userId": null },
+    { "ingredientId": "11", "name": "Milk", "unitOfMeasurementToCaloryPerUnit": {"ml": 42}, "photoURL": null, "isUserCreated": false, "userId": null },
+    { "ingredientId": "12", "name": "Flour", "unitOfMeasurementToCaloryPerUnit": {"g": 364}, "photoURL": null, "isUserCreated": false, "userId": null },
+    { "ingredientId": "13", "name": "Rice", "unitOfMeasurementToCaloryPerUnit": {"g": 130}, "photoURL": null, "isUserCreated": false, "userId": null },
+    { "ingredientId": "14", "name": "Seaweed", "unitOfMeasurementToCaloryPerUnit": {"g": 45}, "photoURL": null, "isUserCreated": false, "userId": null }
+  ],
+
+  "recipes": [
+    {
+      "recipeId": "100",
+      "originalRecipeId": "102",
+      "authorId": "101",
+      "title": "Harvest Grain & Veggie Bowl",
+      "description": "A delicious and nutritious bowl filled with fresh vegetables and grains.",
+      "photoURL": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=2080&auto=format&fit=crop",
+      "preparationTime": 25,
+      "servings": 4,
+      "rating": 4.5,
+      "numberOfRatings": 100,
+      "difficulty": "EASY",
+      "cost": "CHEAP",
+      "calories": 450,
+      "ingredients": [
+        { "recipeIngredientId": "ri1", "ingredient":
+          { "ingredientId": "1", "name": "Quinoa", "unitOfMeasurementToCaloryPerUnit": {"g": 300}, "photoURL": null, "isUserCreated": false, "userId": null },
+          "quantity": 185.0, "customUnitOfMeasurement": "g" },
+        { "recipeIngredientId": "ri2", "ingredient": { "ingredientId": "2", "name": "Chickpeas", "unitOfMeasurementToCaloryPerUnit": {"g": 164}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 165.0, "customUnitOfMeasurement": "g" },
+        { "recipeIngredientId": "ri3", "ingredient": { "ingredientId": "3", "name": "Spinach", "unitOfMeasurementToCaloryPerUnit": {"g": 23}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 60.0, "customUnitOfMeasurement": "g" },
+        { "recipeIngredientId": "ri4", "ingredient": { "ingredientId": "4", "name": "Bell Pepper", "unitOfMeasurementToCaloryPerUnit": {"g": 31}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 120.0, "customUnitOfMeasurement": "g" },
+        { "recipeIngredientId": "ri5", "ingredient": { "ingredientId": "5", "name": "Carrot", "unitOfMeasurementToCaloryPerUnit": {"g": 41}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 150.0, "customUnitOfMeasurement": "g" },
+        { "recipeIngredientId": "ri6", "ingredient": { "ingredientId": "6", "name": "Olive Oil", "unitOfMeasurementToCaloryPerUnit": {"ml": 9}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 30.0, "customUnitOfMeasurement": "ml" },
+        { "recipeIngredientId": "ri7", "ingredient": { "ingredientId": "7", "name": "Lemon Juice", "unitOfMeasurementToCaloryPerUnit": {"ml": 27}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 22.0, "customUnitOfMeasurement": "ml" }
+      ],
+      "steps": [
+        { "stepId": "s1", "photoURL": null, "description": "Cook quinoa according to package instructions.", "order": 1 },
+        { "stepId": "s2", "photoURL": null, "description": "Chop all vegetables.", "order": 2 },
+        { "stepId": "s3", "photoURL": null, "description": "Mix all ingredients in a large bowl.", "order": 3 },
+        { "stepId": "s4", "photoURL": null, "description": "Add olive oil and lemon juice, then toss.", "order": 4 }
+      ],
+      "tags": [
+        { "tagId": "3", "type": "Dietary Restrictions", "name": "Vegan" },
+        { "tagId": "43", "type": "Other", "name": "Healthy" }
+      ],
+      "reviews": [
+        {
+          "reviewId": "r1",
+          "creationDate": 1746787200000,
+          "photosUrl": [],
+          "body": "Super fresh and tasty! Perfect for a quick lunch.",
+          "rating": 5,
+          "userId": "102"
+        },
+        {
+          "reviewId": "r2",
+          "creationDate": 1746787200000,
+          "photosUrl": [],
+          "body": "Amazing flavors, very healthy!",
+          "rating": 5,
+          "userId": "103"
+        }
+      ]
+    },
+
+    {
+      "recipeId": "101",
+      "originalRecipeId": null,
+      "authorId": "101",
+      "title": "Spicy Arrabbiata Pasta",
+      "description": "Classic Italian pasta with a spicy tomato sauce.",
+      "photoURL": "https://images.unsplash.com/photo-1608756687911-aa1599ab3bd9",
+      "preparationTime": 20,
+      "servings": 2,
+      "rating": 4.7,
+      "numberOfRatings": 80,
+      "difficulty": "EASY",
+      "cost": "CHEAP",
+      "calories": 520,
+      "ingredients": [
+        { "recipeIngredientId": "ri8", "ingredient": { "ingredientId": "8", "name": "Pasta", "unitOfMeasurementToCaloryPerUnit": {"g": 131}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 200.0, "customUnitOfMeasurement": "g" },
+        { "recipeIngredientId": "ri9", "ingredient": { "ingredientId": "9", "name": "Tomato Sauce", "unitOfMeasurementToCaloryPerUnit": {"g": 29}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 150.0, "customUnitOfMeasurement": "g" }
+      ],
+      "steps": [
+        { "stepId": "s5", "photoURL": null, "description": "Boil pasta until al dente.", "order": 1 },
+        { "stepId": "s6", "photoURL": null, "description": "Heat tomato sauce with chili flakes.", "order": 2 },
+        { "stepId": "s7", "photoURL": null, "description": "Combine pasta and sauce.", "order": 3 }
+      ],
+      "tags": [
+        { "tagId": "2", "type": "Cuisine Type", "name": "Italian" },
+        { "tagId": "6", "type": "Other", "name": "Spicy" }
+      ],
+      "reviews": []
+    },
+
+    {
+      "recipeId": "102",
+      "originalRecipeId": null,
+      "authorId": "102",
+      "title": "Fluffy Matcha Pancakes",
+      "description": "Sweet and fluffy pancakes with Japanese matcha flavor.",
+      "photoURL": "https://images.unsplash.com/photo-1528207776546-365bb710ee93",
+      "preparationTime": 15,
+      "servings": 2,
+      "rating": 4.8,
+      "numberOfRatings": 120,
+      "difficulty": "MEDIUM",
+      "cost": "AFFORDABLE",
+      "calories": 600,
+      "ingredients": [
+        { "recipeIngredientId": "ri10", "ingredient": { "ingredientId": "10", "name": "Eggs", "unitOfMeasurementToCaloryPerUnit": {"NO UNIT": 78}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 2.0, "customUnitOfMeasurement": "" },
+        { "recipeIngredientId": "ri11", "ingredient": { "ingredientId": "11", "name": "Milk", "unitOfMeasurementToCaloryPerUnit": {"ml": 42}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 200.0, "customUnitOfMeasurement": "ml" },
+        { "recipeIngredientId": "ri12", "ingredient": { "ingredientId": "12", "name": "Flour", "unitOfMeasurementToCaloryPerUnit": {"g": 364}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 150.0, "customUnitOfMeasurement": "g" }
+      ],
+      "steps": [
+        { "stepId": "s8", "photoURL": null, "description": "Mix dry and wet ingredients.", "order": 1 },
+        { "stepId": "s9", "photoURL": null, "description": "Cook pancakes on a pan.", "order": 2 }
+      ],
+      "tags": [
+        { "tagId": "13", "type": "Cuisine Type", "name": "Japanese" },
+        { "tagId": "21", "type": "Other", "name": "Dessert" }
+      ],
+      "reviews": []
+    },
+
+    {
+      "recipeId": "103",
+      "originalRecipeId": null,
+      "authorId": "103",
+      "title": "Classic French Omelette",
+      "description": "Soft and creamy French-style omelette.",
+      "photoURL": "https://images.unsplash.com/photo-1551183053-bf91a1d81141",
+      "preparationTime": 10,
+      "servings": 1,
+      "rating": 4.6,
+      "numberOfRatings": 60,
+      "difficulty": "EASY",
+      "cost": "CHEAP",
+      "calories": 250,
+      "ingredients": [
+        { "recipeIngredientId": "ri13", "ingredient":     { "ingredientId": "10", "name": "Eggs", "unitOfMeasurementToCaloryPerUnit": {"NO UNIT": 78}, "photoURL": null, "isUserCreated": false, "userId": null },
+          "quantity": 3.0, "customUnitOfMeasurement": "" },
+        { "recipeIngredientId": "ri14", "ingredient":     { "ingredientId": "6", "name": "Olive Oil", "unitOfMeasurementToCaloryPerUnit": {"ml": 9}, "photoURL": null, "isUserCreated": false, "userId": null },
+          "quantity": 10.0, "customUnitOfMeasurement": "ml" }
+      ],
+      "steps": [
+        { "stepId": "s10", "photoURL": null, "description": "Whisk eggs thoroughly.", "order": 1 },
+        { "stepId": "s11", "photoURL": null, "description": "Cook gently in pan.", "order": 2 }
+      ],
+      "tags": [
+        { "tagId": "8", "type": "Cuisine Type", "name": "French" }
+      ],
+      "reviews": [
+        {
+          "reviewId": "r3",
+          "creationDate": 1746787200000,
+          "photosUrl": [],
+          "body": "Creamy and delicious!",
+          "rating": 5,
+          "userId": "101"
+        }
+      ]
+    },
+
+    {
+      "recipeId": "104",
+      "originalRecipeId": null,
+      "authorId": "101",
+      "title": "Vegan Sushi Rolls",
+      "description": "Fresh vegan sushi rolls with rice and vegetables.",
+      "photoURL": "https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56",
+      "preparationTime": 30,
+      "servings": 3,
+      "rating": 4.4,
+      "numberOfRatings": 50,
+      "difficulty": "MEDIUM",
+      "cost": "AFFORDABLE",
+      "calories": 380,
+      "ingredients": [
+        { "recipeIngredientId": "ri15", "ingredient": { "ingredientId": "13", "name": "Rice", "unitOfMeasurementToCaloryPerUnit": {"g": 130}, "photoURL": null, "isUserCreated": false, "userId": null },
+          "quantity": 200.0, "customUnitOfMeasurement": "g" },
+        { "recipeIngredientId": "ri16", "ingredient": { "ingredientId": "14", "name": "Seaweed", "unitOfMeasurementToCaloryPerUnit": {"g": 45}, "photoURL": null, "isUserCreated": false, "userId": null },
+          "quantity": 20.0, "customUnitOfMeasurement": "g" },
+        { "recipeIngredientId": "ri17", "ingredient": { "ingredientId": "4", "name": "Bell Pepper", "unitOfMeasurementToCaloryPerUnit": {"g": 31}, "photoURL": null, "isUserCreated": false, "userId": null },
+          "quantity": 50.0, "customUnitOfMeasurement": "g" }
+      ],
+      "steps": [
+        { "stepId": "s12", "photoURL": null, "description": "Prepare sushi rice.", "order": 1 },
+        { "stepId": "s13", "photoURL": null, "description": "Roll with vegetables and seaweed.", "order": 2 }
+      ],
+      "tags": [
+        { "tagId": "3", "type": "Dietary Restrictions", "name": "Vegan" },
+        { "tagId": "13", "type": "Cuisine Type", "name": "Japanese" }
+      ],
+      "reviews": []
+    },
+      {
+        "recipeId": "105",
+        "originalRecipeId": null,
+        "authorId": "101",
+        "title": "Pesto Spinach Pasta",
+        "description": "A vibrant, healthy green pasta dish.",
+        "photoURL": "https://theclevermeal.com/wp-content/uploads/2023/02/spinach-pesto-pasta_5.jpg",
+        "preparationTime": 15,
+        "servings": 2,
+        "rating": 4.6,
+        "numberOfRatings": 45,
+        "difficulty": "EASY",
+        "cost": "CHEAP",
+        "calories": 420,
+        "ingredients": [
+          { "recipeIngredientId": "ri18", "ingredient": { "ingredientId": "8", "name": "Pasta", "unitOfMeasurementToCaloryPerUnit": {"g": 131} }, "quantity": 200.0 , "customUnitOfMeasurement": "" },
+          { "recipeIngredientId": "ri19", "ingredient": { "ingredientId": "3", "name": "Spinach", "unitOfMeasurementToCaloryPerUnit": {"g": 23} }, "quantity": 100.0 , "customUnitOfMeasurement": "" },
+          { "recipeIngredientId": "ri20", "ingredient": { "ingredientId": "6", "name": "Olive Oil", "unitOfMeasurementToCaloryPerUnit": {"ml": 9} }, "quantity": 20.0 , "customUnitOfMeasurement": "" }
+        ],
+        "steps": [
+          { "stepId": "s14", "description": "Boil pasta.", "order": 1 },
+          { "stepId": "s15", "description": "Blend spinach with olive oil.", "order": 2 },
+          { "stepId": "s16", "description": "Toss pasta with sauce.", "order": 3 }
+        ],
+        "tags": [
+          { "tagId": "2", "type": "Cuisine Type", "name": "Italian" },
+          { "tagId": "43", "type": "Other", "name": "Healthy" }
+        ],
+        "reviews": []
+      },
+      {
+        "recipeId": "106",
+        "originalRecipeId": null,
+        "authorId": "102",
+        "title": "Zesty Mediterranean Quinoa",
+        "description": "A light and refreshing salad full of fiber.",
+        "photoURL": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd",
+        "preparationTime": 20,
+        "servings": 3,
+        "rating": 4.9,
+        "numberOfRatings": 30,
+        "difficulty": "EASY",
+        "cost": "AFFORDABLE",
+        "calories": 350,
+        "ingredients": [
+          { "recipeIngredientId": "ri21", "ingredient": { "ingredientId": "1", "name": "Quinoa", "unitOfMeasurementToCaloryPerUnit": {"g": 300} }, "quantity": 150.0 , "customUnitOfMeasurement": "" },
+          { "recipeIngredientId": "ri22", "ingredient": { "ingredientId": "2", "name": "Chickpeas", "unitOfMeasurementToCaloryPerUnit": {"g": 164} }, "quantity": 100.0 , "customUnitOfMeasurement": "" },
+          { "recipeIngredientId": "ri23", "ingredient": { "ingredientId": "7", "name": "Lemon Juice", "unitOfMeasurementToCaloryPerUnit": {"ml": 27} }, "quantity": 30.0 , "customUnitOfMeasurement": "" }
+        ],
+        "steps": [
+          { "stepId": "s17", "description": "Cook quinoa.", "order": 1 },
+          { "stepId": "s18", "description": "Mix in chickpeas and lemon juice.", "order": 2 }
+        ],
+        "tags": [
+          { "tagId": "10", "type": "Cuisine Type", "name": "Mediterranean" },
+          { "tagId": "3", "type": "Dietary Restrictions", "name": "Vegan" }
+        ],
+        "reviews": []
+      },
+      {
+        "recipeId": "107",
+        "originalRecipeId": null,
+        "authorId": "103",
+        "title": "Velvety Carrot Soup",
+        "description": "A comforting, smooth soup perfect for chilly evenings.",
+        "photoURL": "https://images.unsplash.com/photo-1547592166-23ac45744acd",
+        "preparationTime": 35,
+        "servings": 2,
+        "rating": 4.5,
+        "numberOfRatings": 55,
+        "difficulty": "MEDIUM",
+        "cost": "CHEAP",
+        "calories": 280,
+        "ingredients": [
+          { "recipeIngredientId": "ri24", "ingredient": { "ingredientId": "5", "name": "Carrot", "unitOfMeasurementToCaloryPerUnit": {"g": 41} }, "quantity": 400.0 , "customUnitOfMeasurement": "" },
+          { "recipeIngredientId": "ri25", "ingredient": { "ingredientId": "11", "name": "Milk", "unitOfMeasurementToCaloryPerUnit": {"ml": 42} }, "quantity": 250.0 , "customUnitOfMeasurement": "" }
+        ],
+        "steps": [
+          { "stepId": "s19", "description": "Boil carrots until soft.", "order": 1 },
+          { "stepId": "s20", "description": "Blend with milk until smooth.", "order": 2 }
+        ],
+        "tags": [
+          { "tagId": "8", "type": "Cuisine Type", "name": "French" },
+          { "tagId": "14", "type": "Dietary Restrictions", "name": "Vegetarian" }
+        ],
+        "reviews": []
+      },
+      {
+        "recipeId": "108",
+        "originalRecipeId": null,
+        "authorId": "101",
+        "title": "Spicy Veggie Rice Bowl",
+        "description": "Quick, spicy, and satisfying.",
+        "photoURL": "https://www.usarice.com/images/default-source/think-rice/recipes/spicy-vegan-brown-rice-bowl.jpg?sfvrsn=67f0d28d_4",
+        "preparationTime": 15,
+        "servings": 1,
+        "rating": 4.3,
+        "numberOfRatings": 20,
+        "difficulty": "EASY",
+        "cost": "CHEAP",
+        "calories": 400,
+        "ingredients": [
+          { "recipeIngredientId": "ri26", "ingredient": { "ingredientId": "13", "name": "Rice", "unitOfMeasurementToCaloryPerUnit": {"g": 130} }, "quantity": 150.0 , "customUnitOfMeasurement": "" },
+          { "recipeIngredientId": "ri27", "ingredient": { "ingredientId": "14", "name": "Seaweed", "unitOfMeasurementToCaloryPerUnit": {"g": 45} }, "quantity": 10.0 , "customUnitOfMeasurement": "" },
+          { "recipeIngredientId": "ri28", "ingredient": { "ingredientId": "4", "name": "Bell Pepper", "unitOfMeasurementToCaloryPerUnit": {"g": 31} }, "quantity": 50.0 , "customUnitOfMeasurement": "" }
+        ],
+        "steps": [
+          { "stepId": "s21", "description": "Cook rice.", "order": 1 },
+          { "stepId": "s22", "description": "Top with seaweed and chopped peppers.", "order": 2 }
+        ],
+        "tags": [
+          { "tagId": "13", "type": "Cuisine Type", "name": "Japanese" },
+          { "tagId": "6", "type": "Other", "name": "Spicy" }
+        ],
+        "reviews": []
+      },
+      {
+        "recipeId": "109",
+        "originalRecipeId": null,
+        "authorId": "102",
+        "title": "Sweet Milk Custard",
+        "description": "A classic, simple dessert.",
+        "photoURL": "https://i2.wp.com/www.downshiftology.com/wp-content/uploads/2023/10/Custard-7.jpg",
+        "preparationTime": 40,
+        "servings": 4,
+        "rating": 4.7,
+        "numberOfRatings": 90,
+        "difficulty": "MEDIUM",
+        "cost": "AFFORDABLE",
+        "calories": 320,
+        "ingredients": [
+          { "recipeIngredientId": "ri29", "ingredient": { "ingredientId": "10", "name": "Eggs", "unitOfMeasurementToCaloryPerUnit": {"NO UNIT": 78} }, "quantity": 4.0 , "customUnitOfMeasurement": "" },
+          { "recipeIngredientId": "ri30", "ingredient": { "ingredientId": "11", "name": "Milk", "unitOfMeasurementToCaloryPerUnit": {"ml": 42} }, "quantity": 400.0 , "customUnitOfMeasurement": "" }
+        ],
+        "steps": [
+          { "stepId": "s23", "description": "Whisk eggs and milk.", "order": 1 },
+          { "stepId": "s24", "description": "Steam until set.", "order": 2 }
+        ],
+        "tags": [
+          { "tagId": "21", "type": "Other", "name": "Dessert" },
+          { "tagId": "14", "type": "Dietary Restrictions", "name": "Vegetarian" }
+        ],
+        "reviews": []
+      },
+        {
+          "recipeId": "110",
+          "originalRecipeId": null,
+          "authorId": "101",
+          "title": "Artisanal Handmade Pasta with Spinach Emulsion",
+          "description": "A labor-intensive classic, requiring precision and technique to achieve the perfect texture.",
+          "photoURL": "https://sweetsimplevegan.com/wp-content/uploads/2023/09/fresh_spinach_pasta_sweetsimplevegan_1.jpg",
+          "preparationTime": 90,
+          "servings": 4,
+          "rating": 4.9,
+          "numberOfRatings": 45,
+          "difficulty": "HARD",
+          "cost": "EXPENSIVE",
+          "calories": 750,
+          "ingredients": [
+            { "recipeIngredientId": "ri31", "ingredient": { "ingredientId": "12", "name": "Flour", "unitOfMeasurementToCaloryPerUnit": {"g": 364} }, "quantity": 400.0 , "customUnitOfMeasurement": "" },
+            { "recipeIngredientId": "ri32", "ingredient": { "ingredientId": "10", "name": "Eggs", "unitOfMeasurementToCaloryPerUnit": {"NO UNIT": 78} }, "quantity": 4.0 , "customUnitOfMeasurement": "" },
+            { "recipeIngredientId": "ri33", "ingredient": { "ingredientId": "3", "name": "Spinach", "unitOfMeasurementToCaloryPerUnit": {"g": 23} }, "quantity": 200.0 , "customUnitOfMeasurement": "" },
+            { "recipeIngredientId": "ri34", "ingredient": { "ingredientId": "6", "name": "Olive Oil", "unitOfMeasurementToCaloryPerUnit": {"ml": 9} }, "quantity": 50.0 , "customUnitOfMeasurement": "" }
+          ],
+          "steps": [
+            { "stepId": "s25", "description": "Create a mound of flour, create a well, and incorporate eggs slowly by hand to form dough.", "order": 1 },
+            { "stepId": "s26", "description": "Knead the dough for 20 minutes until perfectly elastic, then rest for 30 minutes.", "order": 2 },
+            { "stepId": "s27", "description": "Roll out thin sheets and hand-cut into ribbons.", "order": 3 },
+            { "stepId": "s28", "description": "Blanch spinach and blend with olive oil to create a refined emulsion; toss with cooked pasta.", "order": 4 }
+          ],
+          "tags": [
+            { "tagId": "2", "type": "Cuisine Type", "name": "Italian" }
+          ],
+          "reviews": []
+        },
+        {
+          "recipeId": "111",
+          "originalRecipeId": null,
+          "authorId": "102",
+          "title": "Technique-Heavy Quinoa & Vegetable Soufflé",
+          "description": "A delicate, high-difficulty dish that requires perfect timing and temperature control.",
+          "photoURL": "https://en-chatelaine.mblycdn.com/ench/resized/2026/02/w767/dates-quinoa-cinnamon-recipe.jpg",
+          "preparationTime": 120,
+          "servings": 2,
+          "rating": 4.8,
+          "numberOfRatings": 35,
+          "difficulty": "HARD",
+          "cost": "EXPENSIVE",
+          "calories": 550,
+          "ingredients": [
+            { "recipeIngredientId": "ri35", "ingredient": { "ingredientId": "1", "name": "Quinoa", "unitOfMeasurementToCaloryPerUnit": {"g": 300} }, "quantity": 100.0 , "customUnitOfMeasurement": "" },
+            { "recipeIngredientId": "ri36", "ingredient": { "ingredientId": "10", "name": "Eggs", "unitOfMeasurementToCaloryPerUnit": {"": 78} }, "quantity": 5.0 , "customUnitOfMeasurement": "" },
+            { "recipeIngredientId": "ri37", "ingredient": { "ingredientId": "11", "name": "Milk", "unitOfMeasurementToCaloryPerUnit": {"ml": 42} }, "quantity": 150.0 , "customUnitOfMeasurement": "" },
+            { "recipeIngredientId": "ri38", "ingredient": { "ingredientId": "4", "name": "Bell Pepper", "unitOfMeasurementToCaloryPerUnit": {"g": 31} }, "quantity": 80.0 , "customUnitOfMeasurement": "" }
+          ],
+          "steps": [
+            { "stepId": "s29", "description": "Cook quinoa to specific al dente consistency and drain thoroughly.", "order": 1 },
+            { "stepId": "s30", "description": "Separate eggs and whip whites to stiff peaks; fold gently into a mixture of yolks, milk, and sautéed peppers.", "order": 2 },
+            { "stepId": "s31", "description": "Fold in cooked quinoa carefully to avoid collapsing the aeration.", "order": 3 },
+            { "stepId": "s32", "description": "Bake in a water bath at precise temperature until risen and golden.", "order": 4 }
+          ],
+          "tags": [
+            { "tagId": "8", "type": "Cuisine Type", "name": "French" },
+            { "tagId": "14", "type": "Dietary Restrictions", "name": "Vegetarian" }
+          ],
+          "reviews": []
+        }
+  ]
+}

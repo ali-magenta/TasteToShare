@@ -1,0 +1,330 @@
+package com.example.tastetoshare.viewmodels
+
+import android.net.Uri
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.toRoute
+import com.example.tastetoshare.SessionManager
+import com.example.tastetoshare.TasteToShareApp
+import com.example.tastetoshare.data.uiClasses.toUi
+import com.example.tastetoshare.data.entities.Tag
+import com.example.tastetoshare.data.entities.User
+import com.example.tastetoshare.data.uiClasses.UIRecipePreview
+import com.example.tastetoshare.navigation.ProfileRoute
+import com.example.tastetoshare.repositories.RecipeRepository
+import com.example.tastetoshare.repositories.TagRepository
+import com.example.tastetoshare.repositories.UserRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+
+class ProfileViewModel(
+    private val savedStateHandle: SavedStateHandle,
+    private val userRepository: UserRepository,
+    private val recipeRepository: RecipeRepository,
+    private val tagRepository: TagRepository
+    ) : ViewModel() {
+
+    val defaultTags =
+        tagRepository.getTags(null, null)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
+
+    private val args = savedStateHandle.toRoute<ProfileRoute>()
+    private val userId = args.userId
+
+    val user: StateFlow<User> =
+        userRepository.getUser(userId)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = User()
+            )
+
+    val loggedInUser: StateFlow<User> =
+        userRepository.getUser(SessionManager.CURRENT_LOGGED_IN_USER_ID)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = User()
+            )
+
+    val userRecipes: StateFlow<List<UIRecipePreview>> =
+        recipeRepository.getRecentRecipesPreviewByUserId(userId)
+            .combine(loggedInUser) { recipes, loggedInUser ->
+                recipes.map { it.toUi(loggedInUser) }
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
+
+    private val _uiState = MutableStateFlow(ProfileUIState())
+    val uiState: StateFlow<ProfileUIState> = _uiState.asStateFlow()
+
+    fun toggleMyRecipesAnalyticsTab(value: Boolean) {
+        _uiState.update { it.copy(isShowingMyRecipes = value) }
+    }
+
+    fun onNameChange(value: String) {
+        _uiState.update { it.copy(
+            editedFullName = value,
+            validation = _uiState.value.validation.copy(fullNameError = "")
+        ) }
+    }
+
+    fun onUsernameChanged(value: String) {
+        _uiState.update { it.copy(
+            editedNickName = value,
+            validation = _uiState.value.validation.copy(nickNameError = "")
+        ) }
+    }
+
+    fun onBiographyChanged(value: String) {
+        _uiState.update { it.copy(
+            editedBiography = value,
+            validation = _uiState.value.validation.copy(biographyError = "")
+        ) }
+    }
+
+    fun onPreferencesChanged(value: List<Tag>) {
+        _uiState.update { it.copy(
+            editedTags = value,
+            hasEditedTags = true,
+            validation = _uiState.value.validation.copy(tagsError = "")
+        ) }
+    }
+
+    fun onRoleChanged(value: String) {
+        _uiState.update { it.copy(
+            editedCookingRole = value,
+            validation = _uiState.value.validation.copy(cookingRoleError = "")
+        ) }
+    }
+
+    fun onPasswordChanged(value: String) {
+        _uiState.update { it.copy(
+            editedPassword = value,
+            validation = _uiState.value.validation.copy(passwordError = "")
+        ) }
+    }
+
+    fun hideEditPhotoPopUp() {
+        _uiState.update { it.copy(isShowingImageEditingPopUp = false) }
+    }
+
+    fun showEditPhotoPopUp() {
+        _uiState.update { it.copy(isShowingImageEditingPopUp = true) }
+    }
+
+    fun importPhotoFromGallery() {
+        _uiState.update { it.copy(isGalleryOpen = true) }
+    }
+
+    fun onPhotoSelectedFromGallery(uri: Uri?) {
+        _uiState.update { it.copy(
+            editedPhoto = uri?.toString(),
+            isGalleryOpen = false
+            ) }
+    }
+
+    fun dismissImageEditingPopUp() {
+        _uiState.update { it.copy(isShowingImageEditingPopUp = false) }
+    }
+
+    fun onPhotoTaken(photo: String?) {
+        _uiState.update { it.copy(editedPhoto = photo) }
+    }
+
+    fun onToggleSaved(recipeId: String) {
+        viewModelScope.launch {
+            val loggedUserId = loggedInUser.value.userId
+            val currentlySaved = recipeId in loggedInUser.value.savedRecipeIds
+            if (currentlySaved) {
+                userRepository.deleteSavedRecipe(loggedUserId ?: "", recipeId)
+            } else {
+                userRepository.addSavedRecipe(loggedUserId ?: "", recipeId)
+            }
+
+        }
+    }
+
+    fun saveChanges() {
+        validateProfile()
+    }
+
+    fun handlePhotoUri(uri:String) {
+        _uiState.update { it.copy(
+            editedPhoto = uri,
+        ) }
+        savedStateHandle["returned_uri"] = null
+    }
+
+
+    fun validateProfile(): Boolean {
+        var currentFullNameError = ""
+        var currentNickNameError = ""
+        var currentBiographyError = ""
+        var currentTagsError = ""
+        var currentPasswordError = ""
+
+        val newName = _uiState.value.editedFullName ?: user.value.fullName
+        val newNickName = _uiState.value.editedNickName ?: user.value.userName
+        val newBiography = _uiState.value.editedBiography ?: user.value.description
+        val newPhotoURI = _uiState.value.editedPhoto ?: user.value.photoURI
+        val newTags = if(_uiState.value.hasEditedTags) {
+            _uiState.value.editedTags
+        } else user.value.preferences
+        val newRole = _uiState.value.editedCookingRole ?: user.value.role
+        val newPassword = _uiState.value.editedPassword
+
+        if(newName.isBlank()) {
+            currentFullNameError = "Name cannot be blank"
+        }
+        else if(newName.length < 4) {
+            currentFullNameError = "Name must be at least 4 characters long"
+        }
+
+        if(newNickName.isBlank()) {
+            currentNickNameError = "Username cannot be blank"
+        }
+        else if(newNickName.length < 4) {
+            currentNickNameError = "Username must be at least 4 characters long"
+        }
+
+        if(newBiography.length > 300) {
+            currentBiographyError = "Biography cannot be more than 300 characters long"
+        }
+        if(newTags.size < 3) {
+            currentTagsError = "Please select at least three cooking preferences"
+        }
+        if(newPassword.length < 6) {
+            currentPasswordError = "Password must be at least 6 characters long"
+        }
+        if(!newPassword.contains(regex = Regex("[0-9]"))) {
+            currentPasswordError = "Password must contain at least a digit"
+        }
+        if(!newPassword.contains(regex = Regex("[A-Z]"))) {
+            currentPasswordError = "Password must contain at least a capital letter"
+        }
+
+        val isValidForm = currentNickNameError.isBlank() &&
+                currentFullNameError.isBlank() &&
+                currentBiographyError.isBlank() &&
+                currentTagsError.isBlank() &&
+                currentPasswordError.isBlank()
+
+
+        _uiState.update { it.copy(
+            validation = EditProfileFormValidation(
+                fullNameError = currentFullNameError,
+                nickNameError = currentNickNameError,
+                biographyError = currentBiographyError,
+                tagsError = currentTagsError,
+                passwordError = currentPasswordError,
+                isValid = isValidForm
+            )
+        ) }
+
+
+        if(isValidForm) {
+            viewModelScope.launch {
+                //should add a try and catch in the future for db/connection errors
+                userRepository.updateUser(
+                    User(
+                        userId = user.value.userId,
+                        fullName = newName,
+                        userName = newNickName,
+                        email = user.value.email,
+                        role = newRole,
+                        description = newBiography,
+                        photoURI = newPhotoURI,
+                        preferences = newTags, //Ultimately the user should include a hash of its password
+                        savedRecipeIds = user.value.savedRecipeIds,
+                        triedRecipeIds = user.value.triedRecipeIds,
+                        averageRating = user.value.averageRating,
+                        numberOfRatings = user.value.numberOfRatings,
+                        numberOfRecipeTriedByOthers = user.value.numberOfRecipeTriedByOthers,
+                        numberOfReviews = user.value.numberOfReviews,
+                        )
+                )
+            }
+            //password update actually only happens here since for now it only lives in the viewModel
+            _uiState.update { it.copy(
+                password = newPassword,
+            ) }
+        }
+        return isValidForm
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory =
+            object : ViewModelProvider.Factory {
+
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(
+                    modelClass: Class<T>,
+                    extras: CreationExtras
+                ): T {
+
+                    val application =
+                        checkNotNull(extras[APPLICATION_KEY]) as TasteToShareApp
+
+                    return ProfileViewModel(
+                        savedStateHandle = extras.createSavedStateHandle(),
+                        recipeRepository = application.container.recipeRepository,
+                        userRepository = application.container.userRepository,
+                        tagRepository = application.container.tagRepository
+                    ) as T
+                }
+            }
+
+    }
+}
+
+data class ProfileUIState(
+    val isShowingMyRecipes: Boolean = true,
+    val isShowingImageEditingPopUp: Boolean = false,
+    val editedEmail: String? = null,
+    val editedFullName: String? = null,
+    val editedNickName: String? = null,
+    val editedBiography: String? = null,
+    val editedPhoto: String? = null,
+    val editedCookingRole: String? = null,
+    val editedTags: List<Tag> = emptyList(),
+    val hasEditedTags: Boolean = false,
+    val validation: EditProfileFormValidation = EditProfileFormValidation(),
+    val isLoading: Boolean = false,
+    val isGalleryOpen: Boolean = false,
+    val editedPassword: String = "temporaryPassword0",
+    val password: String = "temporaryPassword0",
+)
+
+
+data class EditProfileFormValidation(
+    val fullNameError: String = "",
+    val nickNameError: String = "",
+    val biographyError: String = "",
+    val photoError: String = "",
+    val cookingRoleError: String = "",
+    val tagsError: String = "",
+    val passwordError: String = "",
+    val isValid: Boolean = true
+)

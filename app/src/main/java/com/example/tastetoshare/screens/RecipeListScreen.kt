@@ -1,0 +1,274 @@
+package com.example.tastetoshare.screens
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tastetoshare.data.entities.RawRecipePreview
+import com.example.tastetoshare.viewmodels.RecipeListUIState
+import com.example.tastetoshare.viewmodels.RecipeListViewModel
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import com.example.tastetoshare.data.Difficulty
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.input.ImeAction
+import com.example.tastetoshare.data.Cost
+import com.example.tastetoshare.data.entities.Ingredient
+import com.example.tastetoshare.data.entities.Tag
+import com.example.tastetoshare.screens.recipeListComponents.FilterChipDropdown
+import com.example.tastetoshare.screens.recipeListComponents.FilterChipIngredients
+import com.example.tastetoshare.screens.recipeListComponents.RecipeListCard
+
+@Composable
+fun RecipeListDestination(
+    onNavigateToDetails: (recipeId: String) -> Unit,
+    viewModel: RecipeListViewModel = viewModel(factory = RecipeListViewModel.Factory)
+) {
+
+    val recipes by viewModel.recipes.collectAsStateWithLifecycle()
+    val ingredients by viewModel.ingredients.collectAsStateWithLifecycle()
+    val cuisineTags by viewModel.cuisineTags.collectAsStateWithLifecycle()
+    val dietaryTags by viewModel.dietaryTags.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    RecipeListScreen(
+        recipes = recipes,
+        ingredients = ingredients,
+        cuisineTags = cuisineTags,
+        dietaryTags = dietaryTags,
+        uiState = uiState,
+        onSearchTextChanged = viewModel::onSearchTextChanged,
+        onDifficultySelected = viewModel::onDifficultySelected,
+        onCostSelected = viewModel::onCostSelected,
+        onSearchIngredientChanged = viewModel::onSearchIngredientChanged,
+        onIngredientsSelected = viewModel::onIngredientsSelected,
+        onCuisineSelected = viewModel::onCuisineSelected,
+        onDietarySelected = viewModel::onDietarySelected,
+        onNavigateToDetails = onNavigateToDetails,
+        onToggleSaved = viewModel::onToggleSaved,
+        userId = uiState.userId
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RecipeListScreen(
+    recipes: List<RawRecipePreview>,
+    ingredients: List<Ingredient>,
+    cuisineTags: List<Tag>,
+    dietaryTags: List<Tag>,
+    uiState: RecipeListUIState,
+    onSearchTextChanged: (String) -> Unit,
+    onDifficultySelected: (Difficulty?) -> Unit,
+    onCostSelected: (Cost?) -> Unit,
+    onSearchIngredientChanged: (String) -> Unit,
+    onIngredientsSelected: (List<Ingredient>) -> Unit,
+    onCuisineSelected: (Tag?) -> Unit,
+    onDietarySelected: (Tag?) -> Unit,
+    onNavigateToDetails: (String) -> Unit,
+    userId: String?,
+    onToggleSaved: (String) -> Unit
+) {
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                colors = topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ),
+                title = {
+                    if(userId != null) {
+                        Text("My Recipes", fontWeight = FontWeight.Bold)
+                    } else
+                    Text("All Recipes", fontWeight = FontWeight.Bold)
+                },
+            )
+        }
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = innerPadding,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 17.dp)
+                            .padding(top = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            SearchRecipeBar(uiState.searchText, onSearchTextChanged)
+                        }
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                            FilterRow(
+                                selectedDifficulty = uiState.selectedDifficulty,
+                                onDifficultySelected = onDifficultySelected,
+                                selectedCost = uiState.selectedCost,
+                                onCostSelected = onCostSelected,
+                                ingredients = ingredients,
+                                searchIngredient = uiState.searchIngredient,
+                                selectedIngredients = uiState.selectedIngredients,
+                                onSearchIngredientChanged = onSearchIngredientChanged,
+                                onIngredientsSelected = onIngredientsSelected,
+                                cuisineTags = cuisineTags,
+                                dietaryTags = dietaryTags,
+                                onCuisineSelected = onCuisineSelected,
+                                onDietarySelected = onDietarySelected,
+                                selectedCuisine = uiState.selectedCuisine,
+                                selectedDietary = uiState.selectedDietary
+                            )
+                        }
+
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = if (recipes.size == 1) "1 recipe found"
+                                else "${recipes.size} recipes found",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                items(recipes) { recipe ->
+                    Box(
+                        Modifier
+                            .padding(start = 17.dp, end = 16.dp)
+                            .clickable { onNavigateToDetails(recipe.recipeId) }
+                            .animateItem()
+                    ) {
+                        RecipeListCard(recipe, onToggleSaved, null)
+                    }
+                }
+
+                // extra spacer to avoid cutting the last element
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+        }
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchRecipeBar(searchText: String, onSearchRecipe: (String) -> Unit, onSearchSubmit: ((String) -> Unit)? = null) {
+    OutlinedTextField(
+        value = searchText,
+        onValueChange = onSearchRecipe,
+        label = { Text("Search recipes") },
+        shape = RoundedCornerShape(50),
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+        trailingIcon = {
+            if (searchText.isNotEmpty()) {
+                IconButton(onClick = { onSearchRecipe("") }) {
+                    Icon(Icons.Default.Clear, contentDescription = "Clear")
+                }
+            }
+        },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(onSearch = {
+            if (onSearchSubmit != null) {
+                onSearchSubmit(searchText)
+            } else {
+                onSearchRecipe(searchText)
+            }
+        }),
+        modifier = Modifier.fillMaxWidth().padding(10.dp)
+        )
+}
+
+@Composable
+fun FilterRow(
+    selectedDifficulty: Difficulty?,
+    onDifficultySelected: (Difficulty?) -> Unit,
+    selectedCost: Cost?,
+    onCostSelected: (Cost?) -> Unit,
+    ingredients: List<Ingredient>,
+    searchIngredient: String,
+    selectedIngredients: List<Ingredient>,
+    onSearchIngredientChanged: (String) -> Unit,
+    onIngredientsSelected: (List<Ingredient>) -> Unit,
+    cuisineTags: List<Tag>,
+    dietaryTags: List<Tag>,
+    onCuisineSelected: (Tag?) -> Unit,
+    onDietarySelected: (Tag?) -> Unit,
+    selectedCuisine: Tag?,
+    selectedDietary: Tag?
+) {
+    // ingredients chip
+    FilterChipIngredients(
+        ingredients = ingredients,
+        searchIngredient = searchIngredient,
+        selectedIngredients = selectedIngredients,
+        onSearchIngredientChanged = onSearchIngredientChanged,
+        onIngredientsSelected = onIngredientsSelected
+    )
+
+    // difficulty chip
+    FilterChipDropdown(
+        label = "Difficulty",
+        selectedOption = selectedDifficulty,
+        options = Difficulty.entries,
+        optionLabel = { it.displayName},
+        onOptionSelected = onDifficultySelected
+    )
+
+    // cost range chip
+    FilterChipDropdown(
+        label = "Cost",
+        selectedOption = selectedCost,
+        options = Cost.entries,
+        optionLabel = { it.displayName},
+        onOptionSelected = onCostSelected
+    )
+
+    // cuisine chip
+    FilterChipDropdown(
+        label = "Cuisine",
+        selectedOption = selectedCuisine,
+        options = cuisineTags,
+        optionLabel = { it.name},
+        onOptionSelected = onCuisineSelected
+    )
+
+    // dietary restrictions chip
+    FilterChipDropdown(
+        label = "Dietary Restrictions",
+        selectedOption = selectedDietary,
+        options = dietaryTags,
+        optionLabel = { it.name},
+        onOptionSelected = onDietarySelected
+    )
+}
