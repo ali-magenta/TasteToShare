@@ -191,6 +191,9 @@ fun AppNavigation() {
                     onNavigateToRecipeDetails = { recipeId ->
                         navActions.navigateToRecipeDetails(recipeId)
                     },
+                    onSendRecommendationNotification = { navActions.sendRecommendationNotification() },
+                    onSendReviewNotification = { navActions.sendRecommendationNotification() },
+                    onSendDuplicateNotification = { navActions.sendRecommendationNotification() }
                 )
             }
 

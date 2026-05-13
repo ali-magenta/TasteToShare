@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -36,7 +38,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
@@ -52,6 +56,9 @@ import java.time.format.DateTimeFormatter
 fun NotificationDestination(
     onNavigateToProfile: (userId: String) -> Unit,
     onNavigateToRecipeDetails: (recipeId: String) -> Unit,
+    onSendRecommendationNotification: () -> Unit,
+    onSendReviewNotification: () -> Unit,
+    onSendDuplicateNotification: () -> Unit,
     viewModel: NotificationViewModel = viewModel(factory = NotificationViewModel.Factory)
 )
 {
@@ -60,7 +67,10 @@ fun NotificationDestination(
     NotificationScreen(
         navigateToProfile = onNavigateToProfile,
         navigateToRecipeDetails = onNavigateToRecipeDetails,
-        notifications = notifications
+        notifications = notifications,
+        sendRecommendationNotification = onSendRecommendationNotification,
+        sendReviewNotification = onSendReviewNotification,
+        sendDuplicateNotification = onSendDuplicateNotification
     )
 }
 
@@ -69,6 +79,9 @@ fun NotificationDestination(
 fun NotificationScreen(
     navigateToProfile: (userId: String) -> Unit,
     navigateToRecipeDetails: (recipeId: String) -> Unit,
+    sendRecommendationNotification: () -> Unit,
+    sendReviewNotification: () -> Unit,
+    sendDuplicateNotification: () -> Unit,
     notifications: List<UINotification>
 ) {
 
@@ -93,6 +106,48 @@ fun NotificationScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                Text("Send notifications", fontWeight = FontWeight.Bold)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                )
+                {
+                    Button(onClick = {sendRecommendationNotification },
+                        modifier = Modifier
+                            .height(56.dp)
+                            .weight(1f),
+                        contentPadding = PaddingValues(horizontal = 4.dp)
+                    ) {
+                        Text(
+                            text = "Recommendation",
+                            textAlign = TextAlign.Center,
+                            fontSize = 12.sp,
+                            maxLines = 1
+                        )                    }
+                    Button(onClick = {sendReviewNotification },
+                        modifier = Modifier
+                            .height(56.dp)
+                            .weight(1f),
+                        contentPadding = PaddingValues(horizontal = 4.dp)
+                    ) {
+                        Text("Review",
+                            textAlign = TextAlign.Center,
+                            fontSize = 12.sp,
+                            maxLines = 1)
+                    }
+                    Button(onClick = {sendDuplicateNotification },
+                        modifier = Modifier
+                            .height(56.dp)
+                            .weight(1f),
+                        contentPadding = PaddingValues(horizontal = 4.dp)
+                    ) {
+                        Text("Duplicate",
+                            textAlign = TextAlign.Center,
+                            fontSize = 12.sp,
+                            maxLines = 1)
+                    }
+                }
                 if (notifications.isNotEmpty()){
                     LazyColumn(
                         modifier = Modifier.fillMaxWidth()
