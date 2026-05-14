@@ -35,6 +35,7 @@ data class EditProfileRoute(val userId: String)
 @Serializable
 data class RecipeDetailsRoute(
     val recipeId: String,
+    val focusReviewId: String? = null
 )
 
 @Serializable

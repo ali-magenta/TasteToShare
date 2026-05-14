@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -28,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,14 +59,28 @@ fun Reviews(
     showDeleteReviewPopup: (String) -> Unit,
     reviewPhotoUrl: String,
     onSetPhotoReviewTarget: (PhotoReviewTarget) -> Unit,
-    onNavigateToPictureDialog: (Boolean) -> Unit
+    onNavigateToPictureDialog: (Boolean) -> Unit,
+    focusReviewId: String? = null,
 ) {
+    val listState = rememberLazyListState()
+
     val sortedReviews = remember(reviews, userReview) {
         val otherReviews = reviews.filter {
             it.user.userId != SessionManager.CURRENT_LOGGED_IN_USER_ID
         }
         if (userReview != null) listOf(userReview) + otherReviews
         else otherReviews
+    }
+
+    LaunchedEffect(focusReviewId, sortedReviews) {
+        if (focusReviewId != null) {
+            val index = sortedReviews.indexOfFirst { it.reviewId == focusReviewId }
+
+            if (index != -1) {
+                val targetIndex = if (userReview == null) index + 1 else index
+                listState.animateScrollToItem(targetIndex)
+            }
+        }
     }
 
     Column(
@@ -85,6 +101,7 @@ fun Reviews(
         )
 
         LazyRow(
+            state = listState,
             modifier = Modifier.fillMaxWidth().padding(start = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(horizontal = 16.dp)

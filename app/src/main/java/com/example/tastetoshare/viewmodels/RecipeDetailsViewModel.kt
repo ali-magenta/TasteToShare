@@ -53,6 +53,7 @@ class RecipeDetailsViewModel(
 
     private val args = savedStateHandle.toRoute<RecipeDetailsRoute>()
 
+    val focusReviewId: String? = args.focusReviewId
     val recipe = recipeRepository
         .getRecipeById(args.recipeId)
         .stateIn(
@@ -255,7 +256,8 @@ class RecipeDetailsViewModel(
                     recipeId = currentRecipe.recipeId,
                     type = NotificationType.NEW_REVIEW,
                     title = "New review on your recipe!",
-                    message = "Someone left a review on your ${currentRecipe.title} recipe."
+                    message = "Someone left a review on your ${currentRecipe.title} recipe.",
+                    targetId = review.reviewId
                 )
 
                 // TODO: Add notification to notification repoisitory

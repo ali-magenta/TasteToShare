@@ -35,7 +35,7 @@ class NotificationService(
                 message = "Someone reviewed your recipe: ${notification.recipe.title} ⭐️",
                 action = SnackbarAction(
                     name = "See review",
-                    routeToNavigate = RecipeDetailsRoute(recipeId = notification.recipe.recipeId)
+                    routeToNavigate = RecipeDetailsRoute(recipeId = notification.recipe.recipeId, focusReviewId = notification.targetId)
                 )
             )
             NotificationType.DUPLICATED_RECIPE -> SnackbarEvent(

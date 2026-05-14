@@ -20,6 +20,8 @@ class AppNavigationActions(private val navCtrl: NavController) {
     fun navigateToCreateRecipe(cloneId: String?, editId: String?) =
         navCtrl.navigate(CreateRecipeGraphRoute(cloneId, editId))
     fun navigateToRecipeDetails(id: String) = navCtrl.navigate(RecipeDetailsRoute(id))
+
+    fun navigateToRecipeDetailsWithReviewScroll(id: String, reviewId: String) = navCtrl.navigate(RecipeDetailsRoute(id, reviewId))
     fun navigateToHomePage() = navCtrl.navigate(HomeRoute)
     fun navigateBack() = navCtrl.popBackStack()
     fun navigateToNotifications() = navCtrl.navigate(NotificationRoute)

@@ -12,7 +12,8 @@ data class UINotification(
     val recipe: Recipe,
     val type: NotificationType,
     val title: String,
-    val message: String
+    val message: String,
+    val targetId: String? = null
 )
 
 fun Notification.toUi(recipe: Recipe): UINotification {
@@ -23,6 +24,7 @@ fun Notification.toUi(recipe: Recipe): UINotification {
         recipe = recipe,
         type = type,
         title = title,
-        message = message
+        message = message,
+        targetId = targetId
     )
 }
