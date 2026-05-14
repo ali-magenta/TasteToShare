@@ -262,7 +262,7 @@ class RecipeDetailsViewModel(
                 )
 
                 notificationRepository.addNotification(notification)
-                notificationService.dispatchNotification(notification.toUi(currentRecipe))
+                // notificationService.dispatchNotification(notification.toUi(currentRecipe))
             }
         }
 

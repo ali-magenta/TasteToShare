@@ -389,7 +389,7 @@ class CreateRecipeViewModel(
                             message = "Someone was inspired by your ${originalRecipe?.title} and created their own version."
                         )
                         notificationRepository.addNotification(notification)
-                        notificationService.dispatchNotification(notification.toUi(newRecipe))
+                        //notificationService.dispatchNotification(notification.toUi(newRecipe))
                     }
                 }
 
