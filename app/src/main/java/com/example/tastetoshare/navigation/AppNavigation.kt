@@ -3,6 +3,10 @@ package com.example.tastetoshare.navigation
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,6 +34,7 @@ import com.example.tastetoshare.screens.RecipeListDestination
 import com.example.tastetoshare.screens.SavedRecipeDestination
 import com.example.tastetoshare.screens.ShoppingListDestination
 import com.example.tastetoshare.screens.components.TasteToShareBottomBar
+import com.example.tastetoshare.services.notifications.SnackbarController
 import com.example.tastetoshare.ui.screens.PictureScreenDestination
 import com.example.tastetoshare.viewmodels.RecipeDetailsViewModel
 
@@ -57,6 +62,29 @@ fun AppNavigation() {
         it.hasRoute<PictureDialogRoute>()
     } == true
 
+    // Notifications
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(true) {
+        SnackbarController.events.collect { event ->
+            val result = snackbarHostState.showSnackbar(
+                message = event.message,
+                actionLabel = event.action?.name,
+                duration = SnackbarDuration.Long
+            )
+
+            if(result == SnackbarResult.ActionPerformed) {
+                event.action?.routeToNavigate?.let { route ->
+                    navCtrl.navigate(route)
+                }
+
+                event.action?.action?.invoke()
+                event.action?.action?.invoke()
+            }
+
+
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -73,6 +101,11 @@ fun AppNavigation() {
                 )
             }
         },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState
+            )
+        }
     )
     {  globalPadding ->
         NavHost(
@@ -90,15 +123,6 @@ fun AppNavigation() {
                     onNavigateToNotifications = { navActions.navigateToNotifications() },
                     onSearchSubmit = { search -> navActions.navigateToRecipeList(searchString = search) }
                 )
-                //HomeScreen(
-                //    onNavigateToRecipeList = { navActions.navigateToRecipeList() },
-                //    onNavigateToProfile = { userId -> navActions.navigateToProfile(userId) },
-                //    onNavigateToCreateRecipe = { cloneId, editId -> navActions.navigateToCreateRecipe(cloneId, editId) },
-                //    onNavigateToRecipeProposal = { recipeId -> navActions.navigateToRecipeDetails(recipeId) },
-//
-                //    // for final HomeScreen (not useful yet)
-                //    onNavigateToNotifications = { navActions.navigateToNotifications() }
-                //)
             }
 
             composable<ProfileRoute>

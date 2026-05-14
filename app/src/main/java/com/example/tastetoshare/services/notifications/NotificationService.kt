@@ -1,4 +1,4 @@
-package com.example.tastetoshare.services
+package com.example.tastetoshare.services.notifications
 
 import android.app.NotificationManager
 import android.content.Context

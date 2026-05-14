@@ -13,10 +13,14 @@ import com.example.tastetoshare.data.NotificationType
 import com.example.tastetoshare.data.entities.Notification
 import com.example.tastetoshare.data.uiClasses.UINotification
 import com.example.tastetoshare.data.uiClasses.toUi
+import com.example.tastetoshare.navigation.RecipeDetailsRoute
 import com.example.tastetoshare.repositories.NotificationRepository
 import com.example.tastetoshare.repositories.RecipeRepository
 import com.example.tastetoshare.repositories.UserRepository
-import com.example.tastetoshare.services.NotificationService
+import com.example.tastetoshare.services.notifications.NotificationService
+import com.example.tastetoshare.services.notifications.SnackbarAction
+import com.example.tastetoshare.services.notifications.SnackbarController
+import com.example.tastetoshare.services.notifications.SnackbarEvent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -75,6 +79,15 @@ class NotificationViewModel(
                 message = "Based on your preferences, you might love ${recipe.title}!",
             )
             notificationService.showNotification(notification.toUi(recipe))
+            SnackbarController.sendEvent(
+                event = SnackbarEvent(
+                    message = "We think that you could enjoy this recipe : ${recipe.title} !",
+                    action = SnackbarAction(
+                        name = "Read the recipe",
+                        routeToNavigate = RecipeDetailsRoute(recipeId = recipe.recipeId),
+                    )
+                )
+            )
         }
     }
 
