@@ -78,16 +78,7 @@ class NotificationViewModel(
                 title = "Some recommendation for you!",
                 message = "Based on your preferences, you might love ${recipe.title}!",
             )
-            notificationService.showNotification(notification.toUi(recipe))
-            SnackbarController.sendEvent(
-                event = SnackbarEvent(
-                    message = "We think that you could enjoy this recipe : ${recipe.title} !",
-                    action = SnackbarAction(
-                        name = "Read the recipe",
-                        routeToNavigate = RecipeDetailsRoute(recipeId = recipe.recipeId),
-                    )
-                )
-            )
+            notificationService.dispatchNotifications(notification.toUi(recipe))
         }
     }
 
@@ -104,7 +95,7 @@ class NotificationViewModel(
                 message = "Someone left a review on your ${recipe.title}."
             )
 
-            notificationService.showNotification(notification.toUi(recipe))
+            notificationService.dispatchNotifications(notification.toUi(recipe))
         }
     }
 
@@ -121,7 +112,7 @@ class NotificationViewModel(
                 message = "A chef was inspired by your ${recipe.title} and created their own version."
             )
 
-            notificationService.showNotification(notification.toUi(recipe))
+            notificationService.dispatchNotifications(notification.toUi(recipe))
         }
     }
 
