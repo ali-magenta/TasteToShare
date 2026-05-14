@@ -8,29 +8,31 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
 import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.TasteToShareApp
 import com.example.tastetoshare.data.Cost
 import com.example.tastetoshare.data.Difficulty
+import com.example.tastetoshare.data.NotificationType
 import com.example.tastetoshare.data.entities.Ingredient
+import com.example.tastetoshare.data.entities.Notification
 import com.example.tastetoshare.data.entities.Recipe
 import com.example.tastetoshare.data.entities.RecipeIngredient
 import com.example.tastetoshare.data.entities.Step
 import com.example.tastetoshare.data.entities.Tag
+import com.example.tastetoshare.data.uiClasses.toUi
 import com.example.tastetoshare.navigation.CreateRecipeGraphRoute
 import com.example.tastetoshare.repositories.IngredientRepository
 import com.example.tastetoshare.repositories.RecipeRepository
 import com.example.tastetoshare.repositories.TagRepository
-import com.example.tastetoshare.repositories.UserRepository
+import com.example.tastetoshare.services.notifications.NotificationService
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -41,7 +43,8 @@ class CreateRecipeViewModel(
     private val savedStateHandle: SavedStateHandle,
     private val tagRepository: TagRepository,
     private val ingredientRepository: IngredientRepository,
-    private val recipeRepository: RecipeRepository
+    private val recipeRepository: RecipeRepository,
+    private val notificationService: NotificationService,
 ) : ViewModel() {
     private var isInitialized = false
     private val _uiState = MutableStateFlow(CreateRecipeUIState())
@@ -306,6 +309,7 @@ class CreateRecipeViewModel(
                 var newRecipe: Recipe
                 val recipeIdFromEdit = _uiState.value.recipeIdFromEdit
                 if(recipeIdFromEdit != null){
+                    // 1 : Edited
                     val recipe = recipeRepository.getRecipeById(recipeIdFromEdit).first()
                     newRecipe = Recipe(
                         creationDate = recipe.creationDate,
@@ -333,6 +337,7 @@ class CreateRecipeViewModel(
 
                 }
                 else{
+                    // 2: Created or duplicated
                     newRecipe = Recipe(
                         originalRecipeId = _uiState.value.parentRecipeId,
                         authorId = SessionManager.CURRENT_LOGGED_IN_USER_ID,
@@ -363,6 +368,31 @@ class CreateRecipeViewModel(
                         ingredientRepository.addOrOverrideIngredient(it.ingredient)
                     }
                 }
+
+                // To change by a firebase script
+                val isDuplicated = recipeIdFromEdit == null && _uiState.value.parentRecipeId != null
+                if (isDuplicated)
+                {
+                    val originalRecipeId = _uiState.value.parentRecipeId!!
+                    val originalRecipe = recipeRepository.getRecipeById(originalRecipeId).firstOrNull()
+
+                    // remove this if for testing on the logged account
+                    // (while we don't have firebase repository for notifications and can't test on 2 devices simultaneously)
+                    if (originalRecipe != null && originalRecipe.authorId != SessionManager.CURRENT_LOGGED_IN_USER_ID) {
+                        val notification = Notification(
+                            userId = originalRecipe?.authorId ?: "101",
+                            recipeId = newRecipe.recipeId,
+                            type = NotificationType.DUPLICATED_RECIPE,
+                            title = "Recipe Duplicated! \uD83D\uDD04",
+                            message = "Someone was inspired by your ${originalRecipe?.title} and created their own version."
+                        )
+
+                        // TODO: Add notification to notification repoisitory
+
+                        notificationService.dispatchNotification(notification.toUi(newRecipe))
+                    }
+                }
+
                 Log.d("debugRecipe", "Recipe saved $newRecipe")
 
                 isInitialized = false
@@ -621,7 +651,8 @@ class CreateRecipeViewModel(
                         savedStateHandle = extras.createSavedStateHandle(),
                         tagRepository = application.container.tagRepository,
                         ingredientRepository = application.container.ingredientRepository,
-                        recipeRepository = application.container.recipeRepository
+                        recipeRepository = application.container.recipeRepository,
+                        notificationService = NotificationService(application),
                     ) as T
                 }
             }

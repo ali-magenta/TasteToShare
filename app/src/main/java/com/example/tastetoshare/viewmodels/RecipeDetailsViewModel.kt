@@ -7,17 +7,22 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.example.tastetoshare.services.notifications.NotificationService
+import com.example.tastetoshare.data.NotificationType
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
 import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.TasteToShareApp
+import com.example.tastetoshare.data.entities.Notification
 import com.example.tastetoshare.data.entities.Recipe
 import com.example.tastetoshare.data.entities.Review
 import com.example.tastetoshare.data.entities.User
 import com.example.tastetoshare.data.uiClasses.UIReview
+import com.example.tastetoshare.data.uiClasses.toUi
 import com.example.tastetoshare.navigation.RecipeDetailsRoute
 import com.example.tastetoshare.repositories.IngredientRepository
+import com.example.tastetoshare.repositories.NotificationRepository
 import com.example.tastetoshare.repositories.RecipeRepository
 import com.example.tastetoshare.repositories.TagRepository
 import com.example.tastetoshare.repositories.UserRepository
@@ -39,6 +44,7 @@ class RecipeDetailsViewModel(
     savedStateHandle: SavedStateHandle,
     private val recipeRepository: RecipeRepository,
     private val userRepository: UserRepository,
+    private val notificationService: NotificationService
 ) : ViewModel() {
 
 
@@ -222,7 +228,7 @@ class RecipeDetailsViewModel(
     }
 
     fun addReview() {
-        val currentRecipeId = recipe.value.recipeId
+        val currentRecipe = recipe.value
         val currentUiState = _uiState.value
 
         // rating mandatory, textual review optional
@@ -237,8 +243,28 @@ class RecipeDetailsViewModel(
         )
 
         viewModelScope.launch {
-            recipeRepository.addReview(currentRecipeId, review)
+            recipeRepository.addReview(currentRecipe.recipeId, review)
+            // To change by a firebase script
+
+            // remove this if for testing on the logged account
+            // (while we don't have firebase repository for notifications and can't test on 2 devices simultaneously)
+            if (currentRecipe.authorId != SessionManager.CURRENT_LOGGED_IN_USER_ID)
+            {
+                val notification = Notification(
+                    userId = currentRecipe.authorId,
+                    recipeId = currentRecipe.recipeId,
+                    type = NotificationType.NEW_REVIEW,
+                    title = "New review on your recipe!",
+                    message = "Someone left a review on your ${currentRecipe.title} recipe."
+                )
+
+                // TODO: Add notification to notification repoisitory
+
+                notificationService.dispatchNotification(notification.toUi(currentRecipe))
+            }
         }
+
+
 
         _uiState.update { it.copy(reviewText = "", selectedRating = 0U, reviewPhotoURL = "") }
     }
@@ -282,7 +308,8 @@ class RecipeDetailsViewModel(
                     return RecipeDetailsViewModel(
                         savedStateHandle = extras.createSavedStateHandle(),
                         recipeRepository = application.container.recipeRepository,
-                        userRepository = application.container.userRepository
+                        userRepository = application.container.userRepository,
+                        notificationService = NotificationService(application)
                     ) as T
                 }
             }

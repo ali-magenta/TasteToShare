@@ -14,7 +14,7 @@ class NotificationService(
 {
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-    suspend fun dispatchNotifications(notification: UINotification)
+    suspend fun dispatchNotification(notification: UINotification)
     {
         showNotification(notification)
 
