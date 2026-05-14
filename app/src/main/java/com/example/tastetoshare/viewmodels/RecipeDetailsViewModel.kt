@@ -44,6 +44,7 @@ class RecipeDetailsViewModel(
     savedStateHandle: SavedStateHandle,
     private val recipeRepository: RecipeRepository,
     private val userRepository: UserRepository,
+    private val notificationRepository: NotificationRepository,
     private val notificationService: NotificationService
 ) : ViewModel() {
 
@@ -260,8 +261,7 @@ class RecipeDetailsViewModel(
                     targetId = review.reviewId
                 )
 
-                // TODO: Add notification to notification repoisitory
-
+                notificationRepository.addNotification(notification)
                 notificationService.dispatchNotification(notification.toUi(currentRecipe))
             }
         }
@@ -311,6 +311,7 @@ class RecipeDetailsViewModel(
                         savedStateHandle = extras.createSavedStateHandle(),
                         recipeRepository = application.container.recipeRepository,
                         userRepository = application.container.userRepository,
+                        notificationRepository = application.container.notificationRepository,
                         notificationService = NotificationService(application)
                     ) as T
                 }

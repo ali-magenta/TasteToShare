@@ -1,10 +1,12 @@
 package com.example.tastetoshare.repositories
 
+import android.util.Log
 import com.example.tastetoshare.data.NotificationType
 import com.example.tastetoshare.data.entities.Notification
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 
 class FakeNotificationRepository: NotificationRepository {
 
@@ -64,5 +66,13 @@ class FakeNotificationRepository: NotificationRepository {
             notifications
                 .filter { it.userId == userId }
         }
+    }
+
+    override suspend fun addNotification(notification: Notification) {
+        _notifications.update { currentNotifications ->
+            listOf(notification) + currentNotifications
+        }
+
+        Log.d("debug", "Notification added: $notification, size of list: ${_notifications.value.size}")
     }
 }

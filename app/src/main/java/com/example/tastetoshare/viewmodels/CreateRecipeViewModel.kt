@@ -23,6 +23,7 @@ import com.example.tastetoshare.data.entities.Tag
 import com.example.tastetoshare.data.uiClasses.toUi
 import com.example.tastetoshare.navigation.CreateRecipeGraphRoute
 import com.example.tastetoshare.repositories.IngredientRepository
+import com.example.tastetoshare.repositories.NotificationRepository
 import com.example.tastetoshare.repositories.RecipeRepository
 import com.example.tastetoshare.repositories.TagRepository
 import com.example.tastetoshare.services.notifications.NotificationService
@@ -44,6 +45,7 @@ class CreateRecipeViewModel(
     private val tagRepository: TagRepository,
     private val ingredientRepository: IngredientRepository,
     private val recipeRepository: RecipeRepository,
+    private val notificationRepository: NotificationRepository,
     private val notificationService: NotificationService,
 ) : ViewModel() {
     private var isInitialized = false
@@ -386,9 +388,7 @@ class CreateRecipeViewModel(
                             title = "Recipe Duplicated! \uD83D\uDD04",
                             message = "Someone was inspired by your ${originalRecipe?.title} and created their own version."
                         )
-
-                        // TODO: Add notification to notification repoisitory
-
+                        notificationRepository.addNotification(notification)
                         notificationService.dispatchNotification(notification.toUi(newRecipe))
                     }
                 }
@@ -652,6 +652,7 @@ class CreateRecipeViewModel(
                         tagRepository = application.container.tagRepository,
                         ingredientRepository = application.container.ingredientRepository,
                         recipeRepository = application.container.recipeRepository,
+                        notificationRepository = application.container.notificationRepository,
                         notificationService = NotificationService(application),
                     ) as T
                 }
