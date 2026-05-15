@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -46,6 +47,7 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation (libs.androidx.camera.camera2)
     implementation (libs.androidx.camera.extensions1)
+    implementation(libs.firebase.firestore)
 
     val navVersion = "2.8.1"
     implementation("androidx.navigation:navigation-compose:$navVersion")
