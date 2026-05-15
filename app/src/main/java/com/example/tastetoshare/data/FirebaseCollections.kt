@@ -1,9 +1,9 @@
 package com.example.tastetoshare.data
 
 object FirebaseCollections {
-    const val INGREDIENTS = "cats"
-    const val RECIPES = "cats"
-    const val  TAGS = "cats"
-    const val USERS = "cats"
-    const val NOTIFICATIONS = "cats"
+    const val INGREDIENTS = "Ingredients"
+    const val RECIPES = "Recipes"
+    const val TAGS = "Tags"
+    const val USERS = "Users"
+    const val NOTIFICATIONS = "Notifications"
 }

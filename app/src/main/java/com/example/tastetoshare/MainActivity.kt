@@ -75,8 +75,7 @@ class TasteToShareApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        Paper.init(this)
-        Paper.book().destroy()
+
         val jsonString =
             applicationContext.assets.open("seed_data.json").bufferedReader().use { it.readText() }
         val wrapperDB = Gson().fromJson(jsonString, WrapperDB::class.java)

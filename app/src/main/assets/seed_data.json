@@ -57,6 +57,39 @@
     }
   ],
 
+  "notifications" : [
+    {
+      "notificationId": "550e8400-e29b-41d4-a716-446655440000",
+      "creationDate": 1715731200000,
+      "userId": "101",
+      "recipeId": "100",
+      "type": "RECOMMENDED_RECIPE",
+      "title": "Fresh Pick for You!",
+      "message": "We found a Spicy Arrabbiata recipe you might love.",
+      "targetId": null
+    },
+    {
+      "notificationId": "a3b8c9d0-1234-5678-90ab-cdef12345678",
+      "creationDate": 1715731245000,
+      "userId": "101",
+      "recipeId": "lasagna_001",
+      "type": "NEW_REVIEW",
+      "title": "New 5-Star Review!",
+      "message": "User 'FoodieKing' just left a review on your Lasagna recipe.",
+      "targetId": null
+    },
+    {
+      "notificationId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "creationDate": 1715731310000,
+      "userId": "101",
+      "recipeId": "100",
+      "type": "DUPLICATED_RECIPE",
+      "title": "Duplicate Detected",
+      "message": "Someone duplicated your recipe.",
+      "targetId": null
+    }
+  ],
+
   "tags": [
     { "tagId": "1", "type": "Cuisine Type", "name": "Asian" },
     { "tagId": "2", "type": "Cuisine Type", "name": "Italian" },
@@ -522,7 +555,7 @@
           "calories": 550,
           "ingredients": [
             { "recipeIngredientId": "ri35", "ingredient": { "ingredientId": "1", "name": "Quinoa", "unitOfMeasurementToCaloryPerUnit": {"g": 300} }, "quantity": 100.0 , "customUnitOfMeasurement": "" },
-            { "recipeIngredientId": "ri36", "ingredient": { "ingredientId": "10", "name": "Eggs", "unitOfMeasurementToCaloryPerUnit": {"": 78} }, "quantity": 5.0 , "customUnitOfMeasurement": "" },
+            { "recipeIngredientId": "ri36", "ingredient": { "ingredientId": "10", "name": "Eggs", "unitOfMeasurementToCaloryPerUnit": {"NO UNIT": 78} }, "quantity": 5.0 , "customUnitOfMeasurement": "" },
             { "recipeIngredientId": "ri37", "ingredient": { "ingredientId": "11", "name": "Milk", "unitOfMeasurementToCaloryPerUnit": {"ml": 42} }, "quantity": 150.0 , "customUnitOfMeasurement": "" },
             { "recipeIngredientId": "ri38", "ingredient": { "ingredientId": "4", "name": "Bell Pepper", "unitOfMeasurementToCaloryPerUnit": {"g": 31} }, "quantity": 80.0 , "customUnitOfMeasurement": "" }
           ],
