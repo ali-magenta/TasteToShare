@@ -1,12 +1,15 @@
 package com.example.tastetoshare.services.notifications
 
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.example.tastetoshare.R
 import com.example.tastetoshare.data.NotificationType
 import com.example.tastetoshare.data.uiClasses.UINotification
 import com.example.tastetoshare.navigation.RecipeDetailsRoute
+import androidx.core.net.toUri
 
 class NotificationService(
     private val context: Context
@@ -35,7 +38,7 @@ class NotificationService(
                 message = "Someone reviewed your recipe: ${notification.recipe.title} ⭐️",
                 action = SnackbarAction(
                     name = "See review",
-                    routeToNavigate = RecipeDetailsRoute(recipeId = notification.recipe.recipeId, focusReviewId = notification.targetId)
+                    routeToNavigate = RecipeDetailsRoute(recipeId = notification.recipe.recipeId, focusReviewId = notification.review?.reviewId)
                 )
             )
             NotificationType.DUPLICATED_RECIPE -> SnackbarEvent(
@@ -60,11 +63,24 @@ class NotificationService(
             NotificationType.RECOMMENDED_RECIPE -> R.drawable.pan_pot
         }
 
+        val uri = (
+                "app://tastetoshare/recipe/${notification.recipe.recipeId}" +
+                        notification.review?.let { "?focusReviewId=${it.reviewId}" }.orEmpty()
+                ).toUri()
+
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            uri
+        )
+        val pendingIntent: PendingIntent =
+            PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
         val notificationBuilder = NotificationCompat.Builder(context, channel)
             .setSmallIcon(icon)
             .setContentTitle(notification.title)
             .setContentText(notification.message)
             .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
 
         notificationManager.notify(notification.notificationId.hashCode(), notificationBuilder.build())
     }

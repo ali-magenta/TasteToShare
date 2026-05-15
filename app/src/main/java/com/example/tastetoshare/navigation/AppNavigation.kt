@@ -1,6 +1,5 @@
 package com.example.tastetoshare.navigation
 
-import androidx.compose.foundation.border
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -17,7 +16,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -26,10 +24,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.screens.EditProfileDestination
-import com.example.tastetoshare.screens.HomeScreen
 import com.example.tastetoshare.screens.HomepageDestination
 import com.example.tastetoshare.screens.NotificationDestination
 import com.example.tastetoshare.screens.PictureDialogDestination
@@ -157,7 +155,13 @@ fun AppNavigation() {
                 )
             }
 
-            composable<RecipeDetailsRoute>
+            composable<RecipeDetailsRoute>(
+                deepLinks = listOf(
+                    navDeepLink {
+                        uriPattern = "app://tastetoshare/recipe/{recipeId}?focusReviewId={focusReviewId}"
+                    }
+                )
+            )
             { backStackEntry ->
                 val viewModel: RecipeDetailsViewModel = viewModel(
                     backStackEntry,

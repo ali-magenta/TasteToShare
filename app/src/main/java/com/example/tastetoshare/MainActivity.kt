@@ -16,7 +16,6 @@ import androidx.core.content.ContextCompat
 import com.example.tastetoshare.data.WrapperPaperDB
 import com.example.tastetoshare.navigation.AppNavigation
 import com.example.tastetoshare.repositories.FakeNotificationRepository
-import com.example.tastetoshare.repositories.IngredientRepository
 import com.example.tastetoshare.repositories.PaperDbIngredientRepository
 import com.example.tastetoshare.repositories.PaperDbRecipeRepository
 import com.example.tastetoshare.repositories.PaperDbTagRepository

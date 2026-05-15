@@ -79,12 +79,13 @@ class NotificationViewModel(
 
     fun sendReviewNotification() {
         viewModelScope.launch {
-            val recipe = recipeRepository.getRecipeById("101").first()
+            val recipe = recipeRepository.getRecipeById("100").first()
             val notification = Notification(
                 notificationId = "fakeReview",
                 creationDate = System.currentTimeMillis(),
                 userId = _userId.value,
                 recipeId = recipe.recipeId,
+                reviewId = recipe.reviews.first().reviewId,
                 type = NotificationType.NEW_REVIEW,
                 title = "New Review on your recipe!",
                 message = "Someone left a review on your ${recipe.title}."
