@@ -14,6 +14,8 @@ import com.google.firebase.firestore.snapshots
 import io.paperdb.Paper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.tasks.await
@@ -41,13 +43,17 @@ class FirebaseRecipeRepository(
     }
 
     override fun getRecipeById(recipeId: String): Flow<Recipe> {
-        return recipeCollection.snapshots()
+
+        val recipe =  recipeCollection.snapshots()
             .map { snapshot ->
                 snapshot.toObjects(Recipe::class.java)
             }.map { recipes ->
+                Log.d("DEBUG", "from getRecipeById : ${recipes.find { it.recipeId == recipeId }}")
             recipes.find { it.recipeId == recipeId }
                 ?: Recipe()
         }
+
+        return recipe
     }
 
     override fun getRecipesPreviewByUserId(userId: String): Flow<List<RawRecipePreview>> {
