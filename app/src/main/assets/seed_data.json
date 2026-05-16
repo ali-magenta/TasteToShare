@@ -379,9 +379,9 @@
         "cost": "CHEAP",
         "calories": 420,
         "ingredients": [
-          { "recipeIngredientId": "ri18", "ingredient": { "ingredientId": "8", "name": "Pasta", "unitOfMeasurementToCaloryPerUnit": {"g": 131} }, "quantity": 200.0 , "customUnitOfMeasurement": "" },
-          { "recipeIngredientId": "ri19", "ingredient": { "ingredientId": "3", "name": "Spinach", "unitOfMeasurementToCaloryPerUnit": {"g": 23} }, "quantity": 100.0 , "customUnitOfMeasurement": "" },
-          { "recipeIngredientId": "ri20", "ingredient": { "ingredientId": "6", "name": "Olive Oil", "unitOfMeasurementToCaloryPerUnit": {"ml": 9} }, "quantity": 20.0 , "customUnitOfMeasurement": "" }
+          { "recipeIngredientId": "ri18", "ingredient": { "ingredientId": "8", "name": "Pasta", "unitOfMeasurementToCaloryPerUnit": {"g": 131} }, "quantity": 200.0 , "customUnitOfMeasurement": "g" },
+          { "recipeIngredientId": "ri19", "ingredient": { "ingredientId": "3", "name": "Spinach", "unitOfMeasurementToCaloryPerUnit": {"g": 23} }, "quantity": 100.0 , "customUnitOfMeasurement": "g" },
+          { "recipeIngredientId": "ri20", "ingredient": { "ingredientId": "6", "name": "Olive Oil", "unitOfMeasurementToCaloryPerUnit": {"ml": 9} }, "quantity": 20.0 , "customUnitOfMeasurement": "ml" }
         ],
         "steps": [
           { "stepId": "s14", "description": "Boil pasta.", "order": 1 },
@@ -409,9 +409,9 @@
         "cost": "AFFORDABLE",
         "calories": 350,
         "ingredients": [
-          { "recipeIngredientId": "ri21", "ingredient": { "ingredientId": "1", "name": "Quinoa", "unitOfMeasurementToCaloryPerUnit": {"g": 300} }, "quantity": 150.0 , "customUnitOfMeasurement": "" },
-          { "recipeIngredientId": "ri22", "ingredient": { "ingredientId": "2", "name": "Chickpeas", "unitOfMeasurementToCaloryPerUnit": {"g": 164} }, "quantity": 100.0 , "customUnitOfMeasurement": "" },
-          { "recipeIngredientId": "ri23", "ingredient": { "ingredientId": "7", "name": "Lemon Juice", "unitOfMeasurementToCaloryPerUnit": {"ml": 27} }, "quantity": 30.0 , "customUnitOfMeasurement": "" }
+          { "recipeIngredientId": "ri21", "ingredient": { "ingredientId": "1", "name": "Quinoa", "unitOfMeasurementToCaloryPerUnit": {"g": 300} }, "quantity": 150.0 , "customUnitOfMeasurement": "g" },
+          { "recipeIngredientId": "ri22", "ingredient": { "ingredientId": "2", "name": "Chickpeas", "unitOfMeasurementToCaloryPerUnit": {"g": 164} }, "quantity": 100.0 , "customUnitOfMeasurement": "g" },
+          { "recipeIngredientId": "ri23", "ingredient": { "ingredientId": "7", "name": "Lemon Juice", "unitOfMeasurementToCaloryPerUnit": {"ml": 27} }, "quantity": 30.0 , "customUnitOfMeasurement": "ml" }
         ],
         "steps": [
           { "stepId": "s17", "description": "Cook quinoa.", "order": 1 },
@@ -438,8 +438,8 @@
         "cost": "CHEAP",
         "calories": 280,
         "ingredients": [
-          { "recipeIngredientId": "ri24", "ingredient": { "ingredientId": "5", "name": "Carrot", "unitOfMeasurementToCaloryPerUnit": {"g": 41} }, "quantity": 400.0 , "customUnitOfMeasurement": "" },
-          { "recipeIngredientId": "ri25", "ingredient": { "ingredientId": "11", "name": "Milk", "unitOfMeasurementToCaloryPerUnit": {"ml": 42} }, "quantity": 250.0 , "customUnitOfMeasurement": "" }
+          { "recipeIngredientId": "ri24", "ingredient": { "ingredientId": "5", "name": "Carrot", "unitOfMeasurementToCaloryPerUnit": {"g": 41} }, "quantity": 400.0 , "customUnitOfMeasurement": "g" },
+          { "recipeIngredientId": "ri25", "ingredient": { "ingredientId": "11", "name": "Milk", "unitOfMeasurementToCaloryPerUnit": {"ml": 42} }, "quantity": 250.0 , "customUnitOfMeasurement": "ml" }
         ],
         "steps": [
           { "stepId": "s19", "description": "Boil carrots until soft.", "order": 1 },
@@ -466,9 +466,9 @@
         "cost": "CHEAP",
         "calories": 400,
         "ingredients": [
-          { "recipeIngredientId": "ri26", "ingredient": { "ingredientId": "13", "name": "Rice", "unitOfMeasurementToCaloryPerUnit": {"g": 130} }, "quantity": 150.0 , "customUnitOfMeasurement": "" },
-          { "recipeIngredientId": "ri27", "ingredient": { "ingredientId": "14", "name": "Seaweed", "unitOfMeasurementToCaloryPerUnit": {"g": 45} }, "quantity": 10.0 , "customUnitOfMeasurement": "" },
-          { "recipeIngredientId": "ri28", "ingredient": { "ingredientId": "4", "name": "Bell Pepper", "unitOfMeasurementToCaloryPerUnit": {"g": 31} }, "quantity": 50.0 , "customUnitOfMeasurement": "" }
+          { "recipeIngredientId": "ri26", "ingredient": { "ingredientId": "13", "name": "Rice", "unitOfMeasurementToCaloryPerUnit": {"g": 130} }, "quantity": 150.0 , "customUnitOfMeasurement": "g" },
+          { "recipeIngredientId": "ri27", "ingredient": { "ingredientId": "14", "name": "Seaweed", "unitOfMeasurementToCaloryPerUnit": {"g": 45} }, "quantity": 10.0 , "customUnitOfMeasurement": "g" },
+          { "recipeIngredientId": "ri28", "ingredient": { "ingredientId": "4", "name": "Bell Pepper", "unitOfMeasurementToCaloryPerUnit": {"g": 31} }, "quantity": 50.0 , "customUnitOfMeasurement": "g" }
         ],
         "steps": [
           { "stepId": "s21", "description": "Cook rice.", "order": 1 },
@@ -496,7 +496,7 @@
         "calories": 320,
         "ingredients": [
           { "recipeIngredientId": "ri29", "ingredient": { "ingredientId": "10", "name": "Eggs", "unitOfMeasurementToCaloryPerUnit": {"NO UNIT": 78} }, "quantity": 4.0 , "customUnitOfMeasurement": "" },
-          { "recipeIngredientId": "ri30", "ingredient": { "ingredientId": "11", "name": "Milk", "unitOfMeasurementToCaloryPerUnit": {"ml": 42} }, "quantity": 400.0 , "customUnitOfMeasurement": "" }
+          { "recipeIngredientId": "ri30", "ingredient": { "ingredientId": "11", "name": "Milk", "unitOfMeasurementToCaloryPerUnit": {"ml": 42} }, "quantity": 400.0 , "customUnitOfMeasurement": "ml" }
         ],
         "steps": [
           { "stepId": "s23", "description": "Whisk eggs and milk.", "order": 1 },
@@ -523,10 +523,10 @@
           "cost": "EXPENSIVE",
           "calories": 750,
           "ingredients": [
-            { "recipeIngredientId": "ri31", "ingredient": { "ingredientId": "12", "name": "Flour", "unitOfMeasurementToCaloryPerUnit": {"g": 364} }, "quantity": 400.0 , "customUnitOfMeasurement": "" },
+            { "recipeIngredientId": "ri31", "ingredient": { "ingredientId": "12", "name": "Flour", "unitOfMeasurementToCaloryPerUnit": {"g": 364} }, "quantity": 400.0 , "customUnitOfMeasurement": "g" },
             { "recipeIngredientId": "ri32", "ingredient": { "ingredientId": "10", "name": "Eggs", "unitOfMeasurementToCaloryPerUnit": {"NO UNIT": 78} }, "quantity": 4.0 , "customUnitOfMeasurement": "" },
-            { "recipeIngredientId": "ri33", "ingredient": { "ingredientId": "3", "name": "Spinach", "unitOfMeasurementToCaloryPerUnit": {"g": 23} }, "quantity": 200.0 , "customUnitOfMeasurement": "" },
-            { "recipeIngredientId": "ri34", "ingredient": { "ingredientId": "6", "name": "Olive Oil", "unitOfMeasurementToCaloryPerUnit": {"ml": 9} }, "quantity": 50.0 , "customUnitOfMeasurement": "" }
+            { "recipeIngredientId": "ri33", "ingredient": { "ingredientId": "3", "name": "Spinach", "unitOfMeasurementToCaloryPerUnit": {"g": 23} }, "quantity": 200.0 , "customUnitOfMeasurement": "g" },
+            { "recipeIngredientId": "ri34", "ingredient": { "ingredientId": "6", "name": "Olive Oil", "unitOfMeasurementToCaloryPerUnit": {"ml": 9} }, "quantity": 50.0 , "customUnitOfMeasurement": "ml" }
           ],
           "steps": [
             { "stepId": "s25", "description": "Create a mound of flour, create a well, and incorporate eggs slowly by hand to form dough.", "order": 1 },
@@ -554,10 +554,10 @@
           "cost": "EXPENSIVE",
           "calories": 550,
           "ingredients": [
-            { "recipeIngredientId": "ri35", "ingredient": { "ingredientId": "1", "name": "Quinoa", "unitOfMeasurementToCaloryPerUnit": {"g": 300} }, "quantity": 100.0 , "customUnitOfMeasurement": "" },
+            { "recipeIngredientId": "ri35", "ingredient": { "ingredientId": "1", "name": "Quinoa", "unitOfMeasurementToCaloryPerUnit": {"g": 300} }, "quantity": 100.0 , "customUnitOfMeasurement": "g" },
             { "recipeIngredientId": "ri36", "ingredient": { "ingredientId": "10", "name": "Eggs", "unitOfMeasurementToCaloryPerUnit": {"NO UNIT": 78} }, "quantity": 5.0 , "customUnitOfMeasurement": "" },
-            { "recipeIngredientId": "ri37", "ingredient": { "ingredientId": "11", "name": "Milk", "unitOfMeasurementToCaloryPerUnit": {"ml": 42} }, "quantity": 150.0 , "customUnitOfMeasurement": "" },
-            { "recipeIngredientId": "ri38", "ingredient": { "ingredientId": "4", "name": "Bell Pepper", "unitOfMeasurementToCaloryPerUnit": {"g": 31} }, "quantity": 80.0 , "customUnitOfMeasurement": "" }
+            { "recipeIngredientId": "ri37", "ingredient": { "ingredientId": "11", "name": "Milk", "unitOfMeasurementToCaloryPerUnit": {"ml": 42} }, "quantity": 150.0 , "customUnitOfMeasurement": "ml" },
+            { "recipeIngredientId": "ri38", "ingredient": { "ingredientId": "4", "name": "Bell Pepper", "unitOfMeasurementToCaloryPerUnit": {"g": 31} }, "quantity": 80.0 , "customUnitOfMeasurement": "g" }
           ],
           "steps": [
             { "stepId": "s29", "description": "Cook quinoa to specific al dente consistency and drain thoroughly.", "order": 1 },
