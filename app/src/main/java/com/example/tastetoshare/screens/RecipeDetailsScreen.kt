@@ -1,5 +1,6 @@
 package com.example.tastetoshare.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,7 +23,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
@@ -174,322 +174,305 @@ fun RecipeDetailsScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            topBar = {
-                CenterAlignedTopAppBar(
-                    colors = topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    ),
-                    title = {
-                        Text("Recipe", fontWeight = FontWeight.Bold)
+    Column(modifier = Modifier.verticalScroll(verticalScrollState)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            RecipeHeader(recipe = recipe, isSaved, toggleSavedRecipe)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                AuthorInfo(
+                    author = author, modifier = Modifier.clickable(onClick = {
+                        onNavigateToProfile(author.userId)
+                    })
+                )
+                if (recipe.originalRecipeId != null) {
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        modifier = Modifier.clickable(onClick = {
+                            onNavigateToRecipeDetails(originalRecipe.recipeId)
+                        })
+                    ) {
+                        Text(
+                            text = "Cloned From",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium
+                        )
+                        CopiedImageIcon(originalRecipe.photoURL, Modifier.size(56.dp))
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Button( //Duplicate button
+                    onClick = {
+                        onNavigateToCreateRecipePage(recipe.recipeId, null)
                     },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.onPrimary,
+                        contentColor = MaterialTheme.colorScheme.primary
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.duplicate),
+                        contentDescription = "Clone icon",
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "Clone",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+
+                if (SessionManager.CURRENT_LOGGED_IN_USER_ID != recipe.authorId) {
+                    Button( //Tried button
+                        onClick = {
+                            toggleTriedRecipe()
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isTried)
+                                MaterialTheme.colorScheme.onPrimary
+                            else
+                                MaterialTheme.colorScheme.primary,
+                            contentColor = if (isTried)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.onPrimary
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp)
+                    ) {
+                        Text(
+                            text = if (!isTried) "Mark as tried" else "Already tried!",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                } else {
+                    Button( //Edit button
+                        onClick = {
+                            onNavigateToCreateRecipePage(null, recipe.recipeId)
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp)
+                    ) {
+                        Text(
+                            text = "Edit",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Button( //Delete button
+                        onClick = {
+                            showDeleteRecipePopUp()
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = DangerRed,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp)
+                    ) {
+                        Text(
+                            text = "Delete",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                RecipeInfoCard(
+                    icon = R.drawable.difficulty,
+                    label = "Difficulty",
+                    value = recipe.difficulty.displayName,
+                    modifier = Modifier.weight(1f)
+                )
+                var time = ""
+                val initialHour = recipe.preparationTime.div(60) ?: 0
+                val initialMinute = recipe.preparationTime.rem(60) ?: 0
+                if (initialHour > 0) {
+                    time += "${initialHour}h "
+                }
+                if (initialMinute > 0) {
+                    time += "${initialMinute}min"
+                }
+                RecipeInfoCard(
+                    icon = R.drawable.time,
+                    label = "Time",
+                    value = time,
+                    modifier = Modifier.weight(1f)
+                )
+                RecipeInfoCard(
+                    icon = R.drawable.cost,
+                    label = "Cost",
+                    value = recipe.cost.displayName,
+                    modifier = Modifier.weight(1f)
                 )
             }
-        ) { innerPadding ->
-            Column(modifier = Modifier.verticalScroll(verticalScrollState)) {
-                Column(
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, start = 16.dp, end = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Text(
+                text = recipe.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            TagsRow(recipe.tags, MaterialTheme.typography.titleMedium)
+
+
+            val selectedTabIndex = if (uiState.isShowingIngredients) 0 else 1
+            val tabs = listOf("Ingredients", "Steps")
+
+            Column(modifier = Modifier.fillMaxSize()) {
+                TabRow(
+                    selectedTabIndex = selectedTabIndex,
+                    containerColor = Color.Transparent,
+                    indicator = { tabPositions ->
+                        if (selectedTabIndex < tabPositions.size) {
+                            TabRowDefaults.SecondaryIndicator(
+                                modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                                color = MaterialTheme.colorScheme.primary,
+                                height = 3.dp
+                            )
+                        }
+                    }
                 ) {
-
-
-                    RecipeHeader(recipe = recipe, isSaved, toggleSavedRecipe)
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        AuthorInfo(
-                            author = author, modifier = Modifier.clickable(onClick = {
-                                onNavigateToProfile(author.userId)
-                            })
-                        )
-                        if (recipe.originalRecipeId != null) {
-                            Column(
-                                horizontalAlignment = Alignment.End,
-                                modifier = Modifier.clickable(onClick = {
-                                    onNavigateToRecipeDetails(originalRecipe.recipeId)
-                                })
-                            ) {
+                    tabs.forEachIndexed { index, title ->
+                        val isSelected = selectedTabIndex == index
+                        Tab(
+                            selected = isSelected,
+                            onClick = { onShowIngredients(index == 0) },
+                            text = {
                                 Text(
-                                    text = "Cloned From",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                CopiedImageIcon(originalRecipe.photoURL, Modifier.size(56.dp))
-                            }
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Button( //Duplicate button
-                            onClick = {
-                                onNavigateToCreateRecipePage(recipe.recipeId, null)
-                            },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.onPrimary,
-                                contentColor = MaterialTheme.colorScheme.primary
-                            ),
-                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.duplicate),
-                                contentDescription = "Clone icon",
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                text = "Clone",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(10.dp))
-
-                        if (SessionManager.CURRENT_LOGGED_IN_USER_ID != recipe.authorId) {
-                            Button( //Tried button
-                                onClick = {
-                                    toggleTriedRecipe()
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (isTried)
-                                        MaterialTheme.colorScheme.onPrimary
-                                    else
-                                        MaterialTheme.colorScheme.primary,
-                                    contentColor = if (isTried)
-                                        MaterialTheme.colorScheme.primary
-                                    else
-                                        MaterialTheme.colorScheme.onPrimary
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp)
-                            ) {
-                                Text(
-                                    text = if (!isTried) "Mark as tried" else "Already tried!",
+                                    text = title,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                     style = MaterialTheme.typography.titleMedium
                                 )
                             }
-                        } else {
-                            Button( //Edit button
-                                onClick = {
-                                    onNavigateToCreateRecipePage(null, recipe.recipeId)
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp)
-                            ) {
-                                Text(
-                                    text = "Edit",
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Button( //Delete button
-                                onClick = {
-                                    showDeleteRecipePopUp()
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = DangerRed,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp)
-                            ) {
-                                Text(
-                                    text = "Delete",
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                            }
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        RecipeInfoCard(
-                            icon = R.drawable.difficulty,
-                            label = "Difficulty",
-                            value = recipe.difficulty.displayName,
-                            modifier = Modifier.weight(1f)
-                        )
-                        var time = ""
-                        val initialHour = recipe.preparationTime.div(60) ?: 0
-                        val initialMinute = recipe.preparationTime.rem(60) ?: 0
-                        if (initialHour > 0) {
-                            time += "${initialHour}h "
-                        }
-                        if (initialMinute > 0) {
-                            time += "${initialMinute}min"
-                        }
-                        RecipeInfoCard(
-                            icon = R.drawable.time,
-                            label = "Time",
-                            value = time,
-                            modifier = Modifier.weight(1f)
-                        )
-                        RecipeInfoCard(
-                            icon = R.drawable.cost,
-                            label = "Cost",
-                            value = recipe.cost.displayName,
-                            modifier = Modifier.weight(1f)
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    Text(
-                        text = recipe.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Medium
-                    )
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    TagsRow(recipe.tags, MaterialTheme.typography.titleMedium)
-
-
-                    val selectedTabIndex = if (uiState.isShowingIngredients) 0 else 1
-                    val tabs = listOf("Ingredients", "Steps")
-
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        TabRow(
-                            selectedTabIndex = selectedTabIndex,
-                            containerColor = Color.Transparent,
-                            indicator = { tabPositions ->
-                                if (selectedTabIndex < tabPositions.size) {
-                                    TabRowDefaults.SecondaryIndicator(
-                                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                                        color = MaterialTheme.colorScheme.primary,
-                                        height = 3.dp
-                                    )
-                                }
-                            }
-                        ) {
-                            tabs.forEachIndexed { index, title ->
-                                val isSelected = selectedTabIndex == index
-                                Tab(
-                                    selected = isSelected,
-                                    onClick = { onShowIngredients(index == 0) },
-                                    text = {
-                                        Text(
-                                            text = title,
-                                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                            style = MaterialTheme.typography.titleMedium
-                                        )
-                                    }
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        when (selectedTabIndex) {
-                            0 -> {
-                                Column() {
-                                    ServingsField(
-                                        servings = recipe.servings,
-                                        selectedServings = selectedServings,
-                                        recipe.calories,
-                                        onIncreaseServingClicked = onIncreaseServingClicked,
-                                        onDecreaseServingClicked = onDecreaseServingClicked
-                                    )
-                                    adjustedIngredients.forEach { ingredient ->
-                                        Spacer(modifier = Modifier.height(5.dp))
-                                        IngredientRow(ingredient)
-                                    }
-                                    Spacer(modifier = Modifier.height(10.dp))
-                                    Button(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        onClick = {
-                                            //TODO add ingredients to shopping list
-                                        },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                                        ),
-                                        contentPadding = PaddingValues(0.dp),
-                                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(14.dp),
-                                            horizontalArrangement = Arrangement.Center
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.cart),
-                                                contentDescription = "Shopping icon",
-                                                modifier = Modifier.size(20.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(5.dp))
-                                            Text(
-                                                text = "Add all to Shopping List",
-                                                style = MaterialTheme.typography.titleMedium
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-
-                            1 -> {
-                                Column() {
-                                    recipe.steps.forEach { step ->
-                                        Spacer(modifier = Modifier.height(5.dp))
-                                        Step(step)
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-
                 }
+                Spacer(modifier = Modifier.height(16.dp))
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onGloballyPositioned { coordinates ->
-                            reviewsSectionY = coordinates.positionInParent().y
+                when (selectedTabIndex) {
+                    0 -> {
+                        Column() {
+                            ServingsField(
+                                servings = recipe.servings,
+                                selectedServings = selectedServings,
+                                recipe.calories,
+                                onIncreaseServingClicked = onIncreaseServingClicked,
+                                onDecreaseServingClicked = onDecreaseServingClicked
+                            )
+                            adjustedIngredients.forEach { ingredient ->
+                                Spacer(modifier = Modifier.height(5.dp))
+                                IngredientRow(ingredient)
+                            }
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Button(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
+                                    //TODO add ingredients to shopping list
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                                ),
+                                contentPadding = PaddingValues(0.dp),
+                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(14.dp),
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.cart),
+                                        contentDescription = "Shopping icon",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text(
+                                        text = "Add all to Shopping List",
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                }
+                            }
                         }
-                ) {
-                    Reviews(
-                        reviews = reviews,
-                        rating = uiState.selectedRating,
-                        reviewText = uiState.reviewText,
-                        onRatingChanged = onRatingChanged,
-                        onReviewTextChanged = onReviewTextChanged,
-                        onAddReview = onAddReview,
-                        userReview = userReview,
-                        showDeleteReviewPopup = showDeleteReviewPopup,
-                        reviewPhotoUrl = uiState.reviewPhotoURL,
-                        onSetPhotoReviewTarget = onSetPhotoTarget,
-                        onNavigateToPictureDialog = onNavigateToPictureDialog,
-                        focusReviewId = focusReviewId,
-                    )
+                    }
+
+                    1 -> {
+                        Column() {
+                            recipe.steps.forEach { step ->
+                                Spacer(modifier = Modifier.height(5.dp))
+                                Step(step)
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        if (uiState.isShowingDeleteRecipePopUp) {
-            DeletePopup("Recipe", onNavigateToHome, deleteRecipe, hideDeleteRecipePopUp)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { coordinates ->
+                    reviewsSectionY = coordinates.positionInParent().y
+                }
+        ) {
+            Reviews(
+                reviews = reviews,
+                rating = uiState.selectedRating,
+                reviewText = uiState.reviewText,
+                onRatingChanged = onRatingChanged,
+                onReviewTextChanged = onReviewTextChanged,
+                onAddReview = onAddReview,
+                userReview = userReview,
+                showDeleteReviewPopup = showDeleteReviewPopup,
+                reviewPhotoUrl = uiState.reviewPhotoURL,
+                onSetPhotoReviewTarget = onSetPhotoTarget,
+                onNavigateToPictureDialog = onNavigateToPictureDialog,
+                focusReviewId = focusReviewId,
+            )
         }
 
-        if(uiState.isShowingDeleteReviewPopUp) {
-            DeleteReviewPopup({onDeleteReview(uiState.reviewIdDelete)}, hideDeleteReviewPopup)
-        }
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+
+    if (uiState.isShowingDeleteRecipePopUp) {
+        DeletePopup("Recipe", onNavigateToHome, deleteRecipe, hideDeleteRecipePopUp)
+    }
+
+    if(uiState.isShowingDeleteReviewPopUp) {
+        DeleteReviewPopup({onDeleteReview(uiState.reviewIdDelete)}, hideDeleteReviewPopup)
     }
 }

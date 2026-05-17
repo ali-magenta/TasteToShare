@@ -26,7 +26,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
@@ -57,8 +56,7 @@ fun NotificationDestination(
     onNavigateToProfile: (userId: String) -> Unit,
     onNavigateToRecipeDetails: (recipeId: String) -> Unit,
     viewModel: NotificationViewModel = viewModel(factory = NotificationViewModel.Factory)
-)
-{
+) {
     val notifications by viewModel.notifications.collectAsStateWithLifecycle()
 
     NotificationScreen(
@@ -81,93 +79,85 @@ fun NotificationScreen(
     sendDuplicateNotification: () -> Unit,
     notifications: List<UINotification>
 ) {
-
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
-                title = {
-                    Text("Recipe", fontWeight = FontWeight.Bold)
-                },
-            )
-        }
-    ) { innerPadding ->
-            Column(
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text("Send notifications", fontWeight = FontWeight.Bold)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        )
+        {
+            Button(
+                onClick = { sendRecommendationNotification() },
                 modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                    .height(56.dp)
+                    .weight(1f),
+                contentPadding = PaddingValues(horizontal = 4.dp)
             ) {
-                Text("Send notifications", fontWeight = FontWeight.Bold)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                Text(
+                    text = "Recommendation",
+                    textAlign = TextAlign.Center,
+                    fontSize = 12.sp,
+                    maxLines = 1
                 )
-                {
-                    Button(onClick = {sendRecommendationNotification() },
-                        modifier = Modifier
-                            .height(56.dp)
-                            .weight(1f),
-                        contentPadding = PaddingValues(horizontal = 4.dp)
-                    ) {
-                        Text(
-                            text = "Recommendation",
-                            textAlign = TextAlign.Center,
-                            fontSize = 12.sp,
-                            maxLines = 1
-                        )                    }
-                    Button(onClick = {sendReviewNotification() },
-                        modifier = Modifier
-                            .height(56.dp)
-                            .weight(1f),
-                        contentPadding = PaddingValues(horizontal = 4.dp)
-                    ) {
-                        Text("Review",
-                            textAlign = TextAlign.Center,
-                            fontSize = 12.sp,
-                            maxLines = 1)
-                    }
-                    Button(onClick = {sendDuplicateNotification() },
-                        modifier = Modifier
-                            .height(56.dp)
-                            .weight(1f),
-                        contentPadding = PaddingValues(horizontal = 4.dp)
-                    ) {
-                        Text("Duplicate",
-                            textAlign = TextAlign.Center,
-                            fontSize = 12.sp,
-                            maxLines = 1)
-                    }
-                }
-                if (notifications.isNotEmpty()){
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        itemsIndexed(notifications) { index, notification ->
-                            Spacer(modifier = Modifier.height(6.dp))
-                            NotificationCard(
-                                notification = notification,
-                                navigateToProfile = navigateToProfile,
-                                navigateToRecipeDetails = navigateToRecipeDetails
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            if (index < notifications.size-1) {
-                                HorizontalDivider(
-                                    thickness = 2.dp,
-                                    color = MaterialTheme.colorScheme.primaryContainer
-                                )
-                            }
-                        }
+            }
+            Button(
+                onClick = { sendReviewNotification() },
+                modifier = Modifier
+                    .height(56.dp)
+                    .weight(1f),
+                contentPadding = PaddingValues(horizontal = 4.dp)
+            ) {
+                Text(
+                    "Review",
+                    textAlign = TextAlign.Center,
+                    fontSize = 12.sp,
+                    maxLines = 1
+                )
+            }
+            Button(
+                onClick = { sendDuplicateNotification() },
+                modifier = Modifier
+                    .height(56.dp)
+                    .weight(1f),
+                contentPadding = PaddingValues(horizontal = 4.dp)
+            ) {
+                Text(
+                    "Duplicate",
+                    textAlign = TextAlign.Center,
+                    fontSize = 12.sp,
+                    maxLines = 1
+                )
+            }
+        }
+        if (notifications.isNotEmpty()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                itemsIndexed(notifications) { index, notification ->
+                    Spacer(modifier = Modifier.height(6.dp))
+                    NotificationCard(
+                        notification = notification,
+                        navigateToProfile = navigateToProfile,
+                        navigateToRecipeDetails = navigateToRecipeDetails
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    if (index < notifications.size - 1) {
+                        HorizontalDivider(
+                            thickness = 2.dp,
+                            color = MaterialTheme.colorScheme.primaryContainer
+                        )
                     }
                 }
             }
         }
+    }
 }
 
 @Composable
@@ -180,9 +170,11 @@ fun NotificationCard(
         NotificationType.RECOMMENDED_RECIPE -> {
             R.drawable.servings
         }
+
         NotificationType.DUPLICATED_RECIPE -> {
             R.drawable.duplicate
         }
+
         else -> {
             R.drawable.comment
         }
@@ -191,11 +183,15 @@ fun NotificationCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable{
+            .clickable {
                 navigateToRecipeDetails(notification.recipe.recipeId)
             }
     ) {
-        Row(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp)
+        ) {
             Column() {
                 Box(
                     modifier = Modifier
@@ -229,8 +225,7 @@ fun NotificationCard(
                     Text(
                         text = Instant.ofEpochMilli(notification.creationDate)
                             .atZone(ZoneId.systemDefault())
-                            .format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"))
-                        ,
+                            .format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm")),
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )

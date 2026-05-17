@@ -36,6 +36,7 @@ fun WelcomeRoute(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .fillMaxHeight()
             .background(Color.Black)
     ) {
         Image(

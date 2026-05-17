@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
@@ -60,7 +62,9 @@ fun InstructionsStep(
     onNavigateToPictureDialog: (Boolean) -> Unit,
     onSetPhotoTarget: (PhotoTarget) -> Unit,
     ) {
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(bottom = 16.dp)
+    ) {
         item {
             Text(
                 text = "Step Instructions",
@@ -77,16 +81,17 @@ fun InstructionsStep(
             )
         }
 
-        uiState.steps.forEach { step ->
-            item{
-                InstructionStepCard(
-                    stepNumber = step.order,
-                    instructionText = step.description,
-                    imageUrl = step.photoURL,
-                    onEditClick = {},
-                    onDeleteClick = { onRemoveStepClick(step.stepId) },
-                )
-            }
+        items(
+            items = uiState.steps,
+            key = { step -> step.stepId }
+        ) { step ->
+            InstructionStepCard(
+                stepNumber = step.order,
+                instructionText = step.description,
+                imageUrl = step.photoURL,
+                onEditClick = {},
+                onDeleteClick = { onRemoveStepClick(step.stepId) },
+            )
         }
 
         item {

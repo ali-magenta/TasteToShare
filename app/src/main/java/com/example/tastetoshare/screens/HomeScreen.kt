@@ -3,6 +3,7 @@ package com.example.tastetoshare.screens
 import androidx.compose.material3.Button
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,7 +18,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
@@ -119,79 +119,51 @@ fun HomepageScreen(
     onNavigateToRecipeProposal: (String) -> Unit,
     onSaveClick: (String) -> Unit
 ) {
-
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
-                title = {
-                    Text("Home", fontWeight = FontWeight.Bold)
-                },
-                actions = {
-                    IconButton(onClick = {
-                        onNavigateToNotifications()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Notifications,
-                            contentDescription = "Notifications",
-                            tint = MaterialTheme.colorScheme.surfaceDim
-                        )
-                    }
-                }
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 4.dp, start = 17.dp, end = 17.dp),
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(bottom = 20.dp)
+    ) {
+        item {
+            SearchRecipeBar(uiState.searchText, onSearchTextChanged, onSearchSubmit)
+        }
+        item {
+            Text(
+                text = "Recommended Recipes",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
-    ) { innerPadding ->
-            LazyColumn(
+        item {
+            LazyRow(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 4.dp, start = 17.dp, end = 17.dp),
-                contentPadding = innerPadding,
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                item {
-                    SearchRecipeBar(uiState.searchText, onSearchTextChanged, onSearchSubmit)
-                }
-                item {
-                    Text(
-                        text = "Recommended Recipes",
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurface
+                items(yourTopRecipes) { recipe ->
+                    RecipePreviewCardVertical(
+                        recipe,
+                        onNavigateToRecipeProposal,
+                        onSaveClick,
+                        Modifier.width(220.dp)
                     )
                 }
-                item{
-                    LazyRow(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(yourTopRecipes) { recipe ->
-                            RecipePreviewCardVertical(
-                                recipe,
-                                onNavigateToRecipeProposal,
-                                onSaveClick,
-                                Modifier.width(220.dp)
-                            )
-                        }
-                    }
-                }
-                item{
-                    Text(
-                        text = "Top Weekly Recipes",
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                items(topWeeklyRecipes) { recipe ->
-                    RecipeCard(recipe,onNavigateToRecipeProposal, onSaveClick)
-                }
-                // empty item so add padding at the bottom of the list
-                item{}
             }
         }
+        item {
+            Text(
+                text = "Top Weekly Recipes",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        items(topWeeklyRecipes) { recipe ->
+            RecipeCard(recipe, onNavigateToRecipeProposal, onSaveClick)
+        }
     }
+}

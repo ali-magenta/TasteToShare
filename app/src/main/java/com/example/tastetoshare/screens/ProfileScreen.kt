@@ -1,5 +1,6 @@
 package com.example.tastetoshare.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,7 +25,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -93,100 +94,52 @@ fun ProfileScreen(
     onViewAllRecipes: () -> Unit,
     onToggleSaved: (String) -> Unit
 ) {
+    val configuration = LocalConfiguration.current
+    val isVertical = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
-                title = {
-                    Text("My profile", fontWeight = FontWeight.Bold)
-                },
-            )
-        },
-        contentWindowInsets = WindowInsets(0, 0, 0, 0)
-    ) { innerPadding ->
-        BoxWithConstraints() {
-            val isVertical = this.maxHeight > this.maxWidth
-            LazyColumn(
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 17.dp, end = 17.dp),
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(bottom = 20.dp)
+    ) {
+        item{
+            Spacer(Modifier.height(16.dp))
+            Column(
                 modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxWidth()
-                    .padding(start = 17.dp, end = 17.dp, bottom = 17.dp),
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(bottom = 20.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
-                item{
-                    Spacer(Modifier.height(16.dp))
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(24.dp),
-                    ) {
-                        if (!isVertical){
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                ProfileHeader(user, Modifier.size(160.dp))
-                                Spacer(modifier = Modifier.width(16.dp))
-                                ProfileInfo(user = user, alignment = Alignment.Start)
-                            }
-                        } else {
-                            ProfileHeader(user, Modifier.size(110.dp))
-                            ProfileInfo(user)
-                        }
-                        TagsRow(user.preferences, MaterialTheme.typography.titleMedium)
-                        if (isOwnProfile)
-                        {
-                            EditProfileButton(user, edit)
-                        }
+                if (!isVertical){
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        ProfileHeader(user, Modifier.size(160.dp))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        ProfileInfo(user = user, alignment = Alignment.Start)
                     }
+                } else {
+                    ProfileHeader(user, Modifier.size(110.dp))
+                    ProfileInfo(user)
                 }
-
-                item{MyRecipesAnalyticsTab(uiState.isShowingMyRecipes, isOwnProfile, toggleMyRecipesAnalyticsTab)}
-                if (isOwnProfile) {
-                    val selectedTabIndex = if (uiState.isShowingMyRecipes) 0 else 1
-
-                    when (selectedTabIndex) {
-                        0 -> {
-                            // My recipes tab
-                            if (recipes.isEmpty()) {
-                                item{NoRecipes()}
-                            } else {
-                                item{
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-                                        horizontalArrangement = Arrangement.End,
-                                    ) {
-                                        Text(
-                                            modifier = Modifier.padding(0.dp).clickable {
-                                                onViewAllRecipes()
-                                            },
-                                            color = MaterialTheme.colorScheme.primary,
-                                            textDecoration = TextDecoration.Underline,
-                                            text = "View All",
-                                        )
-                                    }
-                                }
-                                items(recipes.size) { index ->
-                                    RecipeCard(recipes[index], onNavigateToRecipeProposal, onToggleSaved)
-                                }
-                            }
-                        }
-
-                        1 -> {
-                            // Analytics tab
-                            item {
-                                ProfileAnalytics(user)
-                            }
-                        }
-                    }
+                TagsRow(user.preferences, MaterialTheme.typography.titleMedium)
+                if (isOwnProfile)
+                {
+                    EditProfileButton(user, edit)
                 }
-                else {
+            }
+        }
+
+        item{MyRecipesAnalyticsTab(uiState.isShowingMyRecipes, isOwnProfile, toggleMyRecipesAnalyticsTab)}
+        if (isOwnProfile) {
+            val selectedTabIndex = if (uiState.isShowingMyRecipes) 0 else 1
+
+            when (selectedTabIndex) {
+                0 -> {
+                    // My recipes tab
                     if (recipes.isEmpty()) {
-                        item { NoRecipes() }
+                        item{NoRecipes()}
                     } else {
                         item{
                             Row(
@@ -204,9 +157,40 @@ fun ProfileScreen(
                             }
                         }
                         items(recipes.size) { index ->
-                            RecipeCard(recipe= recipes[index], onNavigateToDetails= onNavigateToRecipeProposal, onToggleSaved)
+                            RecipeCard(recipes[index], onNavigateToRecipeProposal, onToggleSaved)
                         }
                     }
+                }
+
+                1 -> {
+                    // Analytics tab
+                    item {
+                        ProfileAnalytics(user)
+                    }
+                }
+            }
+        }
+        else {
+            if (recipes.isEmpty()) {
+                item { NoRecipes() }
+            } else {
+                item{
+                    Row(
+                        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(0.dp).clickable {
+                                onViewAllRecipes()
+                            },
+                            color = MaterialTheme.colorScheme.primary,
+                            textDecoration = TextDecoration.Underline,
+                            text = "View All",
+                        )
+                    }
+                }
+                items(recipes.size) { index ->
+                    RecipeCard(recipe= recipes[index], onNavigateToDetails= onNavigateToRecipeProposal, onToggleSaved)
                 }
             }
         }
