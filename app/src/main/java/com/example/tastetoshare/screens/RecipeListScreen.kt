@@ -39,7 +39,15 @@ import com.example.tastetoshare.data.Difficulty
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import com.example.tastetoshare.data.Cost
 import com.example.tastetoshare.data.entities.Ingredient
@@ -165,6 +173,11 @@ fun RecipeListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchRecipeBar(searchText: String, onSearchRecipe: (String) -> Unit, onSearchSubmit: ((String) -> Unit)? = null) {
+
+    val focusRequester = remember { FocusRequester() }
+    var textFieldLoaded by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+
     OutlinedTextField(
         value = searchText,
         onValueChange = onSearchRecipe,
@@ -182,11 +195,34 @@ fun SearchRecipeBar(searchText: String, onSearchRecipe: (String) -> Unit, onSear
         keyboardActions = KeyboardActions(onSearch = {
             if (onSearchSubmit != null) {
                 onSearchSubmit(searchText)
+                focusManager.clearFocus()
             } else {
                 onSearchRecipe(searchText)
+                focusManager.clearFocus()
             }
         }),
+        enabled = onSearchSubmit == null,
+        colors = OutlinedTextFieldDefaults.colors(
+            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+            disabledLabelColor = MaterialTheme.colorScheme.onSurface,
+            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurface,
+            disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
+            disabledBorderColor = MaterialTheme.colorScheme.outline,
+            disabledContainerColor = MaterialTheme.colorScheme.surface
+        ),
         modifier = Modifier.fillMaxWidth().padding(10.dp)
+            .focusRequester(focusRequester)
+            .onGloballyPositioned {
+                if (!textFieldLoaded) {
+                    focusRequester.requestFocus()
+                    textFieldLoaded = true
+                }
+            }
+            .clickable{
+            if (onSearchSubmit != null) {
+                onSearchSubmit(searchText)
+            }
+        }
         )
 }
 
