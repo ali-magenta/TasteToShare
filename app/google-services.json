@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "538526353666",
+    "project_id": "tastetoshare-e557e",
+    "storage_bucket": "tastetoshare-e557e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:538526353666:android:a5737076c1947645e09a1b",
+        "android_client_info": {
+          "package_name": "com.example.tastetoshare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBc0I5XjWQsepqroEVjMcFzhXAlZv0LcRI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

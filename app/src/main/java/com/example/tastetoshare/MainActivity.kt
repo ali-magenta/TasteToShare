@@ -13,16 +13,25 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.tastetoshare.data.WrapperPaperDB
+import com.example.tastetoshare.data.WrapperDB
 import com.example.tastetoshare.navigation.AppNavigation
-import com.example.tastetoshare.repositories.FakeNotificationRepository
-import com.example.tastetoshare.repositories.PaperDbIngredientRepository
-import com.example.tastetoshare.repositories.PaperDbRecipeRepository
-import com.example.tastetoshare.repositories.PaperDbTagRepository
-import com.example.tastetoshare.repositories.PaperDbUserRepository
+import com.example.tastetoshare.repositories.FirebaseIngredientRepository
+import com.example.tastetoshare.repositories.FirebaseNotificationRepository
+import com.example.tastetoshare.repositories.FirebaseRecipeRepository
+import com.example.tastetoshare.repositories.FirebaseTagRepository
+import com.example.tastetoshare.repositories.FirebaseUserRepository
+import com.example.tastetoshare.repositories.IngredientRepository
+import com.example.tastetoshare.repositories.NotificationRepository
+import com.example.tastetoshare.repositories.RecipeRepository
+import com.example.tastetoshare.repositories.TagRepository
+import com.example.tastetoshare.repositories.UserRepository
 import com.example.tastetoshare.ui.theme.TasteToShareTheme
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import io.paperdb.Paper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 
 
 object SessionManager {
@@ -30,11 +39,35 @@ object SessionManager {
 }
 
 class AppContainer {
-    val tagRepository = PaperDbTagRepository()
-    val ingredientRepository = PaperDbIngredientRepository()
-    val userRepository = PaperDbUserRepository()
-    val recipeRepository = PaperDbRecipeRepository()
-    val notificationRepository = FakeNotificationRepository()
+
+    private val firestore: FirebaseFirestore by lazy {
+        FirebaseFirestore.getInstance()
+    }
+
+    //TODO("Implement registration with fireBase")
+//    private val credentialManager: CredentialManager by lazy {
+//        CredentialManager.create(context)
+//    }
+
+//val authRepository: AuthRepository by lazy {
+//    FirebaseAuthRepository(Firebase.auth, credentialManager)
+//}
+
+    val tagRepository: TagRepository by lazy {
+        FirebaseTagRepository(firestore)
+    }
+    val ingredientRepository: IngredientRepository by lazy {
+        FirebaseIngredientRepository(firestore)
+    }
+    val userRepository: UserRepository by lazy {
+        FirebaseUserRepository(firestore)
+    }
+    val recipeRepository: RecipeRepository by lazy {
+        FirebaseRecipeRepository(firestore)
+    }
+    val notificationRepository: NotificationRepository by lazy {
+        FirebaseNotificationRepository(firestore)
+    }
 }
 
 class TasteToShareApp : Application() {
@@ -46,30 +79,30 @@ class TasteToShareApp : Application() {
         Paper.book().destroy()
         val jsonString =
             applicationContext.assets.open("seed_data.json").bufferedReader().use { it.readText() }
-        val wrapperPaperDB = Gson().fromJson(jsonString, WrapperPaperDB::class.java)
+        val wrapperDB = Gson().fromJson(jsonString, WrapperDB::class.java)
 
-        Log.d("PAPER", "$wrapperPaperDB")
-
-        val seeded: Boolean = Paper.book().read("seeded") ?: false
-        if (!seeded) {
-            Paper.book().write("seeded", true)
-            wrapperPaperDB.recipes.forEach { recipe ->
-                Paper.book("recipes").write(recipe.recipeId, recipe)
-            }
-
-            wrapperPaperDB.users.forEach { user ->
-                Paper.book("users").write(user.userId, user)
-            }
-
-            wrapperPaperDB.ingredients.forEach {
-                Paper.book("ingredients").write(it.ingredientId, it)
-            }
-
-            wrapperPaperDB.tags.forEach {
-                Paper.book("tags").write(it.tagId, it)
-            }
-        }
         container = AppContainer()
+        // auth = Firebase.auth
+
+
+        // Initialize Firebase data if necessary
+        MainScope().launch(Dispatchers.IO) {
+            (container.tagRepository as? FirebaseTagRepository)?.initializeData(wrapperDB.tags)
+        }
+        MainScope().launch(Dispatchers.IO) {
+            (container.userRepository as? FirebaseUserRepository)?.initializeData(wrapperDB.users)
+        }
+        MainScope().launch(Dispatchers.IO) {
+            (container.recipeRepository as? FirebaseRecipeRepository)?.initializeData(wrapperDB.recipes)
+        }
+        MainScope().launch(Dispatchers.IO) {
+            (container.ingredientRepository as? FirebaseIngredientRepository)?.initializeData(wrapperDB.ingredients)
+        }
+        MainScope().launch(Dispatchers.IO) {
+            (container.notificationRepository as? FirebaseNotificationRepository)?.initializeData(wrapperDB.notifications)
+        }
+
+
         createNotificationChannels()
     }
 
