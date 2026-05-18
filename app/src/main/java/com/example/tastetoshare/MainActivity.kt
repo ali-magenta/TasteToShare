@@ -130,6 +130,14 @@ class TasteToShareApp : Application() {
                 description = "Weekly recipe recommendations"
             }
 
+            val generalChannel = NotificationChannel(
+                "general_channel_id",
+                "General",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "General infos about the app"
+            }
+
             notificationManager.createNotificationChannels(listOf(socialChannel, recommendationChannel))        }
     }
 }

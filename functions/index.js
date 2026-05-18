@@ -11,6 +11,8 @@ const {setGlobalOptions} = require("firebase-functions");
 const {onRequest} = require("firebase-functions/https");
 const logger = require("firebase-functions/logger");
 
+const handleNewReview = require("./src/notifications/onNewReview");
+
 // For cost control, you can set the maximum number of containers that can be
 // running at the same time. This helps mitigate the impact of unexpected
 // traffic spikes by instead downgrading performance. This limit is a
@@ -21,7 +23,11 @@ const logger = require("firebase-functions/logger");
 // functions should each use functions.runWith({ maxInstances: 10 }) instead.
 // In the v1 API, each function can only serve one request per container, so
 // this will be the maximum concurrent request count.
-setGlobalOptions({ maxInstances: 10 });
+exports.onNewReview = functions
+    .runWith({maxInstances: 10})
+    .firestore
+    .document("recipe/{recipeId}")
+    .onUpdate(handleNewReview);
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
