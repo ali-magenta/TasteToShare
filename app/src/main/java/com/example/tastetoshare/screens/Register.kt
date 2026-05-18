@@ -71,181 +71,152 @@ fun SignUpScreen(
     onNavigateToPictureDialog: (Boolean) -> Unit
 ) {
     val scrollState = rememberScrollState()
-
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Sign Up",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        }
-    ) { innerPadding ->
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(scrollState),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(innerPadding)
-                .verticalScroll(scrollState),
+                .fillMaxWidth()
+                .padding(start = 17.dp, end = 16.dp, top = 16.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
+            Text(
+                text = "Join Kitchen People",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Create your account to start your culinary journey.",
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
+        }
+
+        SectionContainer {
+            SectionHeader(title = "Profile Picture", icon = Icons.Outlined.CameraAlt)
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 17.dp, end = 16.dp, top = 16.dp, bottom = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(vertical = 16.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Join Kitchen People",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Create your account to start your culinary journey.",
-                    fontSize = 14.sp,
-                    color = Color.Gray
-                )
-            }
-
-            SectionContainer {
-                SectionHeader(title = "Profile Picture", icon = Icons.Outlined.CameraAlt)
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
+                        .size(100.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            CircleShape
+                        )
+                        .clip(CircleShape)
+                        .clickable { onNavigateToPictureDialog(true) },
                     contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .background(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                CircleShape
-                            )
-                            .clip(CircleShape)
-                            .clickable { onNavigateToPictureDialog(true) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (uiState.editedPhoto != null) {
-                            AsyncImage(
-                                model = uiState.editedPhoto,
-                                contentDescription = "Profile Picture",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Outlined.AddAPhoto,
-                                contentDescription = "Add Photo",
-                                modifier = Modifier.size(40.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                    if (uiState.editedPhoto != null) {
+                        AsyncImage(
+                            model = uiState.editedPhoto,
+                            contentDescription = "Profile Picture",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Outlined.AddAPhoto,
+                            contentDescription = "Add Photo",
+                            modifier = Modifier.size(40.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             }
+        }
 
-            SectionContainer {
-                SectionHeader(title = "Personal Information", icon = Icons.Outlined.Person)
-                SignUpPersonalInformation(
-                    uiState = uiState,
-                    onNameChange = onNameChange,
-                    onUsernameChange = onUsernameChange,
-                    onEmailChange = onEmailChange,
-                    onPasswordChange = onPasswordChange,
-                    onBiographyChange = onBiographyChange
-                )
-            }
+        SectionContainer {
+            SectionHeader(title = "Personal Information", icon = Icons.Outlined.Person)
+            SignUpPersonalInformation(
+                uiState = uiState,
+                onNameChange = onNameChange,
+                onUsernameChange = onUsernameChange,
+                onEmailChange = onEmailChange,
+                onPasswordChange = onPasswordChange,
+                onBiographyChange = onBiographyChange
+            )
+        }
 
-            SectionContainer {
-                SectionHeader(title = "Cooking Preferences", icon = Icons.Outlined.RestaurantMenu)
-                SignUpPreferences(
-                    uiState = uiState,
-                    onCuisineSearchChange = onCuisineSearchChange,
-                    onDietarySearchChange = onDietarySearchChange,
-                    onOtherSearchChange = onOtherSearchChange,
-                    onCuisineTagClick = onCuisineTagClick,
-                    onDietaryTagClick = onDietaryTagClick,
-                    onOtherTagClick = onOtherTagClick
-                )
-                errorAlertBox(uiState.validation.tagsError)
-            }
+        SectionContainer {
+            SectionHeader(title = "Cooking Preferences", icon = Icons.Outlined.RestaurantMenu)
+            SignUpPreferences(
+                uiState = uiState,
+                onCuisineSearchChange = onCuisineSearchChange,
+                onDietarySearchChange = onDietarySearchChange,
+                onOtherSearchChange = onOtherSearchChange,
+                onCuisineTagClick = onCuisineTagClick,
+                onDietaryTagClick = onDietaryTagClick,
+                onOtherTagClick = onOtherTagClick
+            )
+            errorAlertBox(uiState.validation.tagsError)
+        }
 
-            SectionContainer {
-                SectionHeader(title = "Cooking role", icon = Icons.Outlined.RestaurantMenu)
+        SectionContainer {
+            SectionHeader(title = "Cooking role", icon = Icons.Outlined.RestaurantMenu)
 
-                SignUpRoleSelection(
-                    selectedRole = uiState.editedCookingRole,
-                    onRoleChange = onRoleChange
-                )
+            SignUpRoleSelection(
+                selectedRole = uiState.editedCookingRole,
+                onRoleChange = onRoleChange
+            )
 
-                errorAlertBox(uiState.validation.cookingRoleError)
-            }
+            errorAlertBox(uiState.validation.cookingRoleError)
+        }
 
-            // Create account button
-            Column(
+        // Create account button
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 17.dp, end = 16.dp, top = 24.dp, bottom = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Button(
+                onClick = onCreateAccount,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 17.dp, end = 16.dp, top = 24.dp, bottom = 32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                shape = RoundedCornerShape(16.dp)
             ) {
-                Button(
-                    onClick = onCreateAccount,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Text(
-                        text = "Create Account",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                val termsText = buildAnnotatedString {
-                    append("By signing up, you agree to our ")
-                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                        append("Terms of Service")
-                    }
-                    append(" and\n")
-                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                        append("Privacy Policy.")
-                    }
-                }
                 Text(
-                    text = termsText,
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 18.sp
+                    text = "Create Account",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val termsText = buildAnnotatedString {
+                append("By signing up, you agree to our ")
+                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                    append("Terms of Service")
+                }
+                append(" and\n")
+                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                    append("Privacy Policy.")
+                }
+            }
+            Text(
+                text = termsText,
+                fontSize = 12.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center,
+                lineHeight = 18.sp
+            )
         }
     }
 }

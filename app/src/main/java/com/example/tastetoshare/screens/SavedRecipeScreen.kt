@@ -29,7 +29,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
@@ -95,114 +94,99 @@ fun SavedTriedScreen(
     val currentRecipes = if (uiState.selectedTabIndex == 0) savedRecipes else triedRecipes
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            topBar = {
-                CenterAlignedTopAppBar(
-                    colors = topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    ),
-                    title = {
-                        Text("Favorite Recipes", fontWeight = FontWeight.Bold)
-                    },
-                )
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item {
+                TabRow(
+                    selectedTabIndex = uiState.selectedTabIndex,
+                    containerColor = Color.Transparent,
+                    indicator = { tabPositions ->
+                        TabRowDefaults.SecondaryIndicator(
+                            modifier = Modifier.tabIndicatorOffset(tabPositions[uiState.selectedTabIndex]),
+                            color = MaterialTheme.colorScheme.primary,
+                            height = 3.dp
+                        )
+                    }
+                ) {
+                    tabs.forEachIndexed { index, title ->
+                        val isSelected = uiState.selectedTabIndex == index
+                        Tab(
+                            selected = isSelected,
+                            onClick = { onTabSelected(index) },
+                            text = {
+                                Text(
+                                    text = title,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            }
+                        )
+                    }
+                }
             }
-        ) { innerPadding ->
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = innerPadding,
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+
+            item {
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 17.dp)
+                        .padding(top = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        SearchSavedRecipeBar(uiState.searchText, onSearchTextChanged)
+                    }
+
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = if (currentRecipes.size == 1) "1 recipe found"
+                                else "${currentRecipes.size} recipes found",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            if (currentRecipes.isEmpty()) {
                 item {
-                    TabRow(
-                        selectedTabIndex = uiState.selectedTabIndex,
-                        containerColor = Color.Transparent,
-                        indicator = { tabPositions ->
-                            TabRowDefaults.SecondaryIndicator(
-                                modifier = Modifier.tabIndicatorOffset(tabPositions[uiState.selectedTabIndex]),
-                                color = MaterialTheme.colorScheme.primary,
-                                height = 3.dp
-                            )
-                        }
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(32.dp),
+                        contentAlignment = Alignment.TopCenter
                     ) {
-                        tabs.forEachIndexed { index, title ->
-                            val isSelected = uiState.selectedTabIndex == index
-                            Tab(
-                                selected = isSelected,
-                                onClick = { onTabSelected(index) },
-                                text = {
-                                    Text(
-                                        text = title,
-                                        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                }
-                            )
-                        }
+                        Text(
+                            text = if (uiState.selectedTabIndex == 0) "No saved recipes yet..."
+                            else "No tried recipes yet...",
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                     }
                 }
+            } else {
 
-                item {
-                    Column(
-                        modifier = Modifier
-                            .padding(horizontal = 17.dp)
-                            .padding(top = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                items(currentRecipes) { recipe ->
+                    Box(
+                        Modifier
+                            .padding(start = 17.dp, end = 16.dp)
+                            .clickable { onNavigateToDetails(recipe.recipeId) }
+                            .animateItem()
                     ) {
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            SearchSavedRecipeBar(uiState.searchText, onSearchTextChanged)
-                        }
-
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = if (currentRecipes.size == 1) "1 recipe found"
-                                    else "${currentRecipes.size} recipes found",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        RecipeListCard(recipe, onToggleSaved, {showUnsavePopUp(recipe.recipeId)})
                     }
-                }
-
-                if (currentRecipes.isEmpty()) {
-                    item {
-                        Box(
-                            modifier = Modifier.fillMaxSize().padding(32.dp),
-                            contentAlignment = Alignment.TopCenter
-                        ) {
-                            Text(
-                                text = if (uiState.selectedTabIndex == 0) "No saved recipes yet..."
-                                else "No tried recipes yet...",
-                                color = Color.Gray,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    }
-                } else {
-
-                    items(currentRecipes) { recipe ->
-                        Box(
-                            Modifier
-                                .padding(start = 17.dp, end = 16.dp)
-                                .clickable { onNavigateToDetails(recipe.recipeId) }
-                                .animateItem()
-                        ) {
-                            RecipeListCard(recipe, onToggleSaved, {showUnsavePopUp(recipe.recipeId)})
-                        }
-                    }
-                }
-
-                // extra spacer to avoid cutting the last element
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
 
-            if (uiState.isShowingUnsavePopUp) {
-                UnsavePopup(onToggleSaved, hideUnsavePopUp, uiState.recipeToUnsave)
+            // extra spacer to avoid cutting the last element
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
             }
+        }
+
+        if (uiState.isShowingUnsavePopUp) {
+            UnsavePopup(onToggleSaved, hideUnsavePopUp, uiState.recipeToUnsave)
         }
     }
 }

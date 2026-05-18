@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -34,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -86,11 +88,9 @@ fun Reviews(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 16.dp)
             .background(
                 color = MaterialTheme.colorScheme.tertiary
             )
-            .padding(bottom = 16.dp),
     ) {
         Text(
             modifier = Modifier.padding(16.dp),
@@ -143,7 +143,8 @@ fun InputReviewCard(
     Card(
         modifier = modifier
             .width(300.dp)
-            .heightIn(min = 210.dp),
+            .heightIn(min = 210.dp)
+            .padding(bottom=16.dp),
         shape = RoundedCornerShape(25.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.onPrimary
@@ -236,7 +237,8 @@ fun ReviewCard(review: UIReview, onDeleteReview: (String) -> Unit, modifier: Mod
     Card(
         modifier = modifier
             .width(300.dp)
-            .heightIn(min = 210.dp),
+            .heightIn(min = 210.dp)
+            .padding(bottom=16.dp),
         shape = RoundedCornerShape(25.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.onPrimary

@@ -18,5 +18,6 @@ data class User @OptIn(ExperimentalUuidApi::class) constructor(
     val averageRating: Float = 0.0f,
     val numberOfRatings: Int = 0,
     val numberOfRecipeTriedByOthers: Int = 0,
-    val numberOfReviews: Int = 0
+    val numberOfReviews: Int = 0,
+    val fcmToken: String? = null,
 )

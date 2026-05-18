@@ -32,7 +32,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
@@ -123,77 +122,62 @@ fun EditProfilePage(
     val user = checkNotNull(user) { "User must not be null in EditProfilePage" }
     val scrollState = rememberScrollState()     // make the whole page scrollable
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
-                title = {
-                    Text("Edit profile", fontWeight = FontWeight.Bold)
-                },
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(scrollState),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+    ) {
+        Box(
+            modifier = Modifier.padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            EditProfileHeader(user, uiState.editedPhoto, { onNavigateToPictureDialog(true) })
+            Icon(
+                painter = painterResource(R.drawable.photo_camera),
+                contentDescription = "Plus icon",
+                modifier = Modifier
+                    .size(80.dp)
+                    .alpha(0.6f),
+                tint = MaterialTheme.colorScheme.primary
             )
         }
-    ) { innerPadding ->
+
         Column(
             modifier = Modifier
-                .padding(innerPadding)
                 .fillMaxWidth()
-                .verticalScroll(scrollState),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Box(
-                modifier = Modifier.padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                EditProfileHeader(user, uiState.editedPhoto, { onNavigateToPictureDialog(true) })
-                Icon(
-                    painter = painterResource(R.drawable.photo_camera),
-                    contentDescription = "Plus icon",
-                    modifier = Modifier
-                        .size(80.dp)
-                        .alpha(0.6f),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                SectionTitle("Personal Information", R.drawable.profile)
-                EditPersonalInformation(user, uiState.editedFullName, uiState.validation, uiState.editedNickName, uiState.editedBiography, uiState.editedPassword, onNameChange, onUsernameChange, onBiographyChange, onPasswordChange, )
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                SectionTitle("Cooking Preferences", R.drawable.local_dining)
-                EditPreferences(user, defaultTags, uiState.hasEditedTags, uiState.editedTags, uiState.validation, onPreferencesChange)
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                SectionTitle("Cooking Role", R.drawable.pan_pot)
-                EditRole(user, uiState.editedCookingRole, onRoleChange)
-
-            }
-
-            SaveChangesButton(saveChanges)
+            SectionTitle("Personal Information", R.drawable.profile)
+            EditPersonalInformation(user, uiState.editedFullName, uiState.validation, uiState.editedNickName, uiState.editedBiography, uiState.editedPassword, onNameChange, onUsernameChange, onBiographyChange, onPasswordChange, )
         }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SectionTitle("Cooking Preferences", R.drawable.local_dining)
+            EditPreferences(user, defaultTags, uiState.hasEditedTags, uiState.editedTags, uiState.validation, onPreferencesChange)
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SectionTitle("Cooking Role", R.drawable.pan_pot)
+            EditRole(user, uiState.editedCookingRole, onRoleChange)
+
+        }
+
+        SaveChangesButton(saveChanges)
     }
 }
 
@@ -606,7 +590,7 @@ fun EditRole(user: User, editedCookingRole: String?, onRoleChanged: (String) -> 
 fun SaveChangesButton(saveChanges: () -> Unit) {
     Button(
         onClick = saveChanges,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
         colors = ButtonDefaults.buttonColors(
             disabledContainerColor = MaterialTheme.colorScheme.primary,
             disabledContentColor = MaterialTheme.colorScheme.onPrimary,

@@ -26,23 +26,25 @@ class NotificationService(
     }
 
     private fun buildSnackbarEvent(notification: UINotification): SnackbarEvent {
+        val snackbarText = "${notification.message} (${notification.recipe.title})"
+
         return when (notification.type) {
             NotificationType.RECOMMENDED_RECIPE -> SnackbarEvent(
-                message = "We think you could enjoy: ${notification.recipe.title}",
+                message = snackbarText,
                 action = SnackbarAction(
                     name = "See recipe",
                     routeToNavigate = RecipeDetailsRoute(recipeId = notification.recipe.recipeId)
                 )
             )
             NotificationType.NEW_REVIEW -> SnackbarEvent(
-                message = "Someone reviewed your recipe: ${notification.recipe.title} ⭐️",
+                message = snackbarText,
                 action = SnackbarAction(
                     name = "See review",
                     routeToNavigate = RecipeDetailsRoute(recipeId = notification.recipe.recipeId, focusReviewId = notification.review?.reviewId)
                 )
             )
             NotificationType.DUPLICATED_RECIPE -> SnackbarEvent(
-                message = "Your recipe ${notification.recipe.title} was duplicated! 🔄",
+                message = snackbarText,
                 action = SnackbarAction(
                     name = "See recipe",
                     routeToNavigate = RecipeDetailsRoute(recipeId = notification.recipe.recipeId)
@@ -55,6 +57,7 @@ class NotificationService(
         val channel = when (notification.type) {
             NotificationType.NEW_REVIEW, NotificationType.DUPLICATED_RECIPE -> "social_channel_id"
             NotificationType.RECOMMENDED_RECIPE -> "recommendations_channel_id"
+            else -> "general_channel_id"
         }
 
         val icon = when (notification.type) {

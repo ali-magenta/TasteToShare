@@ -41,7 +41,7 @@ fun NavGraphBuilder.createRecipeGraph(
                 }
             }
 
-            CreateRecipeSharedLayout(currentStep = 1, uiState.recipeIdFromEdit != null) {
+            CreateRecipeSharedLayout(currentStep = 1) {
                 BasicInfoStep(
                     uiState = uiState,
                     onTitleChange = { viewModel.setTitle(it) },
@@ -67,7 +67,7 @@ fun NavGraphBuilder.createRecipeGraph(
             val viewModel: CreateRecipeViewModel = viewModel(parentEntry, factory = CreateRecipeViewModel.Factory)
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-            CreateRecipeSharedLayout(currentStep = 2, uiState.recipeIdFromEdit != null) {
+            CreateRecipeSharedLayout(currentStep = 2) {
                 TagsStep(
                     uiState = uiState,
                     onNextClick = {
@@ -93,7 +93,7 @@ fun NavGraphBuilder.createRecipeGraph(
             val viewModel: CreateRecipeViewModel = viewModel(parentEntry, factory = CreateRecipeViewModel.Factory)
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-            CreateRecipeSharedLayout(currentStep = 3, uiState.recipeIdFromEdit != null) {
+            CreateRecipeSharedLayout(currentStep = 3) {
                 IngredientsStep(
                     uiState = uiState,
                     onNextClick = {
@@ -133,7 +133,7 @@ fun NavGraphBuilder.createRecipeGraph(
                 }
             }
 
-            CreateRecipeSharedLayout(currentStep = 4, uiState.recipeIdFromEdit != null) {
+            CreateRecipeSharedLayout(currentStep = 4) {
                 InstructionsStep(
                     uiState = uiState,
                     onNewStepDescriptionChange = { viewModel.setNewStepDescription(it) },

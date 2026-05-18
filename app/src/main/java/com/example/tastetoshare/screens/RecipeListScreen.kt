@@ -17,7 +17,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
@@ -40,7 +39,15 @@ import com.example.tastetoshare.data.Difficulty
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import com.example.tastetoshare.data.Cost
 import com.example.tastetoshare.data.entities.Ingredient
@@ -99,91 +106,78 @@ fun RecipeListScreen(
     userId: String?,
     onToggleSaved: (String) -> Unit
 ) {
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
-                title = {
-                    if(userId != null) {
-                        Text("My Recipes", fontWeight = FontWeight.Bold)
-                    } else
-                    Text("All Recipes", fontWeight = FontWeight.Bold)
-                },
-            )
-        }
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = innerPadding,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                item {
-                    Column(
-                        modifier = Modifier
-                            .padding(horizontal = 17.dp)
-                            .padding(top = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            SearchRecipeBar(uiState.searchText, onSearchTextChanged)
-                        }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 17.dp)
+                        .padding(top = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        SearchRecipeBar(uiState.searchText, onSearchTextChanged)
+                    }
 
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                            FilterRow(
-                                selectedDifficulty = uiState.selectedDifficulty,
-                                onDifficultySelected = onDifficultySelected,
-                                selectedCost = uiState.selectedCost,
-                                onCostSelected = onCostSelected,
-                                ingredients = ingredients,
-                                searchIngredient = uiState.searchIngredient,
-                                selectedIngredients = uiState.selectedIngredients,
-                                onSearchIngredientChanged = onSearchIngredientChanged,
-                                onIngredientsSelected = onIngredientsSelected,
-                                cuisineTags = cuisineTags,
-                                dietaryTags = dietaryTags,
-                                onCuisineSelected = onCuisineSelected,
-                                onDietarySelected = onDietarySelected,
-                                selectedCuisine = uiState.selectedCuisine,
-                                selectedDietary = uiState.selectedDietary
-                            )
-                        }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                        FilterRow(
+                            selectedDifficulty = uiState.selectedDifficulty,
+                            onDifficultySelected = onDifficultySelected,
+                            selectedCost = uiState.selectedCost,
+                            onCostSelected = onCostSelected,
+                            ingredients = ingredients,
+                            searchIngredient = uiState.searchIngredient,
+                            selectedIngredients = uiState.selectedIngredients,
+                            onSearchIngredientChanged = onSearchIngredientChanged,
+                            onIngredientsSelected = onIngredientsSelected,
+                            cuisineTags = cuisineTags,
+                            dietaryTags = dietaryTags,
+                            onCuisineSelected = onCuisineSelected,
+                            onDietarySelected = onDietarySelected,
+                            selectedCuisine = uiState.selectedCuisine,
+                            selectedDietary = uiState.selectedDietary
+                        )
+                    }
 
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = if (recipes.size == 1) "1 recipe found"
-                                else "${recipes.size} recipes found",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = if (recipes.size == 1) "1 recipe found"
+                            else "${recipes.size} recipes found",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
+            }
 
-                items(recipes) { recipe ->
-                    Box(
-                        Modifier
-                            .padding(start = 17.dp, end = 16.dp)
-                            .clickable { onNavigateToDetails(recipe.recipeId) }
-                            .animateItem()
-                    ) {
-                        RecipeListCard(recipe, onToggleSaved, null)
-                    }
+            items(recipes) { recipe ->
+                Box(
+                    Modifier
+                        .padding(start = 17.dp, end = 16.dp)
+                        .clickable { onNavigateToDetails(recipe.recipeId) }
+                        .animateItem()
+                ) {
+                    RecipeListCard(recipe, onToggleSaved, null)
                 }
+            }
 
-                // extra spacer to avoid cutting the last element
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-        }
+            // extra spacer to avoid cutting the last element
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
     }
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchRecipeBar(searchText: String, onSearchRecipe: (String) -> Unit, onSearchSubmit: ((String) -> Unit)? = null) {
+
+    val focusRequester = remember { FocusRequester() }
+    var textFieldLoaded by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+
     OutlinedTextField(
         value = searchText,
         onValueChange = onSearchRecipe,
@@ -201,11 +195,34 @@ fun SearchRecipeBar(searchText: String, onSearchRecipe: (String) -> Unit, onSear
         keyboardActions = KeyboardActions(onSearch = {
             if (onSearchSubmit != null) {
                 onSearchSubmit(searchText)
+                focusManager.clearFocus()
             } else {
                 onSearchRecipe(searchText)
+                focusManager.clearFocus()
             }
         }),
+        enabled = onSearchSubmit == null,
+        colors = OutlinedTextFieldDefaults.colors(
+            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+            disabledLabelColor = MaterialTheme.colorScheme.onSurface,
+            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurface,
+            disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
+            disabledBorderColor = MaterialTheme.colorScheme.outline,
+            disabledContainerColor = MaterialTheme.colorScheme.surface
+        ),
         modifier = Modifier.fillMaxWidth().padding(10.dp)
+            .focusRequester(focusRequester)
+            .onGloballyPositioned {
+                if (!textFieldLoaded) {
+                    focusRequester.requestFocus()
+                    textFieldLoaded = true
+                }
+            }
+            .clickable{
+            if (onSearchSubmit != null) {
+                onSearchSubmit(searchText)
+            }
+        }
         )
 }
 

@@ -36,6 +36,7 @@ import com.example.tastetoshare.screens.RecipeDetailsDestination
 import com.example.tastetoshare.screens.RecipeListDestination
 import com.example.tastetoshare.screens.SavedRecipeDestination
 import com.example.tastetoshare.screens.ShoppingListDestination
+import com.example.tastetoshare.screens.components.DynamicTopBar
 import com.example.tastetoshare.screens.components.TasteToShareBottomBar
 import com.example.tastetoshare.services.notifications.SnackbarController
 import com.example.tastetoshare.ui.screens.PictureScreenDestination
@@ -104,6 +105,13 @@ fun AppNavigation() {
                 )
             }
         },
+        topBar = {
+            DynamicTopBar(
+                currentDestination = currentDestination,
+                onNavigateBack = { navActions.navigateBack() },
+                onNavigateToNotifications = { navActions.navigateToNotifications() }
+            )
+        },
         snackbarHost = {
             SnackbarHost(
                 hostState = snackbarHostState,
@@ -123,7 +131,7 @@ fun AppNavigation() {
         NavHost(
             navController = navCtrl,
             startDestination = AuthGraph,
-            modifier = Modifier.padding(bottom = globalPadding.calculateBottomPadding() - 24.dp)
+            modifier = Modifier.padding(globalPadding)
         ) {
             // Nested graph for login
             authGraph(navActions, navCtrl = navCtrl)
