@@ -7,12 +7,15 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-const {setGlobalOptions} = require("firebase-functions");
-const {onRequest} = require("firebase-functions/https");
-const logger = require("firebase-functions/logger");
+// const {setGlobalOptions} = require("firebase-functions");
+// const {onRequest} = require("firebase-functions/https");
+// const logger = require("firebase-functions/logger");
 
-const handleNewReview = require("./src/notifications/onNewReview");
+const {onDocumentUpdated} = require("firebase-functions/v2/firestore");
+const {setGlobalOptions} = require("firebase-functions/v2");
+const handleNewReview = require("./notifications/onNewReview");
 
+setGlobalOptions({region: "europe-west1", maxInstances: 10});
 // For cost control, you can set the maximum number of containers that can be
 // running at the same time. This helps mitigate the impact of unexpected
 // traffic spikes by instead downgrading performance. This limit is a
@@ -23,11 +26,10 @@ const handleNewReview = require("./src/notifications/onNewReview");
 // functions should each use functions.runWith({ maxInstances: 10 }) instead.
 // In the v1 API, each function can only serve one request per container, so
 // this will be the maximum concurrent request count.
-exports.onNewReview = functions
-    .runWith({maxInstances: 10})
-    .firestore
-    .document("recipe/{recipeId}")
-    .onUpdate(handleNewReview);
+exports.handleNewReview = onDocumentUpdated(
+    "Recipes/{recipeId}",
+    handleNewReview,
+);
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
