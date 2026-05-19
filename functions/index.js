@@ -7,13 +7,14 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-// const {setGlobalOptions} = require("firebase-functions");
-// const {onRequest} = require("firebase-functions/https");
-// const logger = require("firebase-functions/logger");
-
-const {onDocumentUpdated} = require("firebase-functions/v2/firestore");
+const {
+  onDocumentUpdated,
+  onDocumentCreated,
+} = require("firebase-functions/v2/firestore");
 const {setGlobalOptions} = require("firebase-functions/v2");
+
 const handleNewReview = require("./notifications/onNewReview");
+const handleDuplicatedRecipe = require("./notifications/onDuplicatedRecipe");
 
 setGlobalOptions({region: "europe-west1", maxInstances: 10});
 // For cost control, you can set the maximum number of containers that can be
@@ -29,6 +30,11 @@ setGlobalOptions({region: "europe-west1", maxInstances: 10});
 exports.handleNewReview = onDocumentUpdated(
     "Recipes/{recipeId}",
     handleNewReview,
+);
+
+exports.handleDuplicatedRecipe = onDocumentCreated(
+    "Recipes/{recipeId}",
+    handleDuplicatedRecipe,
 );
 
 // Create and deploy your first functions
