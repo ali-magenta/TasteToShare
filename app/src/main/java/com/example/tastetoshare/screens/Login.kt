@@ -134,5 +134,27 @@ fun LoginRouteScreen(
         }
 
         Spacer(modifier = Modifier.height(32.dp))
+
+        Button(
+            onClick =
+                {
+                    SessionManager.CURRENT_LOGGED_IN_USER_ID = "102"
+                    onLoginClick()
+                },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Text(
+                text = "Login as other test account",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }

@@ -1,6 +1,8 @@
 package com.example.tastetoshare.services.notifications
 
+import android.util.Log
 import com.example.tastetoshare.SessionManager
+import com.example.tastetoshare.TasteToShareApp
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import kotlinx.coroutines.CoroutineScope
@@ -42,7 +44,8 @@ class TasteToShareMessagingService : FirebaseMessagingService() {
             type = NotificationType.valueOf(typeString),
             title = title,
             message = message,
-            targetId = targetId
+            targetId = targetId,
+            review = null,
         )
 
         CoroutineScope(Dispatchers.Main).launch {
@@ -51,5 +54,19 @@ class TasteToShareMessagingService : FirebaseMessagingService() {
     }
     override fun onNewToken(token: String) {
         super.onNewToken(token)
+        Log.d("FCM_DEBUG", "Token refresh : $token")
+
+        val userId = SessionManager.CURRENT_LOGGED_IN_USER_ID
+        if (userId != "unlogged") {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val app = application as TasteToShareApp
+                    app.container.userRepository.syncFcmToken(userId)
+                }
+                catch (e: Exception) {
+                    Log.e("FCM_DEBUG", "Token renew error", e)
+                }
+            }
+        }
     }
 }

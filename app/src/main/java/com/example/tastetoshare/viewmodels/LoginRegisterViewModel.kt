@@ -1,6 +1,7 @@
 package com.example.tastetoshare.viewmodels
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -16,6 +17,8 @@ import com.example.tastetoshare.data.entities.User
 import com.example.tastetoshare.navigation.AuthGraph
 import com.example.tastetoshare.repositories.TagRepository
 import com.example.tastetoshare.repositories.UserRepository
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -304,6 +307,7 @@ class LoginRegisterViewModel(
                         numberOfReviews = 0,
                     )
                 )
+                userRepository.syncFcmToken(newUserId)
             }
             SessionManager.CURRENT_LOGGED_IN_USER_ID = newUserId
 
@@ -319,7 +323,13 @@ class LoginRegisterViewModel(
 
         if (true/*TODO add actual input check once we have authentication      email.isNotBlank() && password.isNotBlank()*/) {
             viewModelScope.launch {
-                SessionManager.CURRENT_LOGGED_IN_USER_ID = "101"
+
+                // Change this by the fetch of the actual user from the database
+                // and update the SessionManager
+                if (SessionManager.CURRENT_LOGGED_IN_USER_ID == "unlogged") {
+                    SessionManager.CURRENT_LOGGED_IN_USER_ID = "101"
+                }
+                userRepository.syncFcmToken(SessionManager.CURRENT_LOGGED_IN_USER_ID)
 
                 _uiState.update { it.copy(
                     isLoginSuccessful = true,

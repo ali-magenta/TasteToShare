@@ -39,7 +39,7 @@ import kotlinx.coroutines.tasks.await
 
 
 object SessionManager {
-    var CURRENT_LOGGED_IN_USER_ID: String = "101"
+    var CURRENT_LOGGED_IN_USER_ID: String = "unlogged"
 }
 
 class AppContainer {
@@ -166,17 +166,11 @@ class MainActivity : ComponentActivity() {
     private fun fetchAndSaveFCMToken() {
         lifecycleScope.launch {
             try {
-                val token = Firebase.messaging.token.await()
-                Log.d("FCM_DEBUG", "Device token : $token")
-
                 val userId = SessionManager.CURRENT_LOGGED_IN_USER_ID
 
-                if (userId != null && userId != "unlogged") {
-                    val firestore = FirebaseFirestore.getInstance()
-                    firestore.collection("Users").document(userId)
-                        .update("fcmToken", token)
-                        .await()
-
+                if (userId != "unlogged") {
+                    val app = application as TasteToShareApp
+                    app.container.userRepository.syncFcmToken(userId)
                     Log.d("FCM_DEBUG", "Token synchronized at launch for user : $userId")
                 } else {
                     Log.d("FCM_DEBUG", "User not connected, token save on device.")
