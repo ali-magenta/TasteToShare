@@ -11,10 +11,13 @@ const {
   onDocumentUpdated,
   onDocumentCreated,
 } = require("firebase-functions/v2/firestore");
+
 const {setGlobalOptions} = require("firebase-functions/v2");
 
 const handleNewReview = require("./notifications/onNewReview");
 const handleDuplicatedRecipe = require("./notifications/onDuplicatedRecipe");
+const handleNewRecipePublished = require("./notifications/" +
+  "onNewRecipePublished");
 const sendWeeklyRecommendations = require("./notifications/" +
   "weeklyRecommendations");
 
@@ -37,6 +40,11 @@ exports.handleNewReview = onDocumentUpdated(
 exports.handleDuplicatedRecipe = onDocumentCreated(
     "Recipes/{recipeId}",
     handleDuplicatedRecipe,
+);
+
+exports.handleNewRecipePublished = onDocumentCreated(
+    "Recipes/{recipeId}",
+    handleNewRecipePublished,
 );
 
 exports.sendWeeklyRecommendations = sendWeeklyRecommendations;
