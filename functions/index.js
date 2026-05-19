@@ -15,6 +15,8 @@ const {setGlobalOptions} = require("firebase-functions/v2");
 
 const handleNewReview = require("./notifications/onNewReview");
 const handleDuplicatedRecipe = require("./notifications/onDuplicatedRecipe");
+const sendWeeklyRecommendations = require("./notifications/" +
+  "weeklyRecommendations");
 
 setGlobalOptions({region: "europe-west1", maxInstances: 10});
 // For cost control, you can set the maximum number of containers that can be
@@ -36,6 +38,8 @@ exports.handleDuplicatedRecipe = onDocumentCreated(
     "Recipes/{recipeId}",
     handleDuplicatedRecipe,
 );
+
+exports.sendWeeklyRecommendations = sendWeeklyRecommendations;
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
