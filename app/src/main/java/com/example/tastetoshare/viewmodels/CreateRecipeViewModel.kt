@@ -28,6 +28,7 @@ import com.example.tastetoshare.repositories.RecipeRepository
 import com.example.tastetoshare.repositories.TagRepository
 import com.example.tastetoshare.services.notifications.NotificationService
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -307,6 +308,8 @@ class CreateRecipeViewModel(
             setCalories(computedCalories)
 
             viewModelScope.launch {
+                _uiState.update { it.copy(isSaving = true) }
+                Log.d("STATE", "saving=${_uiState.value.isSaving}")
 
                 var newRecipe: Recipe
                 val recipeIdFromEdit = _uiState.value.recipeIdFromEdit
@@ -396,6 +399,8 @@ class CreateRecipeViewModel(
                 Log.d("debugRecipe", "Recipe saved $newRecipe")
 
                 isInitialized = false
+                _uiState.update { it.copy(isSaving = false) }
+                Log.d("STATE", "saving=${_uiState.value.isSaving}")
             }
         }
     }
@@ -662,6 +667,7 @@ class CreateRecipeViewModel(
 }
 
 data class CreateRecipeUIState(
+    val isSaving: Boolean = false,
     val recipeIdFromEdit: String? = null,
     val parentRecipeId: String? = null,
     val title: String = "",

@@ -49,6 +49,7 @@ dependencies {
     implementation (libs.androidx.camera.extensions1)
     implementation(libs.firebase.firestore)
     implementation("com.google.firebase:firebase-messaging:24.0.0")
+    implementation("com.google.firebase:firebase-storage:22.0.1")
     val navVersion = "2.8.1"
     implementation("androidx.navigation:navigation-compose:$navVersion")
     implementation("androidx.navigation:navigation-ui:$navVersion ")

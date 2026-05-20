@@ -2,28 +2,23 @@ package com.example.tastetoshare.repositories
 
 import android.util.Log
 import com.example.tastetoshare.data.FirebaseCollections
-import com.example.tastetoshare.data.entities.Ingredient
-import com.example.tastetoshare.data.entities.Recipe
 import com.example.tastetoshare.data.entities.User
-import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.snapshots
 import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.messaging.messaging
-import io.paperdb.Paper
-import kotlinx.coroutines.Dispatchers
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 import kotlin.collections.plus
+import androidx.core.net.toUri
 
 class FirebaseUserRepository(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    storage: FirebaseStorage
 ): UserRepository {
 
+    private val storageRef = storage.reference
     private val userCollection = firestore.collection(FirebaseCollections.USERS)
 
     suspend fun initializeData(users: List<User>) {
@@ -55,27 +50,36 @@ class FirebaseUserRepository(
         }
     }
 
-    override suspend fun updateUser(
-        user: User
-    ) {
+    override suspend fun updateUser(user: User) {
         try {
-            val ref = userCollection.document(user.userId)
-            firestore.runTransaction { transaction -> //Transactions in Firestore are designed to ensure data consistency by communicating with the server. Because of this, they require an active network connection and will fail immediately if the device is offline (e.g., in airplane mode). If this failure isn't caught, it causes the app to crash.
-                transaction.set(ref, user)
-            }.await()
+            val userWithPhotoUri = user.copy(
+                photoURI = uploadProfileImage(user.userId, user.photoURI?:"")
+            )
+            userCollection.document(userWithPhotoUri.userId).set(userWithPhotoUri).await()
         } catch (e: Exception) {
-            Log.e("FirebaseRepository", "Error addOrOverrideRecipe", e)
+            Log.e("FirebaseRepository", "Error updateUser", e)
         }
     }
 
     override suspend fun addUser(user: User) {
-        userCollection.document(user.userId).set( user )
-            .addOnSuccessListener {
-                Log.d("FirebaseRepository", "Success addUser")
-            }
-            .addOnFailureListener{ e->
-                Log.e("FirebaseRepository", "Error addUser", e)
-            }
+        try {
+            val userWithPhotoUri = user.copy(
+                photoURI = uploadProfileImage(user.userId, user.photoURI?:"")
+            )
+            userCollection.document(userWithPhotoUri.userId).set(userWithPhotoUri).await()
+            Log.d("FirebaseRepository", "Success addUser")
+        } catch (e: Exception){
+            Log.e("FirebaseRepository", "Error addUser", e)
+        }
+    }
+
+    suspend fun uploadProfileImage(userId: String, uri: String): String? {
+        if (uri == "") return null
+
+        val imageRef = storageRef.child("users/$userId/profile.jpg")
+        val fileUri = uri.toUri()
+        imageRef.putFile(fileUri).await()
+        return imageRef.downloadUrl.await().toString()
     }
 
     override suspend fun addSavedRecipe(userId: String, recipeId: String) {

@@ -8,8 +8,6 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
 import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.TasteToShareApp
@@ -166,8 +164,38 @@ class ProfileViewModel(
         }
     }
 
-    fun saveChanges() {
-        validateProfile()
+    fun saveChanges(onDone: (Boolean) -> Unit) {
+        val isValidForm = validateProfile()
+        if(isValidForm) {
+            viewModelScope.launch {
+                _uiState.update { it.copy(isSaving = true) }
+                userRepository.updateUser(
+                    User(
+                        userId = user.value.userId,
+                        fullName = _uiState.value.editedFullName ?: user.value.fullName,
+                        userName = _uiState.value.editedNickName ?: user.value.userName,
+                        email = user.value.email,
+                        role = _uiState.value.editedCookingRole ?: user.value.role,
+                        description = _uiState.value.editedBiography ?: user.value.description,
+                        photoURI = _uiState.value.editedPhoto ?: user.value.photoURI,
+                        preferences = if (_uiState.value.hasEditedTags)
+                            _uiState.value.editedTags
+                        else user.value.preferences,
+                        savedRecipeIds = user.value.savedRecipeIds,
+                        triedRecipeIds = user.value.triedRecipeIds,
+                        averageRating = user.value.averageRating,
+                        numberOfRatings = user.value.numberOfRatings,
+                        numberOfRecipeTriedByOthers = user.value.numberOfRecipeTriedByOthers,
+                        numberOfReviews = user.value.numberOfReviews,
+                    )
+                )
+
+                _uiState.update {
+                    it.copy(isSaving = false, password = _uiState.value.editedPassword)
+                }
+                onDone(true)
+            }
+        }
     }
 
     fun handlePhotoUri(uri:String) {
@@ -188,11 +216,9 @@ class ProfileViewModel(
         val newName = _uiState.value.editedFullName ?: user.value.fullName
         val newNickName = _uiState.value.editedNickName ?: user.value.userName
         val newBiography = _uiState.value.editedBiography ?: user.value.description
-        val newPhotoURI = _uiState.value.editedPhoto ?: user.value.photoURI
         val newTags = if(_uiState.value.hasEditedTags) {
             _uiState.value.editedTags
         } else user.value.preferences
-        val newRole = _uiState.value.editedCookingRole ?: user.value.role
         val newPassword = _uiState.value.editedPassword
 
         if(newName.isBlank()) {
@@ -243,34 +269,6 @@ class ProfileViewModel(
             )
         ) }
 
-
-        if(isValidForm) {
-            viewModelScope.launch {
-                //should add a try and catch in the future for db/connection errors
-                userRepository.updateUser(
-                    User(
-                        userId = user.value.userId,
-                        fullName = newName,
-                        userName = newNickName,
-                        email = user.value.email,
-                        role = newRole,
-                        description = newBiography,
-                        photoURI = newPhotoURI,
-                        preferences = newTags, //Ultimately the user should include a hash of its password
-                        savedRecipeIds = user.value.savedRecipeIds,
-                        triedRecipeIds = user.value.triedRecipeIds,
-                        averageRating = user.value.averageRating,
-                        numberOfRatings = user.value.numberOfRatings,
-                        numberOfRecipeTriedByOthers = user.value.numberOfRecipeTriedByOthers,
-                        numberOfReviews = user.value.numberOfReviews,
-                        )
-                )
-            }
-            //password update actually only happens here since for now it only lives in the viewModel
-            _uiState.update { it.copy(
-                password = newPassword,
-            ) }
-        }
         return isValidForm
     }
 
@@ -315,6 +313,7 @@ data class ProfileUIState(
     val isGalleryOpen: Boolean = false,
     val editedPassword: String = "temporaryPassword0",
     val password: String = "temporaryPassword0",
+    val isSaving: Boolean = false
 )
 
 

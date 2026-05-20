@@ -245,6 +245,7 @@ class RecipeDetailsViewModel(
         )
 
         viewModelScope.launch {
+            _uiState.update { it.copy(isSavingReview = true) }
             recipeRepository.addReview(currentRecipe.recipeId, review)
             // To change by a firebase script
 
@@ -264,6 +265,7 @@ class RecipeDetailsViewModel(
                 notificationRepository.addNotification(notification)
                 // notificationService.dispatchNotification(notification.toUi(currentRecipe))
             }
+            _uiState.update { it.copy(isSavingReview = false) }
         }
 
 
@@ -328,7 +330,8 @@ data class RecipeDetailsUIState(
     val isShowingDeleteReviewPopUp: Boolean = false,
     val reviewIdDelete: String = "",
     val reviewPhotoURL: String = "",
-    val currentPhotoReviewTarget: PhotoReviewTarget = PhotoReviewTarget.REVIEW_PHOTO
+    val currentPhotoReviewTarget: PhotoReviewTarget = PhotoReviewTarget.REVIEW_PHOTO,
+    val isSavingReview: Boolean = false
 )
 
 enum class PhotoReviewTarget {

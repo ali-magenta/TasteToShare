@@ -1,6 +1,7 @@
 package com.example.tastetoshare.repositories
 
 import android.util.Log
+import androidx.core.net.toUri
 import com.example.tastetoshare.data.Cost
 import com.example.tastetoshare.data.Difficulty
 import com.example.tastetoshare.data.FirebaseCollections
@@ -11,22 +12,21 @@ import com.example.tastetoshare.data.entities.Review
 import com.example.tastetoshare.data.entities.Tag
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.snapshots
-import io.paperdb.Paper
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 import kotlin.collections.plus
 
 class FirebaseRecipeRepository(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    storage: FirebaseStorage
 ): RecipeRepository {
 
+    private val storageRef = storage.reference
     private val recipeCollection = firestore.collection(FirebaseCollections.RECIPES)
 
     suspend fun initializeData(recipes: List<Recipe>) {
@@ -277,14 +277,50 @@ class FirebaseRecipeRepository(
         }
     }
 
-    override suspend fun addOrOverrideRecipe(recipe: Recipe) {
-        recipeCollection.document(recipe.recipeId).set( recipe )
-            .addOnSuccessListener {
-                Log.d("FirebaseRepository", "Success addOrOverrideRecipe")
+    override suspend fun addOrOverrideRecipe(recipe: Recipe) = withContext(Dispatchers.IO) {
+        try {
+            val photoURL = if (recipe.photoURL.startsWith("content://")) {
+                uploadRecipeImage(recipe.recipeId, recipe.photoURL)
+            } else {
+                recipe.photoURL
             }
-            .addOnFailureListener{ e->
-                Log.e("FirebaseRepository", "Error addOrOverrideRecipe", e)
+            val updatedSteps = recipe.steps.map { step ->
+                val updatedPhotoURL = step.photoURL?.let { url ->
+                    if (url.startsWith("content://")) {
+                        uploadStepImage(recipe.recipeId, step.stepId, url)
+                    } else {
+                        url
+                    }
+                }
+                step.copy(photoURL = updatedPhotoURL)
             }
+
+            val updatedRecipe = recipe.copy(
+                photoURL = photoURL,
+                steps = updatedSteps
+            )
+            recipeCollection.document(updatedRecipe.recipeId).set(updatedRecipe).await()
+
+            Log.d("FirebaseRepository", "Success addOrOverrideRecipe")
+
+        } catch (e: Exception) {
+            Log.e("FirebaseRepository", "Error addOrOverrideRecipe", e)
+            throw e
+        }
+    }
+
+    suspend fun uploadRecipeImage(recipeId: String, uri: String): String {
+        val imageRef = storageRef.child("recipes/$recipeId/recipe.jpg")
+        val fileUri = uri.toUri()
+        imageRef.putFile(fileUri).await()
+        return imageRef.downloadUrl.await().toString()
+    }
+
+    suspend fun uploadStepImage(recipeId: String, stepId: String, uri: String): String {
+        val imageRef = storageRef.child("recipes/$recipeId/steps/$stepId.jpg")
+        val fileUri = uri.toUri()
+        imageRef.putFile(fileUri).await()
+        return imageRef.downloadUrl.await().toString()
     }
 
     override suspend fun deleteRecipe(recipeId: String) {
@@ -299,15 +335,30 @@ class FirebaseRecipeRepository(
         review: Review
     ) {
         try {
+            val updatedReview = review.copy(
+                photosUrl = uploadReviewImages(review.reviewId, review.photosUrl)
+            )
             val ref = recipeCollection.document(recipeId)
             val snapshot = ref.get()
                 .await() // a simpler get().await() and update().await() combination. Unlike transactions, these operations are automatically queued by Firestore and synced to the server once the connection is restored, allowing them to work offline.
             val recipe= snapshot.toObject(Recipe::class.java)
             if(recipe != null){
-                ref.update(Recipe::reviews.name, recipe.reviews + review).await()
+                ref.update(Recipe::reviews.name, recipe.reviews + updatedReview).await()
             }
         } catch (e: Exception) {
             Log.e("FirebaseCatRepository", "Error toggling favorite", e)
+        }
+    }
+
+    private suspend fun uploadReviewImages(reviewId: String, photos: List<String>): List<String> {
+        return photos.mapIndexed { index, uri ->
+            if (uri.startsWith("content://")) {
+                val imageRef = storageRef.child("reviews/$reviewId/$index.jpg")
+                imageRef.putFile(uri.toUri()).await()
+                imageRef.downloadUrl.await().toString()
+            } else {
+                uri
+            }
         }
     }
 

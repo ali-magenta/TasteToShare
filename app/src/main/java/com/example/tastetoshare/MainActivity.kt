@@ -29,13 +29,13 @@ import com.example.tastetoshare.repositories.UserRepository
 import com.example.tastetoshare.ui.theme.TasteToShareTheme
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.messaging.messaging
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.storage
 import com.google.gson.Gson
 import io.paperdb.Paper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 
 object SessionManager {
@@ -46,6 +46,10 @@ class AppContainer {
 
     private val firestore: FirebaseFirestore by lazy {
         FirebaseFirestore.getInstance()
+    }
+
+    private val storage: FirebaseStorage by lazy {
+        Firebase.storage
     }
 
     //TODO("Implement registration with fireBase")
@@ -61,13 +65,13 @@ class AppContainer {
         FirebaseTagRepository(firestore)
     }
     val ingredientRepository: IngredientRepository by lazy {
-        FirebaseIngredientRepository(firestore)
+        FirebaseIngredientRepository(firestore, storage)
     }
     val userRepository: UserRepository by lazy {
-        FirebaseUserRepository(firestore)
+        FirebaseUserRepository(firestore, storage)
     }
     val recipeRepository: RecipeRepository by lazy {
-        FirebaseRecipeRepository(firestore)
+        FirebaseRecipeRepository(firestore, storage)
     }
     val notificationRepository: NotificationRepository by lazy {
         FirebaseNotificationRepository(firestore)

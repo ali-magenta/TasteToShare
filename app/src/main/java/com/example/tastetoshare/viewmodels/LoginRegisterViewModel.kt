@@ -1,7 +1,6 @@
 package com.example.tastetoshare.viewmodels
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -308,10 +307,9 @@ class LoginRegisterViewModel(
                     )
                 )
                 userRepository.syncFcmToken(newUserId)
+                SessionManager.CURRENT_LOGGED_IN_USER_ID = newUserId
+                _uiState.update { it.copy(password = password, isSignUpSuccessful = true) }
             }
-            SessionManager.CURRENT_LOGGED_IN_USER_ID = newUserId
-
-            _uiState.update { it.copy(password = password, isSignUpSuccessful = true) }
         }
 
         return isValidForm

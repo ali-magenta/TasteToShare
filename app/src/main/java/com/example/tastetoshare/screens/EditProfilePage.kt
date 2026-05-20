@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,7 +24,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -33,7 +35,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
@@ -92,8 +94,9 @@ fun EditProfileDestination(
         onRoleChange = viewModel::onRoleChanged,
         onPasswordChange =  viewModel::onPasswordChanged,
         saveChanges = {
-            viewModel.saveChanges()
-            onNavigateBack()
+            viewModel.saveChanges{ success ->
+                if (success) onNavigateBack()
+            }
         },
         goBack = onNavigateBack,
     )
@@ -177,7 +180,29 @@ fun EditProfilePage(
 
         }
 
-        SaveChangesButton(saveChanges)
+        SaveChangesButton(saveChanges, uiState.isSaving)
+    }
+    if (uiState.isSaving) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.padding(24.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(24.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    CircularProgressIndicator()
+                    Text("Saving changes...")
+                }
+            }
+        }
     }
 }
 
@@ -277,7 +302,7 @@ fun EditPersonalInformation(
         if(validation.fullNameError.isNotBlank()) {
             Text(validation.fullNameError, color = MaterialTheme.colorScheme.error)
         }
-        
+
         // Username
         Text(
             text = "Username",
@@ -587,9 +612,10 @@ fun EditRole(user: User, editedCookingRole: String?, onRoleChanged: (String) -> 
 }
 
 @Composable
-fun SaveChangesButton(saveChanges: () -> Unit) {
+fun SaveChangesButton(saveChanges: () -> Unit, saving: Boolean) {
     Button(
         onClick = saveChanges,
+        enabled = !saving,
         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
         colors = ButtonDefaults.buttonColors(
             disabledContainerColor = MaterialTheme.colorScheme.primary,
