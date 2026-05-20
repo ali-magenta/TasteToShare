@@ -13,6 +13,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.tastetoshare.data.WrapperDB
 import com.example.tastetoshare.navigation.AppNavigation
 import com.example.tastetoshare.repositories.FirebaseIngredientRepository
@@ -26,16 +27,19 @@ import com.example.tastetoshare.repositories.RecipeRepository
 import com.example.tastetoshare.repositories.TagRepository
 import com.example.tastetoshare.repositories.UserRepository
 import com.example.tastetoshare.ui.theme.TasteToShareTheme
+import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.messaging
 import com.google.gson.Gson
 import io.paperdb.Paper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 
 object SessionManager {
-    var CURRENT_LOGGED_IN_USER_ID: String = "101"
+    var CURRENT_LOGGED_IN_USER_ID: String = "unlogged"
 }
 
 class AppContainer {
@@ -126,6 +130,14 @@ class TasteToShareApp : Application() {
                 description = "Weekly recipe recommendations"
             }
 
+            val generalChannel = NotificationChannel(
+                "general_channel_id",
+                "General",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "General infos about the app"
+            }
+
             notificationManager.createNotificationChannels(listOf(socialChannel, recommendationChannel))        }
     }
 }
@@ -142,6 +154,7 @@ class MainActivity : ComponentActivity() {
                 REQUEST_CODE_PERMISSIONS
             )
         }
+        fetchAndSaveFCMToken()
         enableEdgeToEdge()
         setContent {
             TasteToShareTheme {
@@ -150,6 +163,24 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun fetchAndSaveFCMToken() {
+        lifecycleScope.launch {
+            try {
+                val userId = SessionManager.CURRENT_LOGGED_IN_USER_ID
+
+                if (userId != "unlogged") {
+                    val app = application as TasteToShareApp
+                    app.container.userRepository.syncFcmToken(userId)
+                    Log.d("FCM_DEBUG", "Token synchronized at launch for user : $userId")
+                } else {
+                    Log.d("FCM_DEBUG", "User not connected, token save on device.")
+                }
+
+            } catch (e: Exception) {
+                Log.e("FCM_DEBUG", "Token error", e)
+            }
+        }
+    }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(this, it) ==

@@ -5,8 +5,11 @@ import com.example.tastetoshare.data.FirebaseCollections
 import com.example.tastetoshare.data.entities.Ingredient
 import com.example.tastetoshare.data.entities.Recipe
 import com.example.tastetoshare.data.entities.User
+import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.snapshots
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.messaging
 import io.paperdb.Paper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -129,6 +132,20 @@ class FirebaseUserRepository(
             }
         } catch (e: Exception) {
             Log.e("FirebaseRepository", "Error deleteTriedRecipe", e)
+        }
+    }
+
+    override suspend fun syncFcmToken(userId: String) {
+        try {
+            val token = FirebaseMessaging.getInstance().token.await()
+            Log.d("FCM_DEBUG", "Device token: $token")
+
+            firestore.collection("Users").document(userId)
+                .update("fcmToken", token)
+                .await()
+            Log.d("FCM_DEBUG", "Token sync for $userId")
+        } catch (e: Exception) {
+            Log.e("FCM_DEBUG", "Token sync error", e)
         }
     }
 }

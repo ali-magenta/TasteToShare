@@ -132,5 +132,9 @@ class PaperDbUserRepository: UserRepository {
             }
         }
     }
+
+    override suspend fun syncFcmToken(userId: String) {
+        // Only there because of the interface
+    }
 }
 

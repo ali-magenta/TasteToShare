@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
 
+    implementation("com.google.firebase:firebase-messaging:24.0.0")
     val navVersion = "2.8.1"
     implementation("androidx.navigation:navigation-compose:$navVersion")
     implementation("androidx.navigation:navigation-ui:$navVersion ")

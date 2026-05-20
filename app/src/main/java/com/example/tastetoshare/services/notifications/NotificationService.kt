@@ -1,12 +1,15 @@
 package com.example.tastetoshare.services.notifications
 
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.example.tastetoshare.R
 import com.example.tastetoshare.data.NotificationType
 import com.example.tastetoshare.data.uiClasses.UINotification
 import com.example.tastetoshare.navigation.RecipeDetailsRoute
+import androidx.core.net.toUri
 
 class NotificationService(
     private val context: Context
@@ -23,23 +26,25 @@ class NotificationService(
     }
 
     private fun buildSnackbarEvent(notification: UINotification): SnackbarEvent {
+        val snackbarText = "${notification.message} (${notification.recipe.title})"
+
         return when (notification.type) {
             NotificationType.RECOMMENDED_RECIPE -> SnackbarEvent(
-                message = "We think you could enjoy: ${notification.recipe.title}",
+                message = snackbarText,
                 action = SnackbarAction(
                     name = "See recipe",
                     routeToNavigate = RecipeDetailsRoute(recipeId = notification.recipe.recipeId)
                 )
             )
             NotificationType.NEW_REVIEW -> SnackbarEvent(
-                message = "Someone reviewed your recipe: ${notification.recipe.title} ⭐️",
+                message = snackbarText,
                 action = SnackbarAction(
                     name = "See review",
-                    routeToNavigate = RecipeDetailsRoute(recipeId = notification.recipe.recipeId, focusReviewId = notification.targetId)
+                    routeToNavigate = RecipeDetailsRoute(recipeId = notification.recipe.recipeId, focusReviewId = notification.review?.reviewId)
                 )
             )
             NotificationType.DUPLICATED_RECIPE -> SnackbarEvent(
-                message = "Your recipe ${notification.recipe.title} was duplicated! 🔄",
+                message = snackbarText,
                 action = SnackbarAction(
                     name = "See recipe",
                     routeToNavigate = RecipeDetailsRoute(recipeId = notification.recipe.recipeId)
@@ -52,6 +57,7 @@ class NotificationService(
         val channel = when (notification.type) {
             NotificationType.NEW_REVIEW, NotificationType.DUPLICATED_RECIPE -> "social_channel_id"
             NotificationType.RECOMMENDED_RECIPE -> "recommendations_channel_id"
+            else -> "general_channel_id"
         }
 
         val icon = when (notification.type) {
@@ -60,11 +66,24 @@ class NotificationService(
             NotificationType.RECOMMENDED_RECIPE -> R.drawable.pan_pot
         }
 
+        val uri = (
+                "app://tastetoshare/recipe/${notification.recipe.recipeId}" +
+                        notification.review?.let { "?focusReviewId=${it.reviewId}" }.orEmpty()
+                ).toUri()
+
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            uri
+        )
+        val pendingIntent: PendingIntent =
+            PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
         val notificationBuilder = NotificationCompat.Builder(context, channel)
             .setSmallIcon(icon)
             .setContentTitle(notification.title)
             .setContentText(notification.message)
             .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
 
         notificationManager.notify(notification.notificationId.hashCode(), notificationBuilder.build())
     }

@@ -12,6 +12,7 @@ data class Notification @OptIn(ExperimentalUuidApi::class) constructor(
     val creationDate: Long = System.currentTimeMillis(),
     val userId: String = "",
     val recipeId: String = "",
+    val reviewId: String? = null,
     val type: NotificationType = NotificationType.RECOMMENDED_RECIPE,
     val title: String = "",
     val message: String = "",
