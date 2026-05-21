@@ -370,6 +370,18 @@ class FirebaseRecipeRepository(
             val recipe= snapshot.toObject(Recipe::class.java)
             if(recipe != null){
                 ref.update(Recipe::reviews.name, recipe.reviews.filter { it.reviewId != reviewId }).await()
+
+                val folderRef = storageRef.child("reviews/$reviewId")
+                val files = folderRef.listAll().await()
+
+                try {
+                    files.items.forEach { fileRef ->
+                        fileRef.delete().await()
+                    }
+                } catch (e: Exception) {
+                    Log.e("FirebaseStorage", "Failed deleting review images", e)
+                }
+
             }
         } catch (e: Exception) {
             Log.e("FirebaseCatRepository", "Error toggling favorite", e)

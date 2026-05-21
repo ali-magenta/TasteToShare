@@ -182,6 +182,7 @@ fun SignUpScreen(
         ) {
             Button(
                 onClick = onCreateAccount,
+                enabled = !uiState.isCreatingAccount,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -217,6 +218,28 @@ fun SignUpScreen(
                 textAlign = TextAlign.Center,
                 lineHeight = 18.sp
             )
+        }
+    }
+    if (uiState.isCreatingAccount) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.padding(24.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(24.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    CircularProgressIndicator()
+                    Text("Saving review...")
+                }
+            }
         }
     }
 }
