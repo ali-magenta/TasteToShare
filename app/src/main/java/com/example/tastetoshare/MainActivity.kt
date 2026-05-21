@@ -28,6 +28,8 @@ import com.example.tastetoshare.repositories.TagRepository
 import com.example.tastetoshare.repositories.UserRepository
 import com.example.tastetoshare.ui.theme.TasteToShareTheme
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.messaging
 import com.google.gson.Gson
@@ -48,15 +50,6 @@ class AppContainer {
         FirebaseFirestore.getInstance()
     }
 
-    //TODO("Implement registration with fireBase")
-//    private val credentialManager: CredentialManager by lazy {
-//        CredentialManager.create(context)
-//    }
-
-//val authRepository: AuthRepository by lazy {
-//    FirebaseAuthRepository(Firebase.auth, credentialManager)
-//}
-
     val tagRepository: TagRepository by lazy {
         FirebaseTagRepository(firestore)
     }
@@ -76,6 +69,7 @@ class AppContainer {
 
 class TasteToShareApp : Application() {
     lateinit var container: AppContainer
+    lateinit var auth: FirebaseAuth
 
     override fun onCreate() {
         super.onCreate()
@@ -86,7 +80,7 @@ class TasteToShareApp : Application() {
         val wrapperDB = Gson().fromJson(jsonString, WrapperDB::class.java)
 
         container = AppContainer()
-        // auth = Firebase.auth
+        auth = Firebase.auth
 
 
         // Initialize Firebase data if necessary

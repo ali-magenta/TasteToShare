@@ -37,6 +37,7 @@ import com.example.tastetoshare.screens.RecipeListDestination
 import com.example.tastetoshare.screens.SavedRecipeDestination
 import com.example.tastetoshare.screens.ShoppingListDestination
 import com.example.tastetoshare.screens.components.DynamicTopBar
+import com.example.tastetoshare.screens.LoginDialogDestination
 import com.example.tastetoshare.screens.components.TasteToShareBottomBar
 import com.example.tastetoshare.services.notifications.SnackbarController
 import com.example.tastetoshare.ui.screens.PictureScreenDestination
@@ -210,6 +211,7 @@ fun AppNavigation() {
                     onNavigateToDetails = { recipeId ->
                         navActions.navigateToRecipeDetails(recipeId)
                     },
+                    onAuthRequired = navActions::navigateToLoginDialog
                 )
             }
 
@@ -255,6 +257,14 @@ fun AppNavigation() {
                     onNavigateToRecipeDetails = { recipeId ->
                         navActions.navigateToRecipeDetails(recipeId)
                     },
+                    onAuthRequired = navActions::navigateToLoginDialog
+                )
+            }
+
+            dialog<LoginDialogRoute> {
+                LoginDialogDestination(
+                    onDismiss = {navCtrl.popBackStack()},
+                    onLoginSuccess = {navCtrl.popBackStack()}
                 )
             }
         }

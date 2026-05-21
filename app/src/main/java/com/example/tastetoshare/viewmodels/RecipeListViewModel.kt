@@ -14,6 +14,7 @@ import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.TasteToShareApp
 import com.example.tastetoshare.data.Cost
 import com.example.tastetoshare.data.Difficulty
+import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.entities.Ingredient
 import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.data.entities.Tag
@@ -195,15 +196,20 @@ class RecipeListViewModel(
         _uiState.update { it.copy(selectedDietary = dietary)}
     }
 
-    fun onToggleSaved(recipeId: String) {
-        viewModelScope.launch {
-            val currentlySaved = recipeId in (savedIds.value)
-            if (currentlySaved) {
-                userRepository.deleteSavedRecipe(loggedUserId ?: "", recipeId)
-            } else {
-                userRepository.addSavedRecipe(loggedUserId ?: "", recipeId)
-            }
+    fun onToggleSaved(recipeId: String, onAuthRequired: () -> Unit) {
+        if (SessionManagerFacade.isLoggedIn) {
+            viewModelScope.launch {
+                val currentlySaved = recipeId in (savedIds.value)
+                if (currentlySaved) {
+                    userRepository.deleteSavedRecipe(loggedUserId ?: "", recipeId)
+                } else {
+                    userRepository.addSavedRecipe(loggedUserId ?: "", recipeId)
+                }
 
+            }
+        }
+        else {
+            onAuthRequired()
         }
     }
 

@@ -34,6 +34,7 @@ class AppNavigationActions(private val navCtrl: NavController) {
     fun navigateToHomeFromAuth() = navCtrl.navigate(HomeRoute) {
         popUpTo<AuthGraph> { inclusive = true }
     }
+    fun navigateToLoginDialog() = navCtrl.navigate(LoginDialogRoute)
     fun returnUri(uri: String) {
         navCtrl.previousBackStackEntry
             ?.savedStateHandle

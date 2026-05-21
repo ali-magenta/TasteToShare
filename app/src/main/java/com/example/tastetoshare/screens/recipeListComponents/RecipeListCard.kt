@@ -38,7 +38,12 @@ import com.example.tastetoshare.R
 import com.example.tastetoshare.data.entities.RawRecipePreview
 
 @Composable
-fun RecipeListCard(recipe: RawRecipePreview, onSaveClick: (String) -> Unit, showUnsavePopUp: (() -> Unit)?) {
+fun RecipeListCard(
+    recipe: RawRecipePreview,
+    onSaveClick: (String, () -> Unit) -> Unit,
+    showUnsavePopUp: (() -> Unit)?,
+    onAuthRequired: () -> Unit
+) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -91,7 +96,7 @@ fun RecipeListCard(recipe: RawRecipePreview, onSaveClick: (String) -> Unit, show
                             enabled = true,
                             onClick = {
                                 if(recipe.isSaved && showUnsavePopUp != null) showUnsavePopUp()
-                                else onSaveClick(recipe.recipeId)}
+                                else onSaveClick(recipe.recipeId, onAuthRequired)}
                         )
                     )
                 }

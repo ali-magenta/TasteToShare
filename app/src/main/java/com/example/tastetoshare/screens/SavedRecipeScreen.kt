@@ -57,6 +57,7 @@ import com.example.tastetoshare.viewmodels.SavedTriedViewModel
 @Composable
 fun SavedRecipeDestination(
     onNavigateToRecipeDetails: (recipeId: String) -> Unit,
+    onAuthRequired: () -> Unit,
     viewModel: SavedTriedViewModel = viewModel(factory = SavedTriedViewModel.Factory)
 ) {
 
@@ -74,6 +75,7 @@ fun SavedRecipeDestination(
         onToggleSaved = viewModel::onToggleSaved,
         hideUnsavePopUp = viewModel::hideUnsavePopUp,
         showUnsavePopUp = viewModel::showUnsavePopUp,
+        onAuthRequired = onAuthRequired
     )
 }
 
@@ -85,10 +87,11 @@ fun SavedTriedScreen(
     uiState: SavedTriedUIState,
     onSearchTextChanged: (String) -> Unit,
     onNavigateToDetails: (String) -> Unit,
-    onToggleSaved: (String) -> Unit,
+    onToggleSaved: (String, () -> Unit) -> Unit,
     onTabSelected: (Int) -> Unit,
     hideUnsavePopUp: () -> Unit,
-    showUnsavePopUp: (String) -> Unit
+    showUnsavePopUp: (String) -> Unit,
+    onAuthRequired: () -> Unit
 ) {
     val tabs = listOf("Saved", "Tried")
     val currentRecipes = if (uiState.selectedTabIndex == 0) savedRecipes else triedRecipes
@@ -174,7 +177,7 @@ fun SavedTriedScreen(
                             .clickable { onNavigateToDetails(recipe.recipeId) }
                             .animateItem()
                     ) {
-                        RecipeListCard(recipe, onToggleSaved, {showUnsavePopUp(recipe.recipeId)})
+                        RecipeListCard(recipe, onToggleSaved, {showUnsavePopUp(recipe.recipeId)}, onAuthRequired)
                     }
                 }
             }
@@ -186,7 +189,7 @@ fun SavedTriedScreen(
         }
 
         if (uiState.isShowingUnsavePopUp) {
-            UnsavePopup(onToggleSaved, hideUnsavePopUp, uiState.recipeToUnsave)
+            UnsavePopup(onToggleSaved, hideUnsavePopUp, uiState.recipeToUnsave, onAuthRequired)
         }
     }
 }
@@ -217,9 +220,10 @@ fun SearchSavedRecipeBar(searchText: String, onSearchRecipe: (String) -> Unit) {
 
 @Composable
 fun UnsavePopup(
-    unsaveRecipe: (String) -> Unit,
+    unsaveRecipe: (String, () -> Unit) -> Unit,
     hideUnsavePopUp: () -> Unit,
-    recipeId: String
+    recipeId: String,
+    onAuthRequired: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -274,7 +278,7 @@ fun UnsavePopup(
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         ),
                         onClick = {
-                            unsaveRecipe(recipeId)
+                            unsaveRecipe(recipeId, onAuthRequired)
                         },
                     ) {
                         Text("Yes")

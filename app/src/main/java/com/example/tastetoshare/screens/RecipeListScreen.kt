@@ -59,6 +59,7 @@ import com.example.tastetoshare.screens.recipeListComponents.RecipeListCard
 @Composable
 fun RecipeListDestination(
     onNavigateToDetails: (recipeId: String) -> Unit,
+    onAuthRequired: () -> Unit,
     viewModel: RecipeListViewModel = viewModel(factory = RecipeListViewModel.Factory)
 ) {
 
@@ -83,7 +84,8 @@ fun RecipeListDestination(
         onDietarySelected = viewModel::onDietarySelected,
         onNavigateToDetails = onNavigateToDetails,
         onToggleSaved = viewModel::onToggleSaved,
-        userId = uiState.userId
+        userId = uiState.userId,
+        onAuthRequired = onAuthRequired
     )
 }
 
@@ -104,7 +106,8 @@ fun RecipeListScreen(
     onDietarySelected: (Tag?) -> Unit,
     onNavigateToDetails: (String) -> Unit,
     userId: String?,
-    onToggleSaved: (String) -> Unit
+    onToggleSaved: (String, () -> Unit) -> Unit,
+    onAuthRequired: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -160,7 +163,7 @@ fun RecipeListScreen(
                         .clickable { onNavigateToDetails(recipe.recipeId) }
                         .animateItem()
                 ) {
-                    RecipeListCard(recipe, onToggleSaved, null)
+                    RecipeListCard(recipe, onToggleSaved, null, onAuthRequired)
                 }
             }
 

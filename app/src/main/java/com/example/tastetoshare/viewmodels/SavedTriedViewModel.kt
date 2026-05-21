@@ -12,6 +12,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
 import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.TasteToShareApp
+import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.data.entities.User
 import com.example.tastetoshare.navigation.SavedRecipeRoute
@@ -99,15 +100,19 @@ class SavedTriedViewModel(
         _uiState.update { it.copy(selectedTabIndex = index) }
     }
 
-    fun onToggleSaved(recipeId: String) {
+    fun onToggleSaved(recipeId: String, onAuthRequired: () -> Unit) {
         val currentlySaved = recipeId in loggedInUser.value.savedRecipeIds
-        viewModelScope.launch {
-            if (currentlySaved) {
-                userRepository.deleteSavedRecipe(loggedUserId ?: "", recipeId)
-            } else {
-                userRepository.addSavedRecipe(loggedUserId ?: "", recipeId)
+        if (SessionManagerFacade.isLoggedIn) {
+            viewModelScope.launch {
+                if (currentlySaved) {
+                    userRepository.deleteSavedRecipe(loggedUserId ?: "", recipeId)
+                } else {
+                    userRepository.addSavedRecipe(loggedUserId ?: "", recipeId)
+                }
             }
-
+        }
+        else {
+            onAuthRequired()
         }
         if (currentlySaved) hideUnsavePopUp()
     }
