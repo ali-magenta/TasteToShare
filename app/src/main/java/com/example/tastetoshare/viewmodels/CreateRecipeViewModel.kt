@@ -293,6 +293,7 @@ class CreateRecipeViewModel(
             _uiState.update { it.copy(hasErrors = true) }
         }
         else{
+            _uiState.update { it.copy(isSaving = true) }
             // Compute calories before saving
             var computedCalories: Int? = 0
             for (recipeIngredient in _uiState.value.recipeIngredients) {
@@ -308,12 +309,12 @@ class CreateRecipeViewModel(
             setCalories(computedCalories)
 
             viewModelScope.launch {
-                _uiState.update { it.copy(isSaving = true) }
                 Log.d("STATE", "saving=${_uiState.value.isSaving}")
 
                 var newRecipe: Recipe
                 val recipeIdFromEdit = _uiState.value.recipeIdFromEdit
                 if(recipeIdFromEdit != null){
+                    Log.d("parent recipe when editing", "_uiState.value.parentRecipeId=${_uiState.value.parentRecipeId}")
                     // 1 : Edited
                     val recipe = recipeRepository.getRecipeById(recipeIdFromEdit).first()
                     newRecipe = Recipe(
@@ -367,7 +368,7 @@ class CreateRecipeViewModel(
                 }
 
                 recipeRepository.addOrOverrideRecipe(newRecipe)
-                _uiState.update { it.copy(savedRecipeId = newRecipe.recipeId) }
+                //_uiState.update { it.copy(savedRecipeId = newRecipe.recipeId) }
                 newRecipe.ingredients.forEach {
                     if(it.ingredient.isUserCreated){
                         ingredientRepository.addOrOverrideIngredient(it.ingredient)
@@ -399,7 +400,7 @@ class CreateRecipeViewModel(
                 Log.d("debugRecipe", "Recipe saved $newRecipe")
 
                 isInitialized = false
-                _uiState.update { it.copy(isSaving = false) }
+                _uiState.update { it.copy(savedRecipeId = newRecipe.recipeId, isSaving = false) }
                 Log.d("STATE", "saving=${_uiState.value.isSaving}")
             }
         }

@@ -23,7 +23,7 @@ import kotlin.collections.plus
 
 class FirebaseRecipeRepository(
     private val firestore: FirebaseFirestore,
-    storage: FirebaseStorage
+    private val storage: FirebaseStorage
 ): RecipeRepository {
 
     private val storageRef = storage.reference
@@ -278,39 +278,118 @@ class FirebaseRecipeRepository(
     }
 
     override suspend fun addOrOverrideRecipe(recipe: Recipe) = withContext(Dispatchers.IO) {
+        Log.d("CLONED FROM", "${recipe.originalRecipeId}")
+        var uploadedRecipeImageUrl: String? = null
+        val uploadedStepImages = mutableListOf<Pair<String, String>>()
         try {
-            val photoURL = if (recipe.photoURL.startsWith("content://")) {
-                uploadRecipeImage(recipe.recipeId, recipe.photoURL)
-            } else {
-                recipe.photoURL
-            }
-            val updatedSteps = recipe.steps.map { step ->
-                val updatedPhotoURL = step.photoURL?.let { url ->
-                    if (url.startsWith("content://")) {
-                        uploadStepImage(recipe.recipeId, step.stepId, url)
-                    } else {
-                        url
+
+            val currentRecipe = recipeCollection.document(recipe.recipeId).get().await().toObject(Recipe::class.java)
+            val photoUrl: String = when {
+                recipe.photoURL.startsWith("content://") -> {
+                    uploadRecipeImage(recipe.recipeId, recipe.photoURL).also {
+                        uploadedRecipeImageUrl = it
                     }
                 }
+
+                recipe.photoURL.startsWith("http") && currentRecipe == null  -> {
+                    val oldRef = storage.getReferenceFromUrl(recipe.photoURL)
+                    val newRef = storage.reference.child(
+                        "recipes/${recipe.recipeId}/recipe_${System.currentTimeMillis()}.jpg"
+                    )
+
+                    val stream = oldRef.stream.await().stream
+                    newRef.putStream(stream).await()
+
+                    newRef.downloadUrl.await().toString()
+                }
+
+                else -> recipe.photoURL
+            }
+
+            val updatedSteps = recipe.steps.map { step ->
+                val updatedPhotoURL = step.photoURL?.let { url ->
+                    when {
+                        url.startsWith("content://") -> {
+                            uploadStepImage(recipe.recipeId, step.stepId, url).also { uploadedUrl ->
+                                uploadedStepImages.add(step.stepId to uploadedUrl)
+                            }
+                        }
+
+                        url.startsWith("http") && currentRecipe == null -> {
+                            val oldRef = storage.getReferenceFromUrl(url)
+                            val newRef = storage.reference.child(
+                                "recipes/${recipe.recipeId}/steps/${step.stepId}.jpg"
+                            )
+
+                            val stream = oldRef.stream.await().stream
+                            newRef.putStream(stream).await()
+
+                            newRef.downloadUrl.await().toString()
+                        }
+
+                        else -> url
+                    }
+                }
+
                 step.copy(photoURL = updatedPhotoURL)
             }
 
             val updatedRecipe = recipe.copy(
-                photoURL = photoURL,
-                steps = updatedSteps
+                photoURL = photoUrl,
+                steps = updatedSteps,
+                originalRecipeId = currentRecipe?.originalRecipeId
             )
             recipeCollection.document(updatedRecipe.recipeId).set(updatedRecipe).await()
+
+            // clean up old photo if photo has changed
+            if (currentRecipe?.photoURL != null &&
+                currentRecipe.photoURL != updatedRecipe.photoURL
+            ) {
+                deleteRecipeImage(currentRecipe.photoURL)
+            }
+
+            // clean up old steps photos if they have changed
+            currentRecipe?.steps?.forEach { oldStep ->
+                val newStep = updatedRecipe.steps.find { it.stepId == oldStep.stepId }
+                val oldUrl = oldStep.photoURL
+                val newUrl = newStep?.photoURL
+
+                if (!oldUrl.isNullOrBlank() && oldUrl != newUrl) {
+                    deleteRecipeImage(oldUrl)
+                }
+            }
+
 
             Log.d("FirebaseRepository", "Success addOrOverrideRecipe")
 
         } catch (e: Exception) {
             Log.e("FirebaseRepository", "Error addOrOverrideRecipe", e)
-            throw e
+            try {
+                if (uploadedRecipeImageUrl != null) deleteRecipeImage(uploadedRecipeImageUrl)
+
+                uploadedStepImages.forEach { (_, url) ->
+                    deleteRecipeImage(url)
+                }
+            } catch (e: Exception) {
+                Log.e("FirebaseRepository", "Cleanup failed", e)
+            }
+            //throw e
+        }
+    }
+
+    suspend fun deleteRecipeImage(photoUrl: String?) {
+        if (photoUrl.isNullOrBlank()) return
+        try {
+            val imageRef = storage.getReferenceFromUrl(photoUrl)
+            imageRef.delete().await()
+        } catch (e: Exception) {
+            Log.e("FirebaseStorage", "Failed to delete image", e)
+            //throw e
         }
     }
 
     suspend fun uploadRecipeImage(recipeId: String, uri: String): String {
-        val imageRef = storageRef.child("recipes/$recipeId/recipe.jpg")
+        val imageRef = storageRef.child("recipes/$recipeId/recipe${System.currentTimeMillis()}.jpg")
         val fileUri = uri.toUri()
         imageRef.putFile(fileUri).await()
         return imageRef.downloadUrl.await().toString()
@@ -324,10 +403,27 @@ class FirebaseRecipeRepository(
     }
 
     override suspend fun deleteRecipe(recipeId: String) {
-        recipeCollection.document(recipeId)
-            .delete()
-            .addOnSuccessListener { Log.d("delete", "DocumentSnapshot successfully deleted!") }
-            .addOnFailureListener { e -> Log.w("delete", "Error deleting document", e) }
+        try {
+            val recipe = recipeCollection.document(recipeId).get().await().toObject(Recipe::class.java)
+
+            //delete recipe photo
+            if (recipe?.photoURL != null) deleteRecipeImage(recipe.photoURL)
+
+            //delete steps photos
+            recipe?.steps?.forEach { step ->
+                step.photoURL?.let { url ->
+                    deleteRecipeImage(url)
+                }
+            }
+
+            recipeCollection.document(recipeId).delete().await()
+
+            Log.d("deleteRecipe", "Recipe and images successfully deleted")
+
+        } catch (e: Exception) {
+            Log.e("deleteRecipe", "Error deleting recipe", e)
+            //throw e
+        }
     }
 
     override suspend fun addReview(
