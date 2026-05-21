@@ -15,7 +15,7 @@ import androidx.core.net.toUri
 
 class FirebaseUserRepository(
     private val firestore: FirebaseFirestore,
-    storage: FirebaseStorage
+    private val storage: FirebaseStorage
 ): UserRepository {
 
     private val storageRef = storage.reference
@@ -52,34 +52,67 @@ class FirebaseUserRepository(
 
     override suspend fun updateUser(user: User) {
         try {
-            val userWithPhotoUri = user.copy(
-                photoURI = uploadProfileImage(user.userId, user.photoURI?:"")
+            val photoURL = if (user.photoURI?.startsWith("content://") ?: false) {
+                uploadProfileImage(user.userId, user.photoURI)
+            } else {
+                user.photoURI
+            }
+            val userWithPhotoUrl = user.copy(
+                photoURI = photoURL
             )
-            userCollection.document(userWithPhotoUri.userId).set(userWithPhotoUri).await()
+
+            val currentUser = userCollection.document(user.userId).get().await().toObject(User::class.java)
+
+            userCollection.document(userWithPhotoUrl.userId).set(userWithPhotoUrl).await()
+            if (currentUser?.photoURI != userWithPhotoUrl.photoURI && currentUser?.photoURI != null){
+                deleteProfileImage(currentUser.photoURI)
+                Log.e("FirebaseRepository", "Photo profile cleanup after update")
+            }
         } catch (e: Exception) {
             Log.e("FirebaseRepository", "Error updateUser", e)
+            //throw e
         }
     }
 
     override suspend fun addUser(user: User) {
+        var uploadedPhotoUrl: String? = null
         try {
-            val userWithPhotoUri = user.copy(
-                photoURI = uploadProfileImage(user.userId, user.photoURI?:"")
-            )
-            userCollection.document(userWithPhotoUri.userId).set(userWithPhotoUri).await()
+            uploadedPhotoUrl = if (user.photoURI?.startsWith("content://") == true) {
+                uploadProfileImage(user.userId, user.photoURI)
+            } else {
+                user.photoURI
+            }
+            val userWithPhoto = user.copy(photoURI = uploadedPhotoUrl)
+
+            userCollection.document(userWithPhoto.userId).set(userWithPhoto).await()
             Log.d("FirebaseRepository", "Success addUser")
         } catch (e: Exception){
+            if (!uploadedPhotoUrl.isNullOrBlank()) {
+                deleteProfileImage(uploadedPhotoUrl)
+                Log.e("Firebase Storage", "Profile Photo Cleanup")
+            }
             Log.e("FirebaseRepository", "Error addUser", e)
+            //throw e
         }
     }
 
     suspend fun uploadProfileImage(userId: String, uri: String): String? {
         if (uri == "") return null
 
-        val imageRef = storageRef.child("users/$userId/profile.jpg")
+        val imageRef = storageRef.child("users/$userId/profile_${System.currentTimeMillis()}.jpg")
         val fileUri = uri.toUri()
         imageRef.putFile(fileUri).await()
         return imageRef.downloadUrl.await().toString()
+    }
+
+    suspend fun deleteProfileImage(photoUrl: String?) {
+        if (photoUrl.isNullOrBlank()) return
+        try {
+            val imageRef = storage.getReferenceFromUrl(photoUrl)
+            imageRef.delete().await()
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     override suspend fun addSavedRecipe(userId: String, recipeId: String) {
