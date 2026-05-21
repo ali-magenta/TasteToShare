@@ -1,7 +1,6 @@
 package com.example.tastetoshare.viewmodels
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -289,6 +288,7 @@ class LoginRegisterViewModel(
             val newUserId = Uuid.random().toString()
 
             viewModelScope.launch {
+                _uiState.update { it.copy(isCreatingAccount = true)}
                 userRepository.addUser(
                     User(
                         userId =newUserId,
@@ -308,10 +308,9 @@ class LoginRegisterViewModel(
                     )
                 )
                 userRepository.syncFcmToken(newUserId)
+                SessionManager.CURRENT_LOGGED_IN_USER_ID = newUserId
+                _uiState.update { it.copy(password = password, isCreatingAccount = false, isSignUpSuccessful = true) }
             }
-            SessionManager.CURRENT_LOGGED_IN_USER_ID = newUserId
-
-            _uiState.update { it.copy(password = password, isSignUpSuccessful = true) }
         }
 
         return isValidForm
@@ -379,6 +378,7 @@ data class LoginRegisterUIState(
     val editedPhoto: String? = null,
     val editedCookingRole: String = "",
     val validation: LoginRegisterFormValidation = LoginRegisterFormValidation(),
+    val isCreatingAccount: Boolean = false,
     val isSignUpSuccessful: Boolean = false,
     val isLoginSuccessful: Boolean = false,
 

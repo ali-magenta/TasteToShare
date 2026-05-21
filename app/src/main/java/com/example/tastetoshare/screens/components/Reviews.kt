@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -35,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -63,6 +61,7 @@ fun Reviews(
     onSetPhotoReviewTarget: (PhotoReviewTarget) -> Unit,
     onNavigateToPictureDialog: (Boolean) -> Unit,
     focusReviewId: String? = null,
+    isSavingReview: Boolean,
 ) {
     val listState = rememberLazyListState()
 
@@ -116,7 +115,8 @@ fun Reviews(
                         onAddReview,
                         reviewPhotoUrl,
                         onSetPhotoReviewTarget,
-                        onNavigateToPictureDialog
+                        onNavigateToPictureDialog,
+                        isSavingReview
                     )
                 }
             }
@@ -137,6 +137,7 @@ fun InputReviewCard(
     reviewPhotoUrl: String,
     onSetPhotoReviewTarget: (PhotoReviewTarget) -> Unit,
     onNavigateToPictureDialog: (Boolean) -> Unit,
+    isSavingReview: Boolean,
     modifier: Modifier = Modifier) {
     //val reviewSafe = review ?: ""
 
@@ -208,6 +209,7 @@ fun InputReviewCard(
                 )
                 Button(
                     onClick = onAddReview,
+                    enabled = !isSavingReview,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(8.dp)

@@ -236,11 +236,12 @@ class PaperDbRecipeRepository: RecipeRepository {
         }
     }
 
-    override suspend fun addOrOverrideRecipe(recipe: Recipe) {
+    override suspend fun addOrOverrideRecipe(recipe: Recipe): Int {
         withContext(Dispatchers.IO){
             Paper.book(bookName).write(recipe.recipeId, recipe)
             _recipes.update {currentList-> if (recipe.recipeId in currentList.map{it.recipeId}) currentList.filter{it.recipeId != recipe.recipeId} + recipe else  currentList + recipe}
         }
+        return 0
     }
 
     override suspend fun deleteRecipe(recipeId: String) {

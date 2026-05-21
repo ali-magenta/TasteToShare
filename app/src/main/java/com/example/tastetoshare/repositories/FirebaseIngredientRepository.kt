@@ -1,10 +1,12 @@
 package com.example.tastetoshare.repositories
 
 import android.util.Log
+import androidx.core.net.toUri
 import com.example.tastetoshare.data.FirebaseCollections
 import com.example.tastetoshare.data.entities.Ingredient
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.snapshots
+import com.google.firebase.storage.FirebaseStorage
 import io.paperdb.Paper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -16,9 +18,11 @@ import kotlin.collections.map
 import kotlin.collections.plus
 
 class FirebaseIngredientRepository(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    storage: FirebaseStorage
 ): IngredientRepository {
 
+    private val storageRef = storage.reference
     private val ingredientCollection = firestore.collection(FirebaseCollections.INGREDIENTS)
 
     suspend fun initializeData(ingredients: List<Ingredient>) {
@@ -65,13 +69,28 @@ class FirebaseIngredientRepository(
 
     override suspend fun addOrOverrideIngredient(ingredient: Ingredient) {
         try {
-            val ref = ingredientCollection.document(ingredient.ingredientId)
+            val photoURL = if (ingredient.photoURL != null && ingredient.photoURL.startsWith("content://")) {
+                uploadIngredientImage(ingredient.ingredientId, ingredient.photoURL)
+            } else {
+                ingredient.photoURL
+            }
+            val updatedIngredient = ingredient.copy(
+                photoURL = photoURL
+            )
+            val ref = ingredientCollection.document(updatedIngredient.ingredientId)
             firestore.runTransaction { transaction -> //Transactions in Firestore are designed to ensure data consistency by communicating with the server. Because of this, they require an active network connection and will fail immediately if the device is offline (e.g., in airplane mode). If this failure isn't caught, it causes the app to crash.
-                transaction.set(ref, ingredient)
+                transaction.set(ref, updatedIngredient)
             }.await()
         } catch (e: Exception) {
             Log.e("FirebaseRepository", "Error addOrOverrideIngredient", e)
         }
+    }
+
+    suspend fun uploadIngredientImage(ingredientId: String, uri: String): String {
+        val imageRef = storageRef.child("ingredients/$ingredientId/ingredient.jpg")
+        val fileUri = uri.toUri()
+        imageRef.putFile(fileUri).await()
+        return imageRef.downloadUrl.await().toString()
     }
 
     override suspend fun deleteIngredient(ingredientId: String) {
