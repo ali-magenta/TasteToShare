@@ -26,7 +26,7 @@ import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
-import com.example.tastetoshare.SessionManager
+import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.screens.EditProfileDestination
 import com.example.tastetoshare.screens.HomepageDestination
 import com.example.tastetoshare.screens.NotificationDestination
@@ -37,7 +37,7 @@ import com.example.tastetoshare.screens.RecipeListDestination
 import com.example.tastetoshare.screens.SavedRecipeDestination
 import com.example.tastetoshare.screens.ShoppingListDestination
 import com.example.tastetoshare.screens.components.DynamicTopBar
-import com.example.tastetoshare.screens.LoginDialogDestination
+import com.example.tastetoshare.screens.WelcomeDestination
 import com.example.tastetoshare.screens.components.TasteToShareBottomBar
 import com.example.tastetoshare.services.notifications.SnackbarController
 import com.example.tastetoshare.ui.screens.PictureScreenDestination
@@ -70,6 +70,8 @@ fun AppNavigation() {
     // Notifications
     val snackbarHostState = remember { SnackbarHostState() }
 
+    val currentUserId by SessionManagerFacade.currentUserStateFlow.collectAsStateWithLifecycle()
+
     LaunchedEffect(true) {
         SnackbarController.events.collect { event ->
             val result = snackbarHostState.showSnackbar(
@@ -93,13 +95,16 @@ fun AppNavigation() {
 
     Scaffold(
         bottomBar = {
-            if (!isCreateRecipeScreen && !isAuthScreen && !isPictureScreen && !isPictureDialog && (SessionManager.CURRENT_LOGGED_IN_USER_ID != null)) {
+            if (!isCreateRecipeScreen && !isAuthScreen && !isPictureScreen && !isPictureDialog) {
                 TasteToShareBottomBar(
                     currentDestination = currentDestination,
                     onNavigateHome = { navActions.navigateToHomePage() },
                     onNavigateShopping = { navActions.navigateToShoppingList() },
                     onNavigateSaved = { navActions.navigateToSavedRecipes() },
-                    onNavigateProfile = { navActions.navigateToProfile(SessionManager.CURRENT_LOGGED_IN_USER_ID) },
+                    onNavigateProfile = {
+                        val userId = currentUserId
+                        if (userId != null) { navActions.navigateToProfile(userId) }
+                        else navActions.navigateToLogin() },
                     onCreateRecipe = {
                         navActions.navigateToCreateRecipe(null, null)
                     }
@@ -110,7 +115,8 @@ fun AppNavigation() {
             DynamicTopBar(
                 currentDestination = currentDestination,
                 onNavigateBack = { navActions.navigateBack() },
-                onNavigateToNotifications = { navActions.navigateToNotifications() }
+                onNavigateToNotifications = { navActions.navigateToNotifications() },
+                onNavigateToHome = { navActions.navigateToHomePage() }
             )
         },
         snackbarHost = {
@@ -131,11 +137,11 @@ fun AppNavigation() {
     {  globalPadding ->
         NavHost(
             navController = navCtrl,
-            startDestination = AuthGraph,
+            startDestination = HomeRoute,
             modifier = Modifier.padding(globalPadding)
         ) {
             // Nested graph for login
-            authGraph(navActions, navCtrl = navCtrl)
+            //authGraph(navActions, navCtrl = navCtrl)
 
             composable<HomeRoute>
             {
@@ -143,6 +149,13 @@ fun AppNavigation() {
                     onNavigateToRecipeProposal = { recipeId -> navActions.navigateToRecipeDetails(recipeId) },
                     onNavigateToNotifications = { navActions.navigateToNotifications() },
                     onSearchSubmit = { search -> navActions.navigateToRecipeList(searchString = search) }
+                )
+            }
+
+            composable <WelcomeRoute> {
+                WelcomeDestination(
+                    onDismiss = {navCtrl.popBackStack()},
+                    onLoginSuccess = {navCtrl.popBackStack()}
                 )
             }
 
@@ -211,7 +224,7 @@ fun AppNavigation() {
                     onNavigateToDetails = { recipeId ->
                         navActions.navigateToRecipeDetails(recipeId)
                     },
-                    onAuthRequired = navActions::navigateToLoginDialog
+                    onAuthRequired = navActions::navigateToLogin
                 )
             }
 
@@ -257,14 +270,7 @@ fun AppNavigation() {
                     onNavigateToRecipeDetails = { recipeId ->
                         navActions.navigateToRecipeDetails(recipeId)
                     },
-                    onAuthRequired = navActions::navigateToLoginDialog
-                )
-            }
-
-            dialog<LoginDialogRoute> {
-                LoginDialogDestination(
-                    onDismiss = {navCtrl.popBackStack()},
-                    onLoginSuccess = {navCtrl.popBackStack()}
+                    onAuthRequired = navActions::navigateToLogin
                 )
             }
         }

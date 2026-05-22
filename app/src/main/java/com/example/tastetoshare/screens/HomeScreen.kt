@@ -1,8 +1,6 @@
 package com.example.tastetoshare.screens
 
-import androidx.compose.material3.Button
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,15 +9,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -33,52 +25,6 @@ import com.example.tastetoshare.screens.components.RecipeCard
 import com.example.tastetoshare.screens.components.RecipePreviewCardVertical
 import com.example.tastetoshare.viewmodels.HomepageUIState
 import com.example.tastetoshare.viewmodels.HomepageViewModel
-
-
-@Composable
-fun HomeScreen(
-    onNavigateToRecipeList: () -> Unit,
-    onNavigateToProfile: (userId: String) -> Unit,
-    onNavigateToRecipeProposal: (recipeId: String) -> Unit,
-    onNavigateToCreateRecipe: (recipeIdForClone: String?, recipeIdForEdit: String?) -> Unit,
-    onNavigateToNotifications: () -> Unit
-) {
-    Column(
-        Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Button(onClick = { onNavigateToRecipeList() }) {
-            Text("RecipesList")
-        }
-        Button(onClick = {
-            onNavigateToProfile("101")
-        }) {
-            Text("MyRecipeProposalList")
-        }
-        Button(onClick = {
-            onNavigateToCreateRecipe(null, null)
-        }) {
-            Text("CreateNewRecipeProposal")
-        }
-        Button(onClick = {
-            onNavigateToRecipeProposal("100")
-        }) {
-            Text("ViewRecipeProposal")
-        }
-        Button(onClick = {
-            onNavigateToProfile("102")
-        }) {
-            Text("GoToOtherProfile")
-        }
-
-        Button(onClick = {
-            onNavigateToNotifications()
-        }) {
-            Text("GoToNotifications")
-        }
-    }
-}
 
 @Composable
 fun HomepageDestination(

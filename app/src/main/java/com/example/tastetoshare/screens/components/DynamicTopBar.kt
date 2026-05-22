@@ -2,23 +2,28 @@ package com.example.tastetoshare.screens.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
+import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.navigation.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DynamicTopBar(
     currentDestination: NavDestination?,
     onNavigateBack: () -> Unit,
-    onNavigateToNotifications: () -> Unit
+    onNavigateToNotifications: () -> Unit,
+    onNavigateToHome: () -> Unit
 ) {
     if (currentDestination == null || currentDestination.hasRoute<WelcomeRoute>()) {
         return
@@ -31,7 +36,10 @@ fun DynamicTopBar(
     var title = ""
     var showBackButton = true
     var showNotificationsButton = false
+    var showLogoutButton = false
     var topBarColor = MaterialTheme.colorScheme.primaryContainer
+
+    val scope = rememberCoroutineScope()
 
     when {
         currentDestination.hasRoute<HomeRoute>() -> {
@@ -42,6 +50,7 @@ fun DynamicTopBar(
         currentDestination.hasRoute<ProfileRoute>() -> {
             title = "Profile"
             showBackButton = false
+            showLogoutButton = true
         }
         isCreateRecipeFlow -> {
             title = "Create Recipe"
@@ -110,6 +119,22 @@ fun DynamicTopBar(
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Notifications",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+            if (showLogoutButton) {
+                IconButton(
+                    onClick = {
+                        scope.launch {
+                           SessionManagerFacade.logout()
+                        }
+                        onNavigateToHome()
+                    },
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Logout,
+                        contentDescription = "Logout",
                         tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }

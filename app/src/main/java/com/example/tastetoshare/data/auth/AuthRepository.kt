@@ -10,5 +10,4 @@ interface AuthRepository {
 
     suspend fun logout()
     suspend fun signIn(context: Context): Result<Unit>
-    suspend fun signInAnonymous(context: Context): Result<Unit>
 }

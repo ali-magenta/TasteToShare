@@ -74,6 +74,3 @@ data class CreateRecipeGraphRoute(val parentRecipeId: String? = null, val edited
 data class PictureDialogRoute(
     val isFrontCamera: Boolean
 )
-
-@Serializable
-object LoginDialogRoute

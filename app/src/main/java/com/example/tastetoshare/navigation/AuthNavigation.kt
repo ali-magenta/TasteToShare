@@ -10,18 +10,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.example.tastetoshare.screens.LoginRouteScreen
 import com.example.tastetoshare.screens.SignUpScreen
-import com.example.tastetoshare.screens.WelcomeRoute
 import com.example.tastetoshare.viewmodels.LoginRegisterViewModel
 
 fun NavGraphBuilder.authGraph(navActions: AppNavigationActions, navCtrl: NavController) {
 
     navigation<AuthGraph>(startDestination = WelcomeRoute) {
-        composable <WelcomeRoute> {
-            WelcomeRoute(
-                onNavigateToRegister = { navActions.navigateToRegister() },
-                onNavigateToLogin = { navActions.navigateToLogin() }
-            )
-        }
+//        composable <WelcomeRoute> {
+//            WelcomeDestination(
+//                ,
+//            )
+//        }
 
         composable<LoginRoute> {
             val viewModel: LoginRegisterViewModel = viewModel(

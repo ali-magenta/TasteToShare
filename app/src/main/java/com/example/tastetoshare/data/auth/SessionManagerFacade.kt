@@ -55,13 +55,4 @@ object SessionManagerFacade: AuthRepository {
         }
     }
 
-    override suspend fun signInAnonymous(context: Context): Result<Unit> {
-       return try {
-           FirebaseAuth.getInstance().signInAnonymously().await()
-           Result.success(Unit)
-       } catch (e: Exception) {
-           Result.failure(e)
-       }
-    }
-
 }
