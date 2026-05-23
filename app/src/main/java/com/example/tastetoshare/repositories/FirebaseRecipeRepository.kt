@@ -1,5 +1,7 @@
 package com.example.tastetoshare.repositories
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.core.net.toUri
 import com.example.tastetoshare.data.Cost
@@ -18,6 +20,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.net.URL
 import java.util.concurrent.TimeUnit
 import kotlin.collections.plus
 
@@ -32,14 +36,87 @@ class FirebaseRecipeRepository(
     suspend fun initializeData(recipes: List<Recipe>) {
         val existing = recipeCollection.limit(1).get().await()
         if (existing.isEmpty) {
+            val updatedRecipes = recipes.map { recipe ->
+                val uploadedRecipePhoto = if (recipe.photoURL.startsWith("http")) {
+                    uploadExternalImageToFirebase(
+                        recipe.photoURL,
+                        "recipes/${recipe.recipeId}/recipe_${System.currentTimeMillis()}.jpg"
+                    )
+                } else {
+                    recipe.photoURL
+                }
+
+                val updatedSteps = recipe.steps.map { step ->
+                    val uploadedStepPhoto = step.photoURL?.let { url ->
+                        if (url.startsWith("http")) {
+                            uploadExternalImageToFirebase(
+                                url,
+                                "recipes/${recipe.recipeId}/steps/${step.stepId}.jpg"
+                            )
+                        } else {
+                            url
+                        }
+                    }
+                    step.copy(photoURL = uploadedStepPhoto)
+                }
+
+                val updatedReviews = recipe.reviews.map { review ->
+                    val uploadedPhotos = review.photosUrl.mapIndexed { index, photoUrl ->
+                        if (photoUrl.startsWith("http")) {
+                            uploadExternalImageToFirebase(
+                                photoUrl,
+                                "reviews/${review.reviewId}/$index.jpg"
+                            )
+                        } else {
+                            photoUrl
+                        }
+                    }
+                    review.copy(photosUrl = uploadedPhotos)
+                }
+
+                recipe.copy(
+                    photoURL = uploadedRecipePhoto,
+                    steps = updatedSteps,
+                    reviews = updatedReviews
+                )
+            }
+
             firestore.runBatch { batch ->
-                recipes.forEach { recipe ->
-                    Log.d("DEBUG", "$recipe")
+                updatedRecipes.forEach { recipe ->
                     val docRef = recipeCollection.document(recipe.recipeId)
                     batch.set(docRef, recipe)
                 }
             }.await()
         }
+    }
+
+    private suspend fun uploadExternalImageToFirebase(
+        imageUrl: String,
+        storagePath: String
+    ): String = withContext(Dispatchers.IO) {
+
+        val url = URL(imageUrl)
+        val connection = url.openConnection()
+        connection.connect()
+        val inputStream = connection.getInputStream()
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+        if (bitmap == null) {
+            throw Exception("Failed to decode image")
+        }
+        inputStream.close()
+
+        //compress the image
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(
+            Bitmap.CompressFormat.JPEG,
+            85,
+            outputStream
+        )
+        val compressedBytes = outputStream.toByteArray()
+
+        val storageRef = storage.reference.child(storagePath)
+        storageRef.putBytes(compressedBytes).await()
+        storageRef.downloadUrl.await().toString()
     }
 
     override fun getRecipeById(recipeId: String): Flow<Recipe> {
