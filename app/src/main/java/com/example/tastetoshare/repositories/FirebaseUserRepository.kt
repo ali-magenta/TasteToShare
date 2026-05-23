@@ -185,4 +185,12 @@ class FirebaseUserRepository(
             Log.e("FCM_DEBUG", "Token sync error", e)
         }
     }
+
+    override suspend fun userExists(userId: String): Boolean {
+        return try {
+            userCollection.document(userId).get().await().exists()
+        } catch (e: Exception) {
+            false
+        }
+    }
 }

@@ -136,5 +136,9 @@ class PaperDbUserRepository: UserRepository {
     override suspend fun syncFcmToken(userId: String) {
         // Only there because of the interface
     }
+
+    override suspend fun userExists(userId: String): Boolean {
+        TODO("Not yet implemented")
+    }
 }
 

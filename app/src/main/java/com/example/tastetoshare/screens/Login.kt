@@ -17,7 +17,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.viewmodels.LoginRegisterUIState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -138,7 +137,7 @@ fun LoginRouteScreen(
         Button(
             onClick =
                 {
-                    SessionManager.CURRENT_LOGGED_IN_USER_ID = "102"
+                    //SessionManager.CURRENT_LOGGED_IN_USER_ID = "102"
                     onLoginClick()
                 },
             modifier = Modifier

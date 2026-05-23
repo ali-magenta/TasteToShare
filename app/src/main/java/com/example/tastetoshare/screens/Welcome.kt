@@ -33,22 +33,24 @@ import com.example.tastetoshare.data.auth.SessionManagerFacade
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tastetoshare.viewmodels.WelcomeViewModel
 
 @Composable
 fun WelcomeDestination(
     onDismiss: () -> Unit,
-    onLoginSuccess: () -> Unit
+    viewModel: WelcomeViewModel = viewModel(factory = WelcomeViewModel .Factory)
 ) {
     WelcomeScreen(
         onDismiss,
-        onLoginSuccess
+        viewModel::onGoogleSignInSuccess
     )
 }
 
 @Composable
 fun WelcomeScreen(
     onDismiss: () -> Unit,
-    onLoginSuccess: () -> Unit
+    onGoogleSignInSuccess: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -113,7 +115,9 @@ fun WelcomeScreen(
                 onClick = {
                     scope.launch {
                         val result = SessionManagerFacade.signIn(context)
-                        if (result.isSuccess) onLoginSuccess()
+                        if (result.isSuccess) {
+                            onGoogleSignInSuccess()
+                        }
                     }
                 },
                 modifier = Modifier

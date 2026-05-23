@@ -15,6 +15,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.tastetoshare.data.WrapperDB
+import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.navigation.AppNavigation
 import com.example.tastetoshare.repositories.FirebaseIngredientRepository
 import com.example.tastetoshare.repositories.FirebaseNotificationRepository
@@ -164,9 +165,9 @@ class MainActivity : ComponentActivity() {
     private fun fetchAndSaveFCMToken() {
         lifecycleScope.launch {
             try {
-                val userId = SessionManager.CURRENT_LOGGED_IN_USER_ID
+                val userId = SessionManagerFacade.currentUserStateFlow.value
 
-                if (userId != "unlogged") {
+                if (userId != null) {
                     val app = application as TasteToShareApp
                     app.container.userRepository.syncFcmToken(userId)
                     Log.d("FCM_DEBUG", "Token synchronized at launch for user : $userId")

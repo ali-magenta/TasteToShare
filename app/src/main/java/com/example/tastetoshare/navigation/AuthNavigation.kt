@@ -21,27 +21,27 @@ fun NavGraphBuilder.authGraph(navActions: AppNavigationActions, navCtrl: NavCont
 //            )
 //        }
 
-        composable<LoginRoute> {
-            val viewModel: LoginRegisterViewModel = viewModel(
-                factory = LoginRegisterViewModel.Factory
-            )
-            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-            LaunchedEffect(uiState.isLoginSuccessful) {
-                if (uiState.isLoginSuccessful) {
-                    navActions.navigateToHomeFromAuth()
-                }
-            }
-
-            LoginRouteScreen(
-                uiState = uiState,
-                onEmailChange = { viewModel.onEmailChanged(it) },
-                onPasswordChange = { viewModel.onPasswordChanged(it) },
-                onLoginClick = { viewModel.loginUser() },
-                onNavigateBack = { navActions.navigateBack() },
-                onForgetPassword = { /* TODO */ }
-            )
-        }
+//        composable<LoginRoute> {
+//            val viewModel: LoginRegisterViewModel = viewModel(
+//                factory = LoginRegisterViewModel.Factory
+//            )
+//            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+//
+//            LaunchedEffect(uiState.isLoginSuccessful) {
+//                if (uiState.isLoginSuccessful) {
+//                    navActions.navigateToHomeFromAuth()
+//                }
+//            }
+//
+//            LoginRouteScreen(
+//                uiState = uiState,
+//                onEmailChange = { viewModel.onEmailChanged(it) },
+//                onPasswordChange = { viewModel.onPasswordChanged(it) },
+//                onLoginClick = { viewModel.loginUser() },
+//                onNavigateBack = { navActions.navigateBack() },
+//                onForgetPassword = { /* TODO */ }
+//            )
+//        }
 
         composable<RegisterRoute> { backStackEntry ->
             val viewModel: LoginRegisterViewModel = viewModel(

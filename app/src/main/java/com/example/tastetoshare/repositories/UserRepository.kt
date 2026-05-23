@@ -14,4 +14,5 @@ interface UserRepository {
     suspend fun deleteSavedRecipe(userId : String, recipeId : String)
     suspend fun deleteTriedRecipe(userId : String, recipeId : String)
     suspend fun syncFcmToken(userId : String)
+    suspend fun userExists(userId: String): Boolean
 }

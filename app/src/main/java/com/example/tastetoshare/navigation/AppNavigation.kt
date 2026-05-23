@@ -36,12 +36,15 @@ import com.example.tastetoshare.screens.RecipeDetailsDestination
 import com.example.tastetoshare.screens.RecipeListDestination
 import com.example.tastetoshare.screens.SavedRecipeDestination
 import com.example.tastetoshare.screens.ShoppingListDestination
+import com.example.tastetoshare.screens.SignUpScreen
 import com.example.tastetoshare.screens.components.DynamicTopBar
 import com.example.tastetoshare.screens.WelcomeDestination
 import com.example.tastetoshare.screens.components.TasteToShareBottomBar
 import com.example.tastetoshare.services.notifications.SnackbarController
 import com.example.tastetoshare.ui.screens.PictureScreenDestination
+import com.example.tastetoshare.viewmodels.LoginRegisterViewModel
 import com.example.tastetoshare.viewmodels.RecipeDetailsViewModel
+import com.example.tastetoshare.viewmodels.WelcomeViewModel
 
 @Composable
 fun AppNavigation() {
@@ -153,9 +156,61 @@ fun AppNavigation() {
             }
 
             composable <WelcomeRoute> {
+                val viewModel: WelcomeViewModel = viewModel(factory = WelcomeViewModel.Factory)
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                LaunchedEffect(uiState.isLoginSuccessful) {
+                    if (uiState.isLoginSuccessful) navCtrl.popBackStack()
+                }
+
+                LaunchedEffect(uiState.needsRegistration) {
+                    if (uiState.needsRegistration) navActions.navigateToRegister()
+                }
+
                 WelcomeDestination(
                     onDismiss = {navCtrl.popBackStack()},
-                    onLoginSuccess = {navCtrl.popBackStack()}
+                )
+            }
+
+            composable<RegisterRoute> { backStackEntry ->
+                val viewModel: LoginRegisterViewModel = viewModel(
+                    factory = LoginRegisterViewModel.Factory
+                )
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                LaunchedEffect(uiState.isSignUpSuccessful) {
+                    if (uiState.isSignUpSuccessful) {
+                        navActions.navigateToHomeFromAuth()
+                    }
+                }
+
+                val returnedUri by backStackEntry.savedStateHandle.getStateFlow<String?>("returned_uri", null).collectAsStateWithLifecycle()
+                LaunchedEffect(returnedUri) {
+                    val uri = returnedUri
+                    if (uri != null) {
+                        viewModel.handlePhotoUri(uri)
+                        backStackEntry.savedStateHandle["returned_uri"] = null
+                    }
+                }
+
+                SignUpScreen(
+                    uiState = uiState,
+                    onNavigateBack = { navActions.navigateBack() },
+                    onNameChange = { viewModel.onNameChange(it) },
+                    onUsernameChange = { viewModel.onUsernameChanged(it) },
+                    onEmailChange = { viewModel.onEmailChanged(it) },
+                    onPasswordChange = { viewModel.onPasswordChanged(it) },
+                    onBiographyChange = { viewModel.onBiographyChanged(it) },
+                    onRoleChange = { viewModel.onRoleChanged(it) },
+                    onPhotoSelectedFromGallery = { uri -> viewModel.onPhotoSelectedFromGallery(uri) },
+                    onCuisineSearchChange = { viewModel.setFieldSearchCuisineTypeTags(it) },
+                    onDietarySearchChange = { viewModel.setFieldSearchDietaryRestrictionTags(it) },
+                    onOtherSearchChange = { viewModel.setFieldSearchOtherTags(it) },
+                    onCuisineTagClick = { viewModel.toggleSelectedCuisineTag(it) },
+                    onDietaryTagClick = { viewModel.toggleSelectedDietaryTag(it) },
+                    onOtherTagClick = { viewModel.toggleSelectedOtherTag(it) },
+                    onCreateAccount = { viewModel.validateProfile() },
+                    onNavigateToPictureDialog = {isFrontCamera -> navActions.navigateToPictureDialog(isFrontCamera)}
                 )
             }
 

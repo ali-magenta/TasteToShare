@@ -9,8 +9,8 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.navigation.toRoute
-import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.TasteToShareApp
+import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.entities.Tag
 import com.example.tastetoshare.data.entities.User
 import com.example.tastetoshare.navigation.AuthGraph
@@ -28,8 +28,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 class LoginRegisterViewModel(
     private val savedStateHandle: SavedStateHandle,
@@ -200,7 +198,6 @@ class LoginRegisterViewModel(
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class)
     fun validateProfile(): Boolean {
         val state = _uiState.value
 
@@ -285,13 +282,13 @@ class LoginRegisterViewModel(
         ) }
 
         if (isValidForm) {
-            val newUserId = Uuid.random().toString()
-
             viewModelScope.launch {
                 _uiState.update { it.copy(isCreatingAccount = true)}
+                val userId = SessionManagerFacade.currentUserStateFlow.value ?: return@launch
+
                 userRepository.addUser(
                     User(
-                        userId =newUserId,
+                        userId =userId,
                         fullName = name,
                         userName = username,
                         email = email,
@@ -307,40 +304,39 @@ class LoginRegisterViewModel(
                         numberOfReviews = 0,
                     )
                 )
-                userRepository.syncFcmToken(newUserId)
-                SessionManager.CURRENT_LOGGED_IN_USER_ID = newUserId
-                _uiState.update { it.copy(password = password, isCreatingAccount = false, isSignUpSuccessful = true) }
+                userRepository.syncFcmToken(userId)
+                _uiState.update { it.copy(isCreatingAccount = false, isSignUpSuccessful = true) }
             }
         }
 
         return isValidForm
     }
 
-    fun loginUser() {
-        val email = _uiState.value.editedEmail.trim()
-        val password = _uiState.value.editedPassword
-
-        if (true/*TODO add actual input check once we have authentication      email.isNotBlank() && password.isNotBlank()*/) {
-            viewModelScope.launch {
-
-                // Change this by the fetch of the actual user from the database
-                // and update the SessionManager
-                if (SessionManager.CURRENT_LOGGED_IN_USER_ID == "unlogged") {
-                    SessionManager.CURRENT_LOGGED_IN_USER_ID = "101"
-                }
-                userRepository.syncFcmToken(SessionManager.CURRENT_LOGGED_IN_USER_ID)
-
-                _uiState.update { it.copy(
-                    isLoginSuccessful = true,
-                    validation = _uiState.value.validation.copy(loginError = "")
-                ) }
-            }
-        } else {
-            _uiState.update { it.copy(
-                validation = _uiState.value.validation.copy(loginError = "Please enter your email and password.")
-            ) }
-        }
-    }
+//    fun loginUser() {
+//        val email = _uiState.value.editedEmail.trim()
+//        val password = _uiState.value.editedPassword
+//
+//        if (true/*TODO add actual input check once we have authentication      email.isNotBlank() && password.isNotBlank()*/) {
+//            viewModelScope.launch {
+//
+//                // Change this by the fetch of the actual user from the database
+//                // and update the SessionManager
+//                if (SessionManager.CURRENT_LOGGED_IN_USER_ID == "unlogged") {
+//                    SessionManager.CURRENT_LOGGED_IN_USER_ID = "101"
+//                }
+//                userRepository.syncFcmToken(SessionManager.CURRENT_LOGGED_IN_USER_ID)
+//
+//                _uiState.update { it.copy(
+//                    isLoginSuccessful = true,
+//                    validation = _uiState.value.validation.copy(loginError = "")
+//                ) }
+//            }
+//        } else {
+//            _uiState.update { it.copy(
+//                validation = _uiState.value.validation.copy(loginError = "Please enter your email and password.")
+//            ) }
+//        }
+//    }
 
 
     companion object {
