@@ -4,13 +4,11 @@ import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,7 +20,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
@@ -30,9 +27,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,16 +40,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.tastetoshare.SessionManager
+import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.entities.User
+import com.example.tastetoshare.data.uiClasses.UIRecipePreview
 import com.example.tastetoshare.screens.components.ProfileHeader
 import com.example.tastetoshare.screens.components.ProfileInfo
 import com.example.tastetoshare.screens.components.RecipeCard
 import com.example.tastetoshare.screens.components.TagsRow
 import com.example.tastetoshare.viewmodels.ProfileUIState
 import com.example.tastetoshare.viewmodels.ProfileViewModel
-import com.example.tastetoshare.data.uiClasses.UIRecipePreview
-import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun ProfileDestination(
@@ -73,7 +67,7 @@ fun ProfileDestination(
             recipes = userRecipes,
             uiState = uiState,
             onNavigateToRecipeProposal = onNavigateToRecipeProposal,
-            isOwnProfile = user.userId == SessionManager.CURRENT_LOGGED_IN_USER_ID,
+            isOwnProfile = user.userId == SessionManagerFacade.currentUserId,
             edit = onNavigateToEditProfile,
             toggleMyRecipesAnalyticsTab = viewModel::toggleMyRecipesAnalyticsTab,
             onViewAllRecipes = {onViewAllRecipes(user.userId)},

@@ -164,7 +164,7 @@ fun AppNavigation() {
                 }
 
                 LaunchedEffect(uiState.needsRegistration) {
-                    if (uiState.needsRegistration) navActions.navigateToRegister()
+                    if (uiState.needsRegistration) navActions.navigateToRegister(uiState.googleEmail)
                 }
 
                 WelcomeDestination(
@@ -195,11 +195,11 @@ fun AppNavigation() {
 
                 SignUpScreen(
                     uiState = uiState,
-                    onNavigateBack = { navActions.navigateBack() },
+                    onNavigateBack = {
+                        viewModel.onRegistrationCancelled()
+                        navActions.navigateBack() },
                     onNameChange = { viewModel.onNameChange(it) },
                     onUsernameChange = { viewModel.onUsernameChanged(it) },
-                    onEmailChange = { viewModel.onEmailChanged(it) },
-                    onPasswordChange = { viewModel.onPasswordChanged(it) },
                     onBiographyChange = { viewModel.onBiographyChanged(it) },
                     onRoleChange = { viewModel.onRoleChanged(it) },
                     onPhotoSelectedFromGallery = { uri -> viewModel.onPhotoSelectedFromGallery(uri) },

@@ -1,6 +1,7 @@
 package com.example.tastetoshare.viewmodels
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -14,6 +15,7 @@ import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.entities.Tag
 import com.example.tastetoshare.data.entities.User
 import com.example.tastetoshare.navigation.AuthGraph
+import com.example.tastetoshare.navigation.RegisterRoute
 import com.example.tastetoshare.repositories.TagRepository
 import com.example.tastetoshare.repositories.UserRepository
 import com.google.firebase.firestore.FirebaseFirestore
@@ -35,9 +37,11 @@ class LoginRegisterViewModel(
     private val userRepository: UserRepository
 ) : ViewModel()
 {
-    private val _uiState = MutableStateFlow(LoginRegisterUIState())
 
-    private val args = savedStateHandle.toRoute<AuthGraph>()
+    private val args = savedStateHandle.toRoute<RegisterRoute>()
+    private val _uiState = MutableStateFlow(LoginRegisterUIState(
+        editedEmail = args.googleEmail ?: ""
+    ))
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val _cuisineTypeTags: StateFlow<List<Tag>> = _uiState.flatMapLatest { uiState ->
@@ -136,20 +140,6 @@ class LoginRegisterViewModel(
         ) }
     }
 
-    fun onPasswordChanged(value: String) {
-        _uiState.update { it.copy(
-            editedPassword = value,
-            validation = _uiState.value.validation.copy(passwordError = "")
-        ) }
-    }
-    fun onEmailChanged(value: String) {
-        _uiState.update { it.copy(
-            editedEmail = value,
-            validation = _uiState.value.validation.copy(emailError = "")
-        ) }
-    }
-
-
     fun onPhotoSelectedFromGallery(uri: Uri?) {
         _uiState.update { it.copy(
             editedPhoto = uri?.toString(),
@@ -203,8 +193,6 @@ class LoginRegisterViewModel(
 
         var currentFullNameError = ""
         var currentUsernameError = ""
-        var currentEmailError = ""
-        var currentPasswordError = ""
         var currentBiographyError = ""
         var currentRoleError = ""
         var currentTagsError = ""
@@ -213,7 +201,6 @@ class LoginRegisterViewModel(
         val username = state.editedUsername.trim()
         val email = state.editedEmail.trim()
         val biography = state.editedBiography?.trim() ?: ""
-        val password = state.editedPassword
         val role = state.editedCookingRole
         val allSelectedTags = state.selectedCuisineTypeTags +
                 state.selectedDietaryRestrictionTags +
@@ -231,23 +218,6 @@ class LoginRegisterViewModel(
             currentUsernameError = "Username must be at least 4 characters long"
         }
 
-        val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$".toRegex()
-        if (email.isBlank()) {
-            currentEmailError = "Email cannot be blank"
-        } else if (!email.matches(emailRegex)) {
-            currentEmailError = "Please enter a valid email address"
-        }
-
-        if (password.isBlank()) {
-            currentPasswordError = "Password cannot be blank"
-        } else if (password.length < 8) {
-            currentPasswordError = "Password must be at least 8 characters long"
-        } else if (!password.contains(Regex("[0-9]"))) {
-            currentPasswordError = "Password must contain at least a digit"
-        } else if (!password.contains(Regex("[A-Z]"))) {
-            currentPasswordError = "Password must contain at least a capital letter"
-        }
-
         if (biography.length > 140) {
             currentBiographyError = "Biography cannot exceed 140 characters"
         }
@@ -262,8 +232,6 @@ class LoginRegisterViewModel(
 
         val isValidForm = currentFullNameError.isBlank() &&
                 currentUsernameError.isBlank() &&
-                currentEmailError.isBlank() &&
-                currentPasswordError.isBlank() &&
                 currentBiographyError.isBlank() &&
                 currentRoleError.isBlank() &&
                 currentTagsError.isBlank()
@@ -272,8 +240,6 @@ class LoginRegisterViewModel(
             validation = LoginRegisterFormValidation(
                 fullNameError = currentFullNameError,
                 usernameError = currentUsernameError,
-                emailError = currentEmailError,
-                passwordError = currentPasswordError,
                 biographyError = currentBiographyError,
                 cookingRoleError = currentRoleError,
                 tagsError = currentTagsError,
@@ -338,6 +304,12 @@ class LoginRegisterViewModel(
 //        }
 //    }
 
+    fun onRegistrationCancelled() {
+        viewModelScope.launch {
+            SessionManagerFacade.logout()
+        }
+    }
+
 
     companion object {
         val Factory: ViewModelProvider.Factory =
@@ -365,9 +337,7 @@ class LoginRegisterViewModel(
 
 
 data class LoginRegisterUIState(
-    val password: String = "",
     val editedEmail: String = "",
-    val editedPassword: String = "",
     val editedFullName: String = "",
     val editedUsername: String = "",
     val editedBiography: String? = null,
@@ -405,8 +375,6 @@ data class LoginRegisterFormValidation(
     val photoError: String = "",
     val cookingRoleError: String = "",
     val tagsError: String = "",
-    val passwordError: String = "",
-    val emailError: String = "",
     val loginError: String = "",
     val isValid: Boolean = true,
 )

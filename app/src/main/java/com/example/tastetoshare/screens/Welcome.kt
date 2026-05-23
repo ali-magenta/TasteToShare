@@ -92,7 +92,7 @@ fun WelcomeScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Join Kitchen People",
+                text = "Join TasteToShare",
                 color = Color.White,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,

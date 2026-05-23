@@ -7,6 +7,7 @@ interface AuthRepository {
     val currentUserId: String?
     val currentUserStateFlow: StateFlow<String?>
     val isLoggedIn: Boolean
+    val userEmail: String?
 
     suspend fun logout()
     suspend fun signIn(context: Context): Result<Unit>

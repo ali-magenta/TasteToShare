@@ -46,7 +46,7 @@ class AppNavigationActions(private val navCtrl: NavController) {
         }
         else navCtrl.navigate(WelcomeRoute)
     }
-    fun navigateToRegister() = navCtrl.navigate(RegisterRoute)
+    fun navigateToRegister(googleEmail: String?) = navCtrl.navigate(RegisterRoute(googleEmail))
     //fun navigateToLogin() = navCtrl.navigate(LoginRoute)
     fun navigateToPictureScreen(isFrontCamera: Boolean) = navCtrl.navigate(PictureScreenRoute(isFrontCamera))
     fun navigateToPictureDialog(isFrontCamera: Boolean) = navCtrl.navigate(PictureDialogRoute(isFrontCamera))

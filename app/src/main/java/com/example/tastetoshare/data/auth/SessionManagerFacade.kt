@@ -28,6 +28,9 @@ object SessionManagerFacade: AuthRepository {
     override val isLoggedIn: Boolean
         get() = FirebaseAuth.getInstance().currentUser != null
 
+    override val userEmail: String?
+        get() = FirebaseAuth.getInstance().currentUser?.email
+
     override suspend fun logout() {
         FirebaseAuth.getInstance().signOut()
     }

@@ -59,7 +59,7 @@ object LoginRoute
 object WelcomeRoute
 
 @Serializable
-object RegisterRoute
+data class RegisterRoute(val googleEmail: String? = null)
 
 // Recipe nested graph
 @Serializable

@@ -9,8 +9,8 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.navigation.toRoute
-import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.TasteToShareApp
+import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.uiClasses.toUi
 import com.example.tastetoshare.data.entities.Tag
 import com.example.tastetoshare.data.entities.User
@@ -55,8 +55,15 @@ class ProfileViewModel(
                 initialValue = User()
             )
 
+    private val currentUserId: StateFlow<String?> = SessionManagerFacade.currentUserStateFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = SessionManagerFacade.currentUserStateFlow.value
+        )
+
     val loggedInUser: StateFlow<User> =
-        userRepository.getUser(SessionManager.CURRENT_LOGGED_IN_USER_ID)
+        userRepository.getUser(currentUserId.value ?: "")
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
@@ -114,13 +121,6 @@ class ProfileViewModel(
         _uiState.update { it.copy(
             editedCookingRole = value,
             validation = _uiState.value.validation.copy(cookingRoleError = "")
-        ) }
-    }
-
-    fun onPasswordChanged(value: String) {
-        _uiState.update { it.copy(
-            editedPassword = value,
-            validation = _uiState.value.validation.copy(passwordError = "")
         ) }
     }
 
@@ -191,7 +191,7 @@ class ProfileViewModel(
                 )
 
                 _uiState.update {
-                    it.copy(isSaving = false, password = _uiState.value.editedPassword)
+                    it.copy(isSaving = false)
                 }
                 onDone(true)
             }
@@ -211,7 +211,6 @@ class ProfileViewModel(
         var currentNickNameError = ""
         var currentBiographyError = ""
         var currentTagsError = ""
-        var currentPasswordError = ""
 
         val newName = _uiState.value.editedFullName ?: user.value.fullName
         val newNickName = _uiState.value.editedNickName ?: user.value.userName
@@ -219,7 +218,6 @@ class ProfileViewModel(
         val newTags = if(_uiState.value.hasEditedTags) {
             _uiState.value.editedTags
         } else user.value.preferences
-        val newPassword = _uiState.value.editedPassword
 
         if(newName.isBlank()) {
             currentFullNameError = "Name cannot be blank"
@@ -241,22 +239,11 @@ class ProfileViewModel(
         if(newTags.size < 3) {
             currentTagsError = "Please select at least three cooking preferences"
         }
-        if(newPassword.length < 6) {
-            currentPasswordError = "Password must be at least 6 characters long"
-        }
-        if(!newPassword.contains(regex = Regex("[0-9]"))) {
-            currentPasswordError = "Password must contain at least a digit"
-        }
-        if(!newPassword.contains(regex = Regex("[A-Z]"))) {
-            currentPasswordError = "Password must contain at least a capital letter"
-        }
 
         val isValidForm = currentNickNameError.isBlank() &&
                 currentFullNameError.isBlank() &&
                 currentBiographyError.isBlank() &&
-                currentTagsError.isBlank() &&
-                currentPasswordError.isBlank()
-
+                currentTagsError.isBlank()
 
         _uiState.update { it.copy(
             validation = EditProfileFormValidation(
@@ -264,7 +251,6 @@ class ProfileViewModel(
                 nickNameError = currentNickNameError,
                 biographyError = currentBiographyError,
                 tagsError = currentTagsError,
-                passwordError = currentPasswordError,
                 isValid = isValidForm
             )
         ) }
@@ -311,8 +297,6 @@ data class ProfileUIState(
     val validation: EditProfileFormValidation = EditProfileFormValidation(),
     val isLoading: Boolean = false,
     val isGalleryOpen: Boolean = false,
-    val editedPassword: String = "temporaryPassword0",
-    val password: String = "temporaryPassword0",
     val isSaving: Boolean = false
 )
 
@@ -324,6 +308,5 @@ data class EditProfileFormValidation(
     val photoError: String = "",
     val cookingRoleError: String = "",
     val tagsError: String = "",
-    val passwordError: String = "",
     val isValid: Boolean = true
 )

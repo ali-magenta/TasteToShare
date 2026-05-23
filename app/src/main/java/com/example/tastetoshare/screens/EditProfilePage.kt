@@ -92,7 +92,6 @@ fun EditProfileDestination(
         onBiographyChange = viewModel::onBiographyChanged,
         onPreferencesChange = viewModel::onPreferencesChanged,
         onRoleChange = viewModel::onRoleChanged,
-        onPasswordChange =  viewModel::onPasswordChanged,
         saveChanges = {
             viewModel.saveChanges{ success ->
                 if (success) onNavigateBack()
@@ -114,7 +113,6 @@ fun EditProfilePage(
     onBiographyChange: (String) -> Unit,
     onPreferencesChange: (List<Tag>) -> Unit,
     onRoleChange: (String) -> Unit,
-    onPasswordChange: (String) -> Unit,
     saveChanges: () -> Unit,
     goBack: () -> Unit
 ) {
@@ -155,7 +153,7 @@ fun EditProfilePage(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SectionTitle("Personal Information", R.drawable.profile)
-            EditPersonalInformation(user, uiState.editedFullName, uiState.validation, uiState.editedNickName, uiState.editedBiography, uiState.editedPassword, onNameChange, onUsernameChange, onBiographyChange, onPasswordChange, )
+            EditPersonalInformation(user, uiState.editedFullName, uiState.validation, uiState.editedNickName, uiState.editedBiography, onNameChange, onUsernameChange, onBiographyChange, )
         }
 
         Column(
@@ -259,11 +257,10 @@ fun EditPersonalInformation(
     validation: EditProfileFormValidation,
     editedNickName: String?,
     editedBiography: String?,
-    editedPassword: String,
     onNameChanged: (String) -> Unit,
     onUsernameChanged: (String) -> Unit,
     onBiographyChanged: (String) -> Unit,
-    onPasswordChanged: (String) -> Unit) {
+) {
     Column(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -401,39 +398,6 @@ fun EditPersonalInformation(
             ),
             readOnly = true,
         )
-
-        // Password (partial placeholder)
-        Text(
-            text = "Password",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Bold,
-        )
-
-        OutlinedTextField(
-            value = editedPassword,
-            onValueChange = { newPassword ->
-                onPasswordChanged(newPassword)
-            },
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 4.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = MaterialTheme.colorScheme.secondary,
-                focusedContainerColor = MaterialTheme.colorScheme.secondary,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSecondary,
-                focusedTextColor = MaterialTheme.colorScheme.onSecondary,
-            ),
-            isError = validation.passwordError.isNotBlank(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password
-            ),
-        )
-        if(validation.passwordError.isNotBlank()) {
-            Text(validation.passwordError, color = MaterialTheme.colorScheme.error)
-        }
     }
 }
 

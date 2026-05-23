@@ -24,11 +24,13 @@ class WelcomeViewModel(
     fun onGoogleSignInSuccess() {
         viewModelScope.launch {
             val userId = SessionManagerFacade.currentUserStateFlow.value ?: return@launch
+            val email = SessionManagerFacade.userEmail
             val userExists = userRepository.userExists(userId)
             _uiState.update {
                 it.copy(
                     isLoginSuccessful = userExists,
-                    needsRegistration = !userExists
+                    needsRegistration = !userExists,
+                    googleEmail = email
                 )
             }
         }
@@ -59,4 +61,5 @@ class WelcomeViewModel(
 data class WelcomeUIState(
     val isLoginSuccessful: Boolean = false,
     val needsRegistration: Boolean = false,
+    val googleEmail: String? = null
 )
