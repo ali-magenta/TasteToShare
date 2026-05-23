@@ -7,15 +7,10 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import androidx.navigation.toRoute
-import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.TasteToShareApp
 import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.data.entities.User
-import com.example.tastetoshare.navigation.SavedRecipeRoute
 import com.example.tastetoshare.repositories.RecipeRepository
 import com.example.tastetoshare.repositories.UserRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,23 +22,33 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.collections.filter
 
 class SavedTriedViewModel(
     savedStateHandle: SavedStateHandle,
     private val recipeRepository: RecipeRepository,
     private val userRepository: UserRepository,
-    private val loggedUserId: String?
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SavedTriedUIState())
     val uiState: StateFlow<SavedTriedUIState> = _uiState.asStateFlow()
 
+    private val currentUserId: StateFlow<String?> = SessionManagerFacade.currentUserStateFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = SessionManagerFacade.currentUserStateFlow.value
+        )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     private val loggedInUser: StateFlow<User> =
-        userRepository.getUser(loggedUserId ?: "")
+        currentUserId.flatMapLatest{ userId ->
+            if (userId != null) userRepository.getUser(userId)
+            else flowOf(User())
+        }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
@@ -101,19 +106,19 @@ class SavedTriedViewModel(
     }
 
     fun onToggleSaved(recipeId: String, onAuthRequired: () -> Unit) {
+        if (!SessionManagerFacade.isLoggedIn) {
+            onAuthRequired()
+            return
+        }
         val currentlySaved = recipeId in loggedInUser.value.savedRecipeIds
-        if (SessionManagerFacade.isLoggedIn) {
-            viewModelScope.launch {
-                if (currentlySaved) {
-                    userRepository.deleteSavedRecipe(loggedUserId ?: "", recipeId)
-                } else {
-                    userRepository.addSavedRecipe(loggedUserId ?: "", recipeId)
-                }
+        viewModelScope.launch {
+            if (currentlySaved) {
+                userRepository.deleteSavedRecipe(currentUserId.value ?: "", recipeId)
+            } else {
+                userRepository.addSavedRecipe(currentUserId.value ?: "", recipeId)
             }
         }
-        else {
-            onAuthRequired()
-        }
+
         if (currentlySaved) hideUnsavePopUp()
     }
 
@@ -149,7 +154,6 @@ class SavedTriedViewModel(
                         savedStateHandle = extras.createSavedStateHandle(),
                         recipeRepository = application.container.recipeRepository,
                         userRepository = application.container.userRepository,
-                        loggedUserId = SessionManager.CURRENT_LOGGED_IN_USER_ID
                     ) as T
                 }
             }

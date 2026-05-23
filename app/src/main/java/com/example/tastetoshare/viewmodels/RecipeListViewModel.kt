@@ -7,10 +7,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
-import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.TasteToShareApp
 import com.example.tastetoshare.data.Cost
 import com.example.tastetoshare.data.Difficulty
@@ -19,8 +16,8 @@ import com.example.tastetoshare.data.entities.Ingredient
 import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.data.entities.Tag
 import com.example.tastetoshare.navigation.RecipeListRoute
-import com.example.tastetoshare.repositories.RecipeRepository
 import com.example.tastetoshare.repositories.IngredientRepository
+import com.example.tastetoshare.repositories.RecipeRepository
 import com.example.tastetoshare.repositories.TagRepository
 import com.example.tastetoshare.repositories.UserRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,6 +30,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -43,12 +42,9 @@ class RecipeListViewModel(
     private val ingredientRepository: IngredientRepository,
     private val tagRepository: TagRepository,
     private val userRepository: UserRepository,
-    private val loggedUserId: String?
 ) : ViewModel() {
 
     private val args = savedStateHandle.toRoute<RecipeListRoute>()
-    // filter by author for my recipes page
-    private val userId = args.userId
 
     private val _uiState = MutableStateFlow(
         RecipeListUIState(
@@ -89,8 +85,27 @@ class RecipeListViewModel(
         }
     }
 
-    val savedIds: StateFlow<Set<String>> = userRepository
-        .getSavedRecipes(loggedUserId ?: "")
+    private val currentUserId: StateFlow<String?> = SessionManagerFacade.currentUserStateFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = SessionManagerFacade.currentUserStateFlow.value
+        )
+
+    private val isLoggedIn: StateFlow<Boolean> = SessionManagerFacade.currentUserStateFlow
+        .map {it != null}
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = SessionManagerFacade.currentUserStateFlow.value != null
+        )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val savedIds: StateFlow<Set<String>> = currentUserId
+        .flatMapLatest { userId ->
+            if (userId != null) userRepository.getSavedRecipes(userId)
+            else flowOf(emptySet())
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -197,13 +212,14 @@ class RecipeListViewModel(
     }
 
     fun onToggleSaved(recipeId: String, onAuthRequired: () -> Unit) {
-        if (SessionManagerFacade.isLoggedIn) {
+        if (isLoggedIn.value) {
             viewModelScope.launch {
+                val userId = SessionManagerFacade.currentUserStateFlow.value ?: return@launch
                 val currentlySaved = recipeId in (savedIds.value)
                 if (currentlySaved) {
-                    userRepository.deleteSavedRecipe(loggedUserId ?: "", recipeId)
+                    userRepository.deleteSavedRecipe(userId, recipeId)
                 } else {
-                    userRepository.addSavedRecipe(loggedUserId ?: "", recipeId)
+                    userRepository.addSavedRecipe(userId, recipeId)
                 }
 
             }
@@ -232,7 +248,6 @@ class RecipeListViewModel(
                         ingredientRepository = application.container.ingredientRepository,
                         tagRepository = application.container.tagRepository,
                         userRepository = application.container.userRepository,
-                        loggedUserId = SessionManager.CURRENT_LOGGED_IN_USER_ID
                     ) as T
                 }
             }

@@ -12,49 +12,47 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.tastetoshare.data.entities.RawRecipePreview
-import com.example.tastetoshare.viewmodels.RecipeListUIState
-import com.example.tastetoshare.viewmodels.RecipeListViewModel
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import com.example.tastetoshare.data.Difficulty
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tastetoshare.data.Cost
+import com.example.tastetoshare.data.Difficulty
 import com.example.tastetoshare.data.entities.Ingredient
+import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.data.entities.Tag
 import com.example.tastetoshare.screens.recipeListComponents.FilterChipDropdown
 import com.example.tastetoshare.screens.recipeListComponents.FilterChipIngredients
 import com.example.tastetoshare.screens.recipeListComponents.RecipeListCard
+import com.example.tastetoshare.viewmodels.RecipeListUIState
+import com.example.tastetoshare.viewmodels.RecipeListViewModel
 
 @Composable
 fun RecipeListDestination(
@@ -84,7 +82,6 @@ fun RecipeListDestination(
         onDietarySelected = viewModel::onDietarySelected,
         onNavigateToDetails = onNavigateToDetails,
         onToggleSaved = viewModel::onToggleSaved,
-        userId = uiState.userId,
         onAuthRequired = onAuthRequired
     )
 }
@@ -105,7 +102,6 @@ fun RecipeListScreen(
     onCuisineSelected: (Tag?) -> Unit,
     onDietarySelected: (Tag?) -> Unit,
     onNavigateToDetails: (String) -> Unit,
-    userId: String?,
     onToggleSaved: (String, () -> Unit) -> Unit,
     onAuthRequired: () -> Unit
 ) {

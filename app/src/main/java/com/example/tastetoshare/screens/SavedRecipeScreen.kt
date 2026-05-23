@@ -47,7 +47,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.screens.recipeListComponents.RecipeListCard
 import com.example.tastetoshare.ui.theme.DangerRed
