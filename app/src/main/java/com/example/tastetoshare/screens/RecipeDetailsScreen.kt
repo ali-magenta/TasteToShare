@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tastetoshare.R
-import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.data.entities.Recipe
 import com.example.tastetoshare.data.entities.RecipeIngredient
 import com.example.tastetoshare.data.entities.User
@@ -77,6 +76,7 @@ fun RecipeDetailsDestination(
     onNavigateToCreateRecipePage: (recipeIdForClone: String?, recipeIdForEdit: String?) -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToPictureDialog: (Boolean) -> Unit,
+    onAuthRequired: () -> Unit,
     // onNavigateToShoppingList: () -> Unit,
     viewModel: RecipeDetailsViewModel = viewModel(factory = RecipeDetailsViewModel.Factory),
 )
@@ -126,6 +126,7 @@ fun RecipeDetailsDestination(
         showDeleteReviewPopup = viewModel::showDeleteReviewPopUp,
         onSetPhotoTarget = viewModel::setPhotoTarget,
         onNavigateToPictureDialog = onNavigateToPictureDialog,
+        onAuthRequired = onAuthRequired,
         focusReviewId = focusReviewId
     )
 }
@@ -150,19 +151,20 @@ fun RecipeDetailsScreen(
     onIncreaseServingClicked: () -> Unit,
     onDecreaseServingClicked: () -> Unit,
     deleteRecipe: () -> Unit,
-    toggleTriedRecipe: () -> Unit,
-    toggleSavedRecipe: () -> Unit,
+    toggleTriedRecipe: (() -> Unit) -> Unit,
+    toggleSavedRecipe: (() -> Unit) -> Unit,
     hideDeleteRecipePopUp: () -> Unit,
     showDeleteRecipePopUp: () -> Unit,
     onRatingChanged: (Int) -> Unit,
     onReviewTextChanged: (String) -> Unit,
-    onAddReview: () -> Unit,
+    onAddReview: (() -> Unit) -> Unit,
     userReview: UIReview?,
     onDeleteReview: (String) -> Unit,
     hideDeleteReviewPopup: () -> Unit,
     showDeleteReviewPopup: (String) -> Unit,
     onSetPhotoTarget: (PhotoReviewTarget) -> Unit,
     onNavigateToPictureDialog: (Boolean) -> Unit,
+    onAuthRequired: () -> Unit,
     focusReviewId: String? = null
 ) {
     val verticalScrollState = rememberScrollState()
@@ -182,7 +184,7 @@ fun RecipeDetailsScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            RecipeHeader(recipe = recipe, isSaved, toggleSavedRecipe)
+            RecipeHeader(recipe = recipe, isSaved, toggleSavedRecipe, onAuthRequired)
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -238,10 +240,10 @@ fun RecipeDetailsScreen(
                 }
                 Spacer(modifier = Modifier.width(10.dp))
 
-                if (SessionManager.CURRENT_LOGGED_IN_USER_ID != recipe.authorId) {
+                if (uiState.currentUserId != recipe.authorId) {
                     Button( //Tried button
                         onClick = {
-                            toggleTriedRecipe()
+                            toggleTriedRecipe(onAuthRequired)
                         },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(
@@ -462,7 +464,9 @@ fun RecipeDetailsScreen(
                 onSetPhotoReviewTarget = onSetPhotoTarget,
                 onNavigateToPictureDialog = onNavigateToPictureDialog,
                 focusReviewId = focusReviewId,
-                isSavingReview = uiState.isSavingReview
+                isSavingReview = uiState.isSavingReview,
+                onAuthRequired = onAuthRequired,
+                loggedUserId = uiState.currentUserId
             )
         }
 

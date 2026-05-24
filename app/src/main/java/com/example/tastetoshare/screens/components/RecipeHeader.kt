@@ -39,7 +39,7 @@ import com.example.tastetoshare.data.entities.Recipe
 
 
 @Composable
-fun RecipeHeader(recipe: Recipe, isSaved: Boolean, toggleSavedRecipe: () -> Unit) {
+fun RecipeHeader(recipe: Recipe, isSaved: Boolean, toggleSavedRecipe: (() -> Unit) -> Unit, onAuthRequired: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp)
@@ -79,7 +79,7 @@ fun RecipeHeader(recipe: Recipe, isSaved: Boolean, toggleSavedRecipe: () -> Unit
                             )
                     ) {}
                 }
-                TitleRatingSavedOverlay(recipe, isSaved, toggleSavedRecipe, Modifier.matchParentSize())
+                TitleRatingSavedOverlay(recipe, isSaved, toggleSavedRecipe, onAuthRequired, Modifier.matchParentSize())
             }
         }
     }
@@ -90,7 +90,8 @@ fun RecipeHeader(recipe: Recipe, isSaved: Boolean, toggleSavedRecipe: () -> Unit
 fun TitleRatingSavedOverlay(
     recipe: Recipe,
     isSaved: Boolean,
-    toggleSavedRecipe: () -> Unit,
+    toggleSavedRecipe: (() -> Unit) -> Unit,
+    onAuthRequired: () -> Unit,
     modifier: Modifier
 ) {
     Box(
@@ -98,7 +99,7 @@ fun TitleRatingSavedOverlay(
             .padding(16.dp)
     ) {
         Rating(recipe.rating, Modifier.align(Alignment.TopEnd))
-        TitleSave(recipe, isSaved, toggleSavedRecipe, Modifier.align(Alignment.BottomStart))
+        TitleSave(recipe, isSaved, toggleSavedRecipe, onAuthRequired, Modifier.align(Alignment.BottomStart))
     }
 }
 
@@ -131,7 +132,7 @@ fun Rating(rating: Float, modifier: Modifier) {
 }
 
 @Composable
-fun TitleSave(recipe: Recipe, isSaved: Boolean, toggleSavedRecipe: () -> Unit, modifier: Modifier) {
+fun TitleSave(recipe: Recipe, isSaved: Boolean, toggleSavedRecipe: (() -> Unit) -> Unit, onAuthRequired: () -> Unit, modifier: Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth(),
@@ -148,7 +149,7 @@ fun TitleSave(recipe: Recipe, isSaved: Boolean, toggleSavedRecipe: () -> Unit, m
         )
         Button(
             onClick = {
-                toggleSavedRecipe()
+                toggleSavedRecipe(onAuthRequired)
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.White.copy(alpha = 0.25f), // semi-transparent background

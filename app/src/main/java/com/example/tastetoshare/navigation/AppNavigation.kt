@@ -267,6 +267,7 @@ fun AppNavigation() {
                     },
                     onNavigateToHome = { navActions.navigateToHomePage() },
                     onNavigateToPictureDialog = {isFrontCamera -> navActions.navigateToPictureDialog(isFrontCamera)},
+                    onAuthRequired = navActions::navigateToLogin,
                     viewModel = viewModel
                     // for final RecipeDetails (idk if we want to access shopping list when adding ingredients to it or not)
                     // onNavigateToShoppingList = {navActions.navigateToShoppingList()}

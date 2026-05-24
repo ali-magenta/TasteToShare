@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.tastetoshare.R
-import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.ui.theme.StarGold
 import com.example.tastetoshare.data.uiClasses.UIReview
 import com.example.tastetoshare.ui.theme.DangerRed
@@ -54,20 +53,22 @@ fun Reviews(
     reviewText: String,
     onRatingChanged: (Int) -> Unit,
     onReviewTextChanged: (String) -> Unit,
-    onAddReview: () -> Unit,
+    onAddReview: (() -> Unit) -> Unit,
     userReview: UIReview?,
     showDeleteReviewPopup: (String) -> Unit,
     reviewPhotoUrl: String,
     onSetPhotoReviewTarget: (PhotoReviewTarget) -> Unit,
     onNavigateToPictureDialog: (Boolean) -> Unit,
     focusReviewId: String? = null,
+    onAuthRequired: () -> Unit,
+    loggedUserId: String?,
     isSavingReview: Boolean,
 ) {
     val listState = rememberLazyListState()
 
     val sortedReviews = remember(reviews, userReview) {
         val otherReviews = reviews.filter {
-            it.user.userId != SessionManager.CURRENT_LOGGED_IN_USER_ID
+            it.user.userId != loggedUserId
         }
         if (userReview != null) listOf(userReview) + otherReviews
         else otherReviews
@@ -116,12 +117,13 @@ fun Reviews(
                         reviewPhotoUrl,
                         onSetPhotoReviewTarget,
                         onNavigateToPictureDialog,
-                        isSavingReview
+                        isSavingReview,
+                        onAuthRequired
                     )
                 }
             }
             items(sortedReviews) { review ->
-                ReviewCard(review, showDeleteReviewPopup)
+                ReviewCard(review, showDeleteReviewPopup, loggedUserId)
             }
         }
     }
@@ -133,11 +135,12 @@ fun InputReviewCard(
     reviewText: String,
     onRatingChanged: (Int) -> Unit,
     onReviewTextChanged: (String) -> Unit,
-    onAddReview: () -> Unit,
+    onAddReview: (() -> Unit) -> Unit,
     reviewPhotoUrl: String,
     onSetPhotoReviewTarget: (PhotoReviewTarget) -> Unit,
     onNavigateToPictureDialog: (Boolean) -> Unit,
     isSavingReview: Boolean,
+    onAuthRequired: () -> Unit,
     modifier: Modifier = Modifier) {
     //val reviewSafe = review ?: ""
 
@@ -208,7 +211,7 @@ fun InputReviewCard(
                     minLines = 5
                 )
                 Button(
-                    onClick = onAddReview,
+                    onClick = { onAddReview(onAuthRequired) },
                     enabled = !isSavingReview,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -233,8 +236,8 @@ fun InputReviewCard(
 }
 
 @Composable
-fun ReviewCard(review: UIReview, onDeleteReview: (String) -> Unit, modifier: Modifier = Modifier) {
-    val isMyReview = review.user.userId == SessionManager.CURRENT_LOGGED_IN_USER_ID
+fun ReviewCard(review: UIReview, onDeleteReview: (String) -> Unit, loggedUserId: String?, modifier: Modifier = Modifier) {
+    val isMyReview = review.user.userId == loggedUserId
 
     Card(
         modifier = modifier

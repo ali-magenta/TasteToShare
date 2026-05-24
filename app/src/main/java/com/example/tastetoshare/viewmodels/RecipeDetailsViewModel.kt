@@ -7,25 +7,20 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.example.tastetoshare.services.notifications.NotificationService
-import com.example.tastetoshare.data.NotificationType
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
-import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.TasteToShareApp
+import com.example.tastetoshare.data.NotificationType
+import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.entities.Notification
 import com.example.tastetoshare.data.entities.Recipe
 import com.example.tastetoshare.data.entities.Review
 import com.example.tastetoshare.data.entities.User
 import com.example.tastetoshare.data.uiClasses.UIReview
-import com.example.tastetoshare.data.uiClasses.toUi
 import com.example.tastetoshare.navigation.RecipeDetailsRoute
-import com.example.tastetoshare.repositories.IngredientRepository
 import com.example.tastetoshare.repositories.NotificationRepository
 import com.example.tastetoshare.repositories.RecipeRepository
-import com.example.tastetoshare.repositories.TagRepository
 import com.example.tastetoshare.repositories.UserRepository
+import com.example.tastetoshare.services.notifications.NotificationService
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -38,7 +33,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.collections.map
 
 class RecipeDetailsViewModel(
     savedStateHandle: SavedStateHandle,
@@ -53,6 +47,29 @@ class RecipeDetailsViewModel(
     val uiState = _uiState.asStateFlow()
 
     private val args = savedStateHandle.toRoute<RecipeDetailsRoute>()
+
+    private val currentUserId: StateFlow<String?> = SessionManagerFacade.currentUserStateFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = SessionManagerFacade.currentUserStateFlow.value
+        )
+
+    private val isLoggedIn: StateFlow<Boolean> = SessionManagerFacade.currentUserStateFlow
+        .map {it != null}
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = SessionManagerFacade.currentUserStateFlow.value != null
+        )
+
+    init {
+        viewModelScope.launch {
+            currentUserId.collect { userId ->
+                _uiState.update { it.copy(currentUserId = userId) }
+            }
+        }
+    }
 
     val focusReviewId: String? = args.focusReviewId
     val recipe = recipeRepository
@@ -89,24 +106,41 @@ class RecipeDetailsViewModel(
         hideDeleteRecipePopUp()
     }
 
-    fun toggleRecipeTried() {
-        viewModelScope.launch {
-            if(isTried.value) {
-                userRepository.deleteTriedRecipe(SessionManager.CURRENT_LOGGED_IN_USER_ID, recipe.value.recipeId)
-            } else {
-                userRepository.addTriedRecipe(SessionManager.CURRENT_LOGGED_IN_USER_ID, recipe.value.recipeId)
+    fun toggleRecipeTried(onAuthRequired: () -> Unit) {
+        if (isLoggedIn.value) {
+            viewModelScope.launch {
+                val userId = SessionManagerFacade.currentUserStateFlow.value ?: return@launch
+                if (isTried.value) {
+                    userRepository.deleteTriedRecipe(userId, recipe.value.recipeId)
+                } else {
+                    userRepository.addTriedRecipe(
+                        userId,
+                        recipe.value.recipeId
+                    )
+                }
             }
         }
+        else onAuthRequired()
     }
 
-    fun toggleRecipeSaved() {
-        viewModelScope.launch {
-            if(isSaved.value) {
-                userRepository.deleteSavedRecipe(SessionManager.CURRENT_LOGGED_IN_USER_ID, recipe.value.recipeId)
-            } else {
-                userRepository.addSavedRecipe(SessionManager.CURRENT_LOGGED_IN_USER_ID, recipe.value.recipeId)
+    fun toggleRecipeSaved(onAuthRequired: () -> Unit) {
+        if (isLoggedIn.value) {
+            viewModelScope.launch {
+                val userId = SessionManagerFacade.currentUserStateFlow.value ?: return@launch
+                if (isSaved.value) {
+                    userRepository.deleteSavedRecipe(
+                        userId,
+                        recipe.value.recipeId
+                    )
+                } else {
+                    userRepository.addSavedRecipe(
+                        userId,
+                        recipe.value.recipeId
+                    )
+                }
             }
         }
+        else onAuthRequired()
     }
 
     fun hideDeleteRecipePopUp() {
@@ -143,14 +177,16 @@ class RecipeDetailsViewModel(
     //the flatmap latest is a transformation (see slide 11 of flows)
     //That allows to get the latest element in the flow and update when the value changes
     @OptIn(ExperimentalCoroutinesApi::class)
-    val loggedInUser: StateFlow<User> = recipe.flatMapLatest { recipe ->
-        userRepository.getUser(SessionManager.CURRENT_LOGGED_IN_USER_ID)
-    }
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            User()
-        )
+    private val loggedInUser: StateFlow<User> =
+        currentUserId.flatMapLatest{ userId ->
+            if (userId != null) userRepository.getUser(userId)
+            else flowOf(User())
+        }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = User()
+            )
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val originalRecipe: StateFlow<Recipe> = recipe.flatMapLatest { recipe ->
@@ -213,7 +249,7 @@ class RecipeDetailsViewModel(
             )
 
     val userReview: StateFlow<UIReview?> = reviews.map { reviewList ->
-        reviewList.find { it.user.userId == SessionManager.CURRENT_LOGGED_IN_USER_ID }
+        reviewList.find { it.user.userId == currentUserId.value }
     }
         .stateIn(
                 scope = viewModelScope,
@@ -229,48 +265,49 @@ class RecipeDetailsViewModel(
         _uiState.update { it.copy(reviewText = text) }
     }
 
-    fun addReview() {
-        val currentRecipe = recipe.value
-        val currentUiState = _uiState.value
+    fun addReview(onAuthRequired: () -> Unit) {
+        if(isLoggedIn.value) {
+            val currentRecipe = recipe.value
+            val currentUiState = _uiState.value
+            val userId = SessionManagerFacade.currentUserStateFlow.value ?: return
 
-        // rating mandatory, textual review optional
-        if (currentUiState.selectedRating == 0U) return
+            // rating mandatory, textual review optional
+            if (currentUiState.selectedRating == 0U) return
 
-        val review = Review(
-            body = currentUiState.reviewText,
-            rating = currentUiState.selectedRating.toInt(),
-            userId = SessionManager.CURRENT_LOGGED_IN_USER_ID,
-            photosUrl = if (currentUiState.reviewPhotoURL.isNotBlank()) listOf(currentUiState.reviewPhotoURL)
-                        else emptyList()
-        )
+            val review = Review(
+                body = currentUiState.reviewText,
+                rating = currentUiState.selectedRating.toInt(),
+                userId = userId,
+                photosUrl = if (currentUiState.reviewPhotoURL.isNotBlank()) listOf(currentUiState.reviewPhotoURL)
+                else emptyList()
+            )
 
-        viewModelScope.launch {
-            _uiState.update { it.copy(isSavingReview = true) }
-            recipeRepository.addReview(currentRecipe.recipeId, review)
-            // To change by a firebase script
+            viewModelScope.launch {
+                _uiState.update { it.copy(isSavingReview = true) }
+                recipeRepository.addReview(currentRecipe.recipeId, review)
+                // To change by a firebase script
 
-            // remove this if for testing on the logged account
-            // (while we don't have firebase repository for notifications and can't test on 2 devices simultaneously)
-            if (currentRecipe.authorId != SessionManager.CURRENT_LOGGED_IN_USER_ID)
-            {
-                val notification = Notification(
-                    userId = currentRecipe.authorId,
-                    recipeId = currentRecipe.recipeId,
-                    type = NotificationType.NEW_REVIEW,
-                    title = "New review on your recipe!",
-                    message = "Someone left a review on your ${currentRecipe.title} recipe.",
-                    targetId = review.reviewId
-                )
+                // remove this if for testing on the logged account
+                // (while we don't have firebase repository for notifications and can't test on 2 devices simultaneously)
+                if (currentRecipe.authorId != userId) {
+                    val notification = Notification(
+                        userId = currentRecipe.authorId,
+                        recipeId = currentRecipe.recipeId,
+                        type = NotificationType.NEW_REVIEW,
+                        title = "New review on your recipe!",
+                        message = "Someone left a review on your ${currentRecipe.title} recipe.",
+                        targetId = review.reviewId
+                    )
 
-                notificationRepository.addNotification(notification)
-                // notificationService.dispatchNotification(notification.toUi(currentRecipe))
+                    notificationRepository.addNotification(notification)
+                    // notificationService.dispatchNotification(notification.toUi(currentRecipe))
+                }
+                _uiState.update { it.copy(isSavingReview = false) }
             }
-            _uiState.update { it.copy(isSavingReview = false) }
+
+            _uiState.update { it.copy(reviewText = "", selectedRating = 0U, reviewPhotoURL = "") }
         }
-
-
-
-        _uiState.update { it.copy(reviewText = "", selectedRating = 0U, reviewPhotoURL = "") }
+        else onAuthRequired()
     }
 
     fun deleteReview(reviewId: String) {
@@ -331,7 +368,8 @@ data class RecipeDetailsUIState(
     val reviewIdDelete: String = "",
     val reviewPhotoURL: String = "",
     val currentPhotoReviewTarget: PhotoReviewTarget = PhotoReviewTarget.REVIEW_PHOTO,
-    val isSavingReview: Boolean = false
+    val isSavingReview: Boolean = false,
+    val currentUserId: String? = null
 )
 
 enum class PhotoReviewTarget {

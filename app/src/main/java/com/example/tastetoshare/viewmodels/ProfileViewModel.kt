@@ -70,6 +70,17 @@ class ProfileViewModel(
                 initialValue = User()
             )
 
+    private val _uiState = MutableStateFlow(ProfileUIState())
+    val uiState: StateFlow<ProfileUIState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            currentUserId.collect { userId ->
+                _uiState.update { it.copy(currentUserId = userId) }
+            }
+        }
+    }
+
     val userRecipes: StateFlow<List<UIRecipePreview>> =
         recipeRepository.getRecentRecipesPreviewByUserId(userId)
             .combine(loggedInUser) { recipes, loggedInUser ->
@@ -80,9 +91,6 @@ class ProfileViewModel(
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = emptyList()
             )
-
-    private val _uiState = MutableStateFlow(ProfileUIState())
-    val uiState: StateFlow<ProfileUIState> = _uiState.asStateFlow()
 
     fun toggleMyRecipesAnalyticsTab(value: Boolean) {
         _uiState.update { it.copy(isShowingMyRecipes = value) }
@@ -297,7 +305,8 @@ data class ProfileUIState(
     val validation: EditProfileFormValidation = EditProfileFormValidation(),
     val isLoading: Boolean = false,
     val isGalleryOpen: Boolean = false,
-    val isSaving: Boolean = false
+    val isSaving: Boolean = false,
+    val currentUserId: String? = null
 )
 
 

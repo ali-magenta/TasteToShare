@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.entities.User
 import com.example.tastetoshare.data.uiClasses.UIRecipePreview
 import com.example.tastetoshare.screens.components.ProfileHeader
@@ -67,7 +66,7 @@ fun ProfileDestination(
             recipes = userRecipes,
             uiState = uiState,
             onNavigateToRecipeProposal = onNavigateToRecipeProposal,
-            isOwnProfile = user.userId == SessionManagerFacade.currentUserId,
+            isOwnProfile = user.userId == uiState.currentUserId,
             edit = onNavigateToEditProfile,
             toggleMyRecipesAnalyticsTab = viewModel::toggleMyRecipesAnalyticsTab,
             onViewAllRecipes = {onViewAllRecipes(user.userId)},

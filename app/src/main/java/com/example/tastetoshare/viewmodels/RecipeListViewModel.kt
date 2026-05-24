@@ -88,7 +88,7 @@ class RecipeListViewModel(
     private val currentUserId: StateFlow<String?> = SessionManagerFacade.currentUserStateFlow
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly,
             initialValue = SessionManagerFacade.currentUserStateFlow.value
         )
 
@@ -96,7 +96,7 @@ class RecipeListViewModel(
         .map {it != null}
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly,
             initialValue = SessionManagerFacade.currentUserStateFlow.value != null
         )
 
