@@ -7,7 +7,6 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination
@@ -23,7 +22,9 @@ fun DynamicTopBar(
     currentDestination: NavDestination?,
     onNavigateBack: () -> Unit,
     onNavigateToNotifications: () -> Unit,
-    onNavigateToHome: () -> Unit
+    onNavigateToHome: () -> Unit,
+    currentUserId: String?,
+    profileUserId: String?
 ) {
     if (currentDestination == null || currentDestination.hasRoute<WelcomeRoute>()) {
         return
@@ -50,7 +51,7 @@ fun DynamicTopBar(
         currentDestination.hasRoute<ProfileRoute>() -> {
             title = "Profile"
             showBackButton = false
-            showLogoutButton = true
+            showLogoutButton = currentUserId != null && currentUserId == profileUserId
         }
         isCreateRecipeFlow -> {
             title = "Create Recipe"

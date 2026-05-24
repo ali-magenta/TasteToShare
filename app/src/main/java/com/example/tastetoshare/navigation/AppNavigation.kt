@@ -119,7 +119,12 @@ fun AppNavigation() {
                 currentDestination = currentDestination,
                 onNavigateBack = { navActions.navigateBack() },
                 onNavigateToNotifications = { navActions.navigateToNotifications() },
-                onNavigateToHome = { navActions.navigateToHomePage() }
+                onNavigateToHome = { navActions.navigateToHomePage() },
+                currentUserId = currentUserId,
+                profileUserId = navBackStackEntry?.destination?.let {
+                    if(it.hasRoute<ProfileRoute>()) navBackStackEntry?.toRoute<ProfileRoute>()?.userId
+                    else null
+                }
             )
         },
         snackbarHost = {
@@ -151,7 +156,8 @@ fun AppNavigation() {
                 HomepageDestination(
                     onNavigateToRecipeProposal = { recipeId -> navActions.navigateToRecipeDetails(recipeId) },
                     onNavigateToNotifications = { navActions.navigateToNotifications() },
-                    onSearchSubmit = { search -> navActions.navigateToRecipeList(searchString = search) }
+                    onSearchSubmit = { search -> navActions.navigateToRecipeList(searchString = search) },
+                    onAuthRequired = navActions::navigateToLogin,
                 )
             }
 
@@ -221,6 +227,7 @@ fun AppNavigation() {
                     onViewAllRecipes = { userId -> navActions.navigateToRecipeList(userId) },
                     onNavigateToRecipeProposal = { recipeId -> navActions.navigateToRecipeDetails(recipeId) },
                     onNavigateToEditProfile = {navActions.navigateToEditProfile(args.userId) },
+                    onAuthRequired = navActions::navigateToLogin,
                 )
             }
 

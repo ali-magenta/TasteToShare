@@ -19,11 +19,15 @@ import com.example.tastetoshare.navigation.ProfileRoute
 import com.example.tastetoshare.repositories.RecipeRepository
 import com.example.tastetoshare.repositories.TagRepository
 import com.example.tastetoshare.repositories.UserRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -58,15 +62,27 @@ class ProfileViewModel(
     private val currentUserId: StateFlow<String?> = SessionManagerFacade.currentUserStateFlow
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly,
             initialValue = SessionManagerFacade.currentUserStateFlow.value
         )
 
+    private val isLoggedIn: StateFlow<Boolean> = SessionManagerFacade.currentUserStateFlow
+        .map {it != null}
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = SessionManagerFacade.currentUserStateFlow.value != null
+        )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     val loggedInUser: StateFlow<User> =
-        userRepository.getUser(currentUserId.value ?: "")
+        currentUserId.flatMapLatest { userId ->
+            if(userId != null) userRepository.getUser(userId)
+            else flowOf(User())
+        }
             .stateIn(
                 scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
+                started = SharingStarted.Eagerly,
                 initialValue = User()
             )
 
@@ -159,17 +175,20 @@ class ProfileViewModel(
         _uiState.update { it.copy(editedPhoto = photo) }
     }
 
-    fun onToggleSaved(recipeId: String) {
-        viewModelScope.launch {
-            val loggedUserId = loggedInUser.value.userId
-            val currentlySaved = recipeId in loggedInUser.value.savedRecipeIds
-            if (currentlySaved) {
-                userRepository.deleteSavedRecipe(loggedUserId ?: "", recipeId)
-            } else {
-                userRepository.addSavedRecipe(loggedUserId ?: "", recipeId)
-            }
+    fun onToggleSaved(recipeId: String, onAuthRequired: () -> Unit) {
+        if (isLoggedIn.value) {
+            viewModelScope.launch {
+                val loggedUserId = SessionManagerFacade.currentUserStateFlow.value ?: return@launch
+                val currentlySaved = recipeId in loggedInUser.value.savedRecipeIds
+                if (currentlySaved) {
+                    userRepository.deleteSavedRecipe(loggedUserId, recipeId)
+                } else {
+                    userRepository.addSavedRecipe(loggedUserId, recipeId)
+                }
 
+            }
         }
+        else onAuthRequired()
     }
 
     fun saveChanges(onDone: (Boolean) -> Unit) {

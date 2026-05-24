@@ -54,6 +54,7 @@ fun ProfileDestination(
     onViewAllRecipes: (String) -> Unit,
     onNavigateToRecipeProposal: (String) -> Unit,
     onNavigateToEditProfile: () -> Unit,
+    onAuthRequired: () -> Unit,
     viewModel: ProfileViewModel = viewModel(factory = ProfileViewModel.Factory)
 ) {
 
@@ -70,7 +71,8 @@ fun ProfileDestination(
             edit = onNavigateToEditProfile,
             toggleMyRecipesAnalyticsTab = viewModel::toggleMyRecipesAnalyticsTab,
             onViewAllRecipes = {onViewAllRecipes(user.userId)},
-            onToggleSaved = viewModel::onToggleSaved
+            onToggleSaved = viewModel::onToggleSaved,
+            onAuthRequired = onAuthRequired
         )
     }
 
@@ -85,7 +87,8 @@ fun ProfileScreen(
     edit: () -> Unit,
     toggleMyRecipesAnalyticsTab: (Boolean) -> Unit,
     onViewAllRecipes: () -> Unit,
-    onToggleSaved: (String) -> Unit
+    onToggleSaved: (String, () -> Unit) -> Unit,
+    onAuthRequired: () -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val isVertical = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -150,7 +153,7 @@ fun ProfileScreen(
                             }
                         }
                         items(recipes.size) { index ->
-                            RecipeCard(recipes[index], onNavigateToRecipeProposal, onToggleSaved)
+                            RecipeCard(recipes[index], onNavigateToRecipeProposal, onToggleSaved, onAuthRequired)
                         }
                     }
                 }
@@ -183,7 +186,7 @@ fun ProfileScreen(
                     }
                 }
                 items(recipes.size) { index ->
-                    RecipeCard(recipe= recipes[index], onNavigateToDetails= onNavigateToRecipeProposal, onToggleSaved)
+                    RecipeCard(recipe= recipes[index], onNavigateToDetails= onNavigateToRecipeProposal, onToggleSaved, onAuthRequired)
                 }
             }
         }

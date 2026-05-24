@@ -81,9 +81,12 @@ fun UserRoleRow(role: String) {
 }
 
 @Composable
-fun RecipeCard(recipe: UIRecipePreview,
-               onNavigateToDetails: (String) -> Unit,
-               onSaveClick: (String) -> Unit) {
+fun RecipeCard(
+    recipe: UIRecipePreview,
+    onNavigateToDetails: (String) -> Unit,
+    onSaveClick: (String, () -> Unit) -> Unit,
+    onAuthRequired: () -> Unit
+) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -135,7 +138,7 @@ fun RecipeCard(recipe: UIRecipePreview,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.clickable(
                             enabled = true,
-                            onClick = {onSaveClick(recipe.recipeId)}
+                            onClick = {onSaveClick(recipe.recipeId, onAuthRequired)}
                         )
                     )
                 }

@@ -31,7 +31,8 @@ fun HomepageDestination(
     viewModel: HomepageViewModel = viewModel(factory = HomepageViewModel.Factory),
     onNavigateToNotifications: () -> Unit,
     onNavigateToRecipeProposal: (String) -> Unit,
-    onSearchSubmit: (String) -> Unit
+    onSearchSubmit: (String) -> Unit,
+    onAuthRequired: () -> Unit
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -48,7 +49,8 @@ fun HomepageDestination(
         viewModel::onSearchTextChanged,
         onNavigateToNotifications,
         onNavigateToRecipeProposal,
-        viewModel::onToggleSaved
+        viewModel::onToggleSaved,
+        onAuthRequired
     )
 }
 
@@ -63,7 +65,8 @@ fun HomepageScreen(
     onSearchTextChanged: (String) -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToRecipeProposal: (String) -> Unit,
-    onSaveClick: (String) -> Unit
+    onSaveClick: (String, () -> Unit) -> Unit,
+    onAuthRequired: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -95,6 +98,7 @@ fun HomepageScreen(
                         recipe,
                         onNavigateToRecipeProposal,
                         onSaveClick,
+                        onAuthRequired,
                         Modifier.width(220.dp)
                     )
                 }
@@ -109,7 +113,7 @@ fun HomepageScreen(
             )
         }
         items(topWeeklyRecipes) { recipe ->
-            RecipeCard(recipe, onNavigateToRecipeProposal, onSaveClick)
+            RecipeCard(recipe, onNavigateToRecipeProposal, onSaveClick, onAuthRequired)
         }
     }
 }

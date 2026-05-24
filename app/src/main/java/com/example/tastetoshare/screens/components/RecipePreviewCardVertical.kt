@@ -38,7 +38,8 @@ import com.example.tastetoshare.data.uiClasses.UIRecipePreview
 fun RecipePreviewCardVertical(
     recipe: UIRecipePreview,
     onNavigateToDetails: (String) -> Unit,
-    onSaveClick: (String) -> Unit,
+    onSaveClick: (String, () -> Unit) -> Unit,
+    onAuthRequired: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -63,7 +64,7 @@ fun RecipePreviewCardVertical(
                         .padding(4.dp)
                 ) {
                     Button(
-                        onClick = {onSaveClick(recipe.recipeId)},
+                        onClick = {onSaveClick(recipe.recipeId, onAuthRequired)},
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Black.copy(alpha = 0.45f), // semi-transparent background
                             contentColor = MaterialTheme.colorScheme.primary
