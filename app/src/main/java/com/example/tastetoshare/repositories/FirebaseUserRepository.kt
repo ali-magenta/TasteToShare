@@ -1,5 +1,7 @@
 package com.example.tastetoshare.repositories
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import com.example.tastetoshare.data.FirebaseCollections
 import com.example.tastetoshare.data.entities.User
@@ -12,6 +14,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import kotlin.collections.plus
 import androidx.core.net.toUri
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.net.URL
+import kotlin.collections.map
 
 class FirebaseUserRepository(
     private val firestore: FirebaseFirestore,
@@ -24,8 +31,21 @@ class FirebaseUserRepository(
     suspend fun initializeData(users: List<User>) {
         val existing = userCollection.limit(1).get().await()
         if (existing.isEmpty) {
+            val updatedUser = users.map { user ->
+                val uploadedUserPhoto = if (!user.photoURI.isNullOrBlank() && user.photoURI.startsWith("http")) {
+                    uploadExternalImageToFirebase(
+                        user.photoURI,
+                        "users/${user.userId}/profile_${System.currentTimeMillis()}.jpg"
+                    )
+                } else {
+                    user.photoURI
+                }
+                user.copy(
+                    photoURI = uploadedUserPhoto,
+                )
+            }
             firestore.runBatch { batch ->
-                users.forEach { user ->
+                updatedUser.forEach { user ->
                     val docRef = userCollection.document(user.userId)
                     batch.set(docRef, user)
                 }
@@ -33,6 +53,34 @@ class FirebaseUserRepository(
         }
     }
 
+    private suspend fun uploadExternalImageToFirebase(
+        imageUrl: String,
+        storagePath: String
+    ): String = withContext(Dispatchers.IO) {
+
+        val url = URL(imageUrl)
+        val connection = url.openConnection()
+        connection.connect()
+        val inputStream = connection.getInputStream()
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+        if (bitmap == null) {
+            throw Exception("Failed to decode image")
+        }
+        inputStream.close()
+
+        //compress the image
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(
+            Bitmap.CompressFormat.JPEG,
+            85,
+            outputStream
+        )
+        val compressedBytes = outputStream.toByteArray()
+
+        val storageRef = storage.reference.child(storagePath)
+        storageRef.putBytes(compressedBytes).await()
+        storageRef.downloadUrl.await().toString()
+    }
 
     override fun getUser(userId: String): Flow<User> {
         return userCollection.snapshots()
