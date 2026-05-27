@@ -29,6 +29,7 @@ import androidx.navigation.toRoute
 import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.screens.EditProfileDestination
 import com.example.tastetoshare.screens.HomepageDestination
+import com.example.tastetoshare.screens.MapDestination
 import com.example.tastetoshare.screens.NotificationDestination
 import com.example.tastetoshare.screens.PictureDialogDestination
 import com.example.tastetoshare.screens.ProfileDestination
@@ -157,6 +158,7 @@ fun AppNavigation() {
                     onNavigateToRecipeProposal = { recipeId -> navActions.navigateToRecipeDetails(recipeId) },
                     onNavigateToNotifications = { navActions.navigateToNotifications() },
                     onSearchSubmit = { search -> navActions.navigateToRecipeList(searchString = search) },
+                    onNavigateToMap = navActions::navigateToMap,
                     onAuthRequired = navActions::navigateToLogin,
                 )
             }
@@ -284,6 +286,16 @@ fun AppNavigation() {
             composable<RecipeListRoute>
             {
                 RecipeListDestination(
+                    onNavigateToDetails = { recipeId ->
+                        navActions.navigateToRecipeDetails(recipeId)
+                    },
+                    onAuthRequired = navActions::navigateToLogin
+                )
+            }
+
+            composable<MapRoute>
+            {
+                MapDestination(
                     onNavigateToDetails = { recipeId ->
                         navActions.navigateToRecipeDetails(recipeId)
                     },

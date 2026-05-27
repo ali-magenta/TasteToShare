@@ -27,6 +27,7 @@ class AppNavigationActions(private val navCtrl: NavController) {
 
     fun navigateToRecipeDetailsWithReviewScroll(id: String, reviewId: String) = navCtrl.navigate(RecipeDetailsRoute(id, reviewId))
     fun navigateToHomePage() = navCtrl.navigate(HomeRoute)
+    fun navigateToMap() = navCtrl.navigate(MapRoute)
     fun navigateBack() = navCtrl.popBackStack()
     fun navigateToNotifications() {
         if(SessionManagerFacade.isLoggedIn) {

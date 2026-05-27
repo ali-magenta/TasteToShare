@@ -1,25 +1,38 @@
 package com.example.tastetoshare.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tastetoshare.R
 import com.example.tastetoshare.data.uiClasses.UIRecipePreview
 import com.example.tastetoshare.screens.components.RecipeCard
 import com.example.tastetoshare.screens.components.RecipePreviewCardVertical
@@ -31,6 +44,7 @@ fun HomepageDestination(
     viewModel: HomepageViewModel = viewModel(factory = HomepageViewModel.Factory),
     onNavigateToNotifications: () -> Unit,
     onNavigateToRecipeProposal: (String) -> Unit,
+    onNavigateToMap: () -> Unit,
     onSearchSubmit: (String) -> Unit,
     onAuthRequired: () -> Unit
 ) {
@@ -48,6 +62,7 @@ fun HomepageDestination(
         onSearchSubmit,
         viewModel::onSearchTextChanged,
         onNavigateToNotifications,
+        onNavigateToMap = onNavigateToMap,
         onNavigateToRecipeProposal,
         viewModel::onToggleSaved,
         onAuthRequired
@@ -64,6 +79,7 @@ fun HomepageScreen(
     onSearchSubmit: (String) -> Unit,
     onSearchTextChanged: (String) -> Unit,
     onNavigateToNotifications: () -> Unit,
+    onNavigateToMap: () -> Unit,
     onNavigateToRecipeProposal: (String) -> Unit,
     onSaveClick: (String, () -> Unit) -> Unit,
     onAuthRequired: () -> Unit
@@ -77,7 +93,22 @@ fun HomepageScreen(
         contentPadding = PaddingValues(bottom = 20.dp)
     ) {
         item {
-            SearchRecipeBar(uiState.searchText, onSearchTextChanged, onSearchSubmit)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(modifier = Modifier.weight(4f)) {
+                    SearchRecipeBar(uiState.searchText, onSearchTextChanged, onSearchSubmit)
+                }
+
+                IconButton(
+                    onClick = {onNavigateToMap()},
+                    modifier = Modifier.size(50.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Map,
+                        contentDescription = "Map Button",
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
         }
         item {
             Text(

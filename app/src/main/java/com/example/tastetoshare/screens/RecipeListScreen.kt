@@ -72,7 +72,13 @@ fun RecipeListDestination(
         ingredients = ingredients,
         cuisineTags = cuisineTags,
         dietaryTags = dietaryTags,
-        uiState = uiState,
+        searchText = uiState.searchText,
+        selectedDifficulty = uiState.selectedDifficulty,
+        selectedCost = uiState.selectedCost,
+        searchIngredient = uiState.searchIngredient,
+        selectedIngredients = uiState.selectedIngredients,
+        selectedCuisine = uiState.selectedCuisine,
+        selectedDietary = uiState.selectedDietary,
         onSearchTextChanged = viewModel::onSearchTextChanged,
         onDifficultySelected = viewModel::onDifficultySelected,
         onCostSelected = viewModel::onCostSelected,
@@ -93,7 +99,13 @@ fun RecipeListScreen(
     ingredients: List<Ingredient>,
     cuisineTags: List<Tag>,
     dietaryTags: List<Tag>,
-    uiState: RecipeListUIState,
+    searchText: String,
+    selectedDifficulty: Difficulty?,
+    selectedCost: Cost?,
+    searchIngredient: String,
+    selectedIngredients: List<Ingredient>,
+    selectedCuisine: Tag?,
+    selectedDietary: Tag?,
     onSearchTextChanged: (String) -> Unit,
     onDifficultySelected: (Difficulty?) -> Unit,
     onCostSelected: (Cost?) -> Unit,
@@ -118,26 +130,26 @@ fun RecipeListScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        SearchRecipeBar(uiState.searchText, onSearchTextChanged)
+                        SearchRecipeBar(searchText, onSearchTextChanged)
                     }
 
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
                         FilterRow(
-                            selectedDifficulty = uiState.selectedDifficulty,
+                            selectedDifficulty = selectedDifficulty,
                             onDifficultySelected = onDifficultySelected,
-                            selectedCost = uiState.selectedCost,
+                            selectedCost = selectedCost,
                             onCostSelected = onCostSelected,
                             ingredients = ingredients,
-                            searchIngredient = uiState.searchIngredient,
-                            selectedIngredients = uiState.selectedIngredients,
+                            searchIngredient = searchIngredient,
+                            selectedIngredients = selectedIngredients,
                             onSearchIngredientChanged = onSearchIngredientChanged,
                             onIngredientsSelected = onIngredientsSelected,
                             cuisineTags = cuisineTags,
                             dietaryTags = dietaryTags,
                             onCuisineSelected = onCuisineSelected,
                             onDietarySelected = onDietarySelected,
-                            selectedCuisine = uiState.selectedCuisine,
-                            selectedDietary = uiState.selectedDietary
+                            selectedCuisine = selectedCuisine,
+                            selectedDietary = selectedDietary
                         )
                     }
 

@@ -48,6 +48,9 @@ data class RecipeListRoute(
     val tagsId: List<String>?,
 )
 
+@Serializable
+object MapRoute
+
 // Authentification nested graph
 @Serializable
 object AuthGraph

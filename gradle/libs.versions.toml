@@ -13,6 +13,7 @@ kotlin = "2.0.21"
 composeBom = "2024.09.00"
 coil = "2.7.0"
 lifecycle = "2.10.0"
+mapsCompose = "8.3.0"
 material3Version = "1.2.1"
 paperdb = "2.7.2"
 remoteCreationCore = "1.0.0-alpha07"
@@ -54,6 +55,7 @@ androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-remote-creation-core = { group = "androidx.compose.remote", name = "remote-creation-core", version.ref = "remoteCreationCore" }
+maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 paperdb = { module = "io.github.pilgr:paperdb", version.ref = "paperdb" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }

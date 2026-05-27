@@ -47,5 +47,6 @@
             </intent-filter>
         </service>
 
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyDIhe-RD3pERMhM8qZcNDEgqwbq6vnmNu0"/>
     </application>
 </manifest>
