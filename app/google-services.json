@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "538526353666-df3ofq45nsoihukda5b5caah5hbip3ut.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.tastetoshare",
+            "certificate_hash": "f0255cf5b01371a2b70595d50220d1180a22427b"
+          }
+        },
+        {
           "client_id": "538526353666-hab14e4qlhmdbq5en501jtct7v8et3bs.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
