@@ -46,31 +46,33 @@ fun MapDestination(
             snippet = "Marker in Singapore"
         )
     }
-
-    ModalBottomSheet(onDismissRequest = { /* Executed when the sheet is dismissed */ }) {
-        RecipeListScreen(
-            recipes = recipes,
-            ingredients = ingredients,
-            cuisineTags = cuisineTags,
-            dietaryTags = dietaryTags,
-            searchText = uiState.searchText,
-            selectedDifficulty = uiState.selectedDifficulty,
-            selectedCost = uiState.selectedCost,
-            searchIngredient = uiState.searchIngredient,
-            selectedIngredients = uiState.selectedIngredients,
-            selectedCuisine = uiState.selectedCuisine,
-            selectedDietary = uiState.selectedDietary,
-            onSearchTextChanged = viewModel::onSearchTextChanged,
-            onDifficultySelected = viewModel::onDifficultySelected,
-            onCostSelected = viewModel::onCostSelected,
-            onSearchIngredientChanged = viewModel::onSearchIngredientChanged,
-            onIngredientsSelected = viewModel::onIngredientsSelected,
-            onCuisineSelected = viewModel::onCuisineSelected,
-            onDietarySelected = viewModel::onDietarySelected,
-            onNavigateToDetails = onNavigateToDetails,
-            onToggleSaved = viewModel::onToggleSaved,
-            onAuthRequired = onAuthRequired
-        )
+    if(uiState.showBottomSheet){
+        ModalBottomSheet(onDismissRequest = { viewModel.hideBottomSheet() }) {
+            RecipeListScreen(
+                recipes = recipes,
+                ingredients = ingredients,
+                cuisineTags = cuisineTags,
+                dietaryTags = dietaryTags,
+                searchText = uiState.searchText,
+                selectedDifficulty = uiState.selectedDifficulty,
+                selectedCost = uiState.selectedCost,
+                searchIngredient = uiState.searchIngredient,
+                selectedIngredients = uiState.selectedIngredients,
+                selectedCuisine = uiState.selectedCuisine,
+                selectedDietary = uiState.selectedDietary,
+                onSearchTextChanged = viewModel::onSearchTextChanged,
+                onDifficultySelected = viewModel::onDifficultySelected,
+                onCostSelected = viewModel::onCostSelected,
+                onSearchIngredientChanged = viewModel::onSearchIngredientChanged,
+                onIngredientsSelected = viewModel::onIngredientsSelected,
+                onCuisineSelected = viewModel::onCuisineSelected,
+                onDietarySelected = viewModel::onDietarySelected,
+                onNavigateToDetails = onNavigateToDetails,
+                onToggleSaved = viewModel::onToggleSaved,
+                onAuthRequired = onAuthRequired
+            )
+        }
     }
+
 
 }
