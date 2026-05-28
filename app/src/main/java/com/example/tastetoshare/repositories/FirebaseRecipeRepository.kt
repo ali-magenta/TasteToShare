@@ -354,6 +354,24 @@ class FirebaseRecipeRepository(
         }
     }
 
+    override fun getTopRecipesURLsByCountries(): Flow<Map<Tag, List<String>>> {
+        return recipeCollection.snapshots()
+            .map { snapshot ->
+                snapshot.toObjects(Recipe::class.java)
+            }.map { recipes ->
+
+                recipes
+                    .map { recipe -> recipe.copy(tags = recipe.tags.filter { it.type == "Country" }) }
+                    .filter { recipe -> recipe.tags.isNotEmpty() }
+                    .sortedWith(
+                        compareByDescending<Recipe> { it.rating }
+                            .thenByDescending { it.numberOfRatings }
+                    )
+                    .groupBy(keySelector = { it.tags.first() }, valueTransform = { it.photoURL })
+            }
+
+    }
+
     override suspend fun addOrOverrideRecipe(recipe: Recipe) = withContext(Dispatchers.IO) {
         Log.d("CLONED FROM", "${recipe.originalRecipeId}")
         var uploadedRecipeImageUrl: String? = null

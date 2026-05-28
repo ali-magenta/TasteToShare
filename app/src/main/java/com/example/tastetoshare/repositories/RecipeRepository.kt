@@ -8,6 +8,7 @@ import com.example.tastetoshare.data.entities.Review
 import com.example.tastetoshare.data.entities.Tag
 import com.example.tastetoshare.data.entities.RawRecipePreview
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface RecipeRepository {
     fun getRecipeById(recipeId: String): Flow<Recipe>
@@ -29,6 +30,7 @@ interface RecipeRepository {
     fun getTopWeeklyRecipesPreview(): Flow<List<RawRecipePreview>>
     fun getTopMonthlyRecipesPreview(): Flow<List<RawRecipePreview>>
     fun getFilteredTopWeeklyRecipesPreview(tags : List<Tag>? = null): Flow<List<RawRecipePreview>>
+    fun getTopRecipesURLsByCountries(): Flow<Map<Tag, List<String>>>
     suspend fun addOrOverrideRecipe(recipe: Recipe): Any
     suspend fun deleteRecipe(recipeId : String)
     suspend fun addReview(recipeId : String, review : Review)

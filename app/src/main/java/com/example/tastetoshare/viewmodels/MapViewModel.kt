@@ -76,6 +76,13 @@ class MapViewModel(
             initialValue = emptySet<String>()
         )
 
+    val topRecipesURLsByCountries: StateFlow<Map<Tag, List<String>>> = recipeRepository.getTopRecipesURLsByCountries()
+        .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyMap()
+    )
+
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class, FlowPreview::class)
     val rawRecipes: StateFlow<List<RawRecipePreview>> =
         uiState
