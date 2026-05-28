@@ -5,6 +5,7 @@ import com.example.tastetoshare.data.FirebaseCollections
 import com.example.tastetoshare.data.entities.Ingredient
 import com.example.tastetoshare.data.entities.Notification
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.snapshots
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -28,7 +29,10 @@ class FirebaseNotificationRepository(
         }
     }
     override fun getNotifications(userId: String): Flow<List<Notification>> {
-        return notificationCollection.snapshots()
+        return notificationCollection
+            .whereEqualTo("userId", userId)
+            .orderBy("creationDate", Query.Direction.DESCENDING)
+            .snapshots()
             .map { snapshot ->
                 snapshot.toObjects(Notification::class.java)
             }

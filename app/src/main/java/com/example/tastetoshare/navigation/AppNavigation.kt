@@ -295,6 +295,7 @@ fun AppNavigation() {
                 navCtrl = navCtrl,
                 onRecipeCreated = { recipeId -> navActions.navigateToRecipeDetails(recipeId)},
                 onNavigateToPictureDialog = {isFrontCamera -> navActions.navigateToPictureDialog(isFrontCamera) },
+                onAuthRequired = navActions::navigateToLogin
             )
 
             composable<PictureScreenRoute>
