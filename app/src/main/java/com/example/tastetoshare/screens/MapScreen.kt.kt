@@ -1,12 +1,11 @@
 package com.example.tastetoshare.screens
 
-import android.annotation.SuppressLint
 import android.graphics.drawable.BitmapDrawable
-import android.util.Log
+import android.location.Geocoder
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalGridApi
+import androidx.compose.foundation.layout.Grid
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
@@ -15,17 +14,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.ImageLoader
-import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.example.tastetoshare.data.Cost
@@ -36,12 +34,11 @@ import com.example.tastetoshare.data.entities.Tag
 import com.example.tastetoshare.viewmodels.MapViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
-
 
 
 @Composable
@@ -124,8 +121,18 @@ fun MapScreen(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState
     ) {
-        RecipesMarker(singapore, topRecipesURLsByCountries.values.firstOrNull()?.firstOrNull()?: "")
-        Log.d("DEBUG", "$topRecipesURLsByCountries")
+
+        val geocoder = Geocoder(LocalContext.current, LocalLocale.current.platformLocale)
+        topRecipesURLsByCountries.entries.forEach {
+            val addresses = geocoder.getFromLocationName(it.key.name, 1)
+
+            if (!addresses.isNullOrEmpty()) {
+                val countryAddress = addresses[0]
+
+                val countryCenter = LatLng(countryAddress.latitude, countryAddress.longitude)
+                RecipesMarker(countryCenter, topRecipesURLsByCountries.values.firstOrNull()?: emptyList(), cameraPositionState)
+            }
+        }
     }
     if(showBottomSheet){
         ModalBottomSheet(onDismissRequest = { hideBottomSheet() }) {
@@ -157,42 +164,70 @@ fun MapScreen(
 }
 
 
+@OptIn(ExperimentalGridApi::class)
 @Composable
 fun RecipesMarker(
     location: LatLng,
     urls: List<String>,
+    cameraPositionState: CameraPositionState
 ) {
     val context = LocalContext.current
     val markerState = remember { MarkerState(position = location) }
-    var bitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var bitmaps by remember { mutableStateOf<List<ImageBitmap>>(emptyList()) }
 
     LaunchedEffect(urls) {
         val loader = ImageLoader(context)
-        val request = ImageRequest.Builder(context)
-            .data(urls)
-            .size(128, 128)
-            .allowHardware(false)
-            .build()
+        urls.forEach {
+            val request = ImageRequest.Builder(context)
+                .data(it)
+                .size(128, 128)
+                .allowHardware(false)
+                .build()
 
-        val result = (loader.execute(request) as? SuccessResult)?.drawable
-        bitmap = (result as? BitmapDrawable)?.bitmap?.asImageBitmap()
+            val result = (loader.execute(request) as? SuccessResult)?.drawable
+            val bitmap = (result as? BitmapDrawable)?.bitmap?.asImageBitmap()
+            if(bitmap != null){
+                bitmaps = bitmaps + bitmap
+            }
+        }
     }
 
-    bitmap?.let { bmp ->
-        MarkerComposable(
-            state = markerState,
-            keys = arrayOf(bmp),
+    val currentZoom = cameraPositionState.position.zoom
+
+    val targetSize = when {
+        currentZoom >= 15f -> 72.dp
+        currentZoom >= 12f -> 56.dp
+        currentZoom >= 10f -> 40.dp
+        currentZoom >= 5f -> 50.dp
+        currentZoom >= 4f -> 40.dp
+        currentZoom >= 3f -> 30.dp
+        else        -> 10.dp
+    }
+
+    MarkerComposable(
+        state = markerState,
+        keys = arrayOf(bitmaps, targetSize),
+    ) {
+
+        Grid(
+            config = {
+                repeat(3) {
+                    column(targetSize)
+                }
+                repeat(3) {
+                    row(targetSize)
+                }
+            }
         ) {
-            Box(
-                modifier = Modifier.size(64.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    bitmap = bmp,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
+            bitmaps.forEachIndexed { index, bitmap ->
+                if (index < 9){
+                    Image(
+                        bitmap = bitmap,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }
         }
     }
