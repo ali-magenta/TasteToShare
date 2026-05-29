@@ -87,4 +87,5 @@ dependencies {
 
     //GoogleMap
     implementation(libs.maps.compose)
+    implementation(libs.android.maps.utils)
 }

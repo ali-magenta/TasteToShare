@@ -6,4 +6,5 @@ object FirebaseCollections {
     const val TAGS = "Tags"
     const val USERS = "Users"
     const val NOTIFICATIONS = "Notifications"
+    const val COUNTRIES = "Countries"
 }

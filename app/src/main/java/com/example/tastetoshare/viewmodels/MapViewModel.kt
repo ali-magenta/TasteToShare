@@ -12,11 +12,13 @@ import com.example.tastetoshare.TasteToShareApp
 import com.example.tastetoshare.data.Cost
 import com.example.tastetoshare.data.Difficulty
 import com.example.tastetoshare.data.auth.SessionManagerFacade
+import com.example.tastetoshare.data.entities.Country
 import com.example.tastetoshare.data.entities.Ingredient
 import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.data.entities.Tag
 import com.example.tastetoshare.navigation.MapRoute
 import com.example.tastetoshare.navigation.RecipeListRoute
+import com.example.tastetoshare.repositories.CountryRepository
 import com.example.tastetoshare.repositories.IngredientRepository
 import com.example.tastetoshare.repositories.RecipeRepository
 import com.example.tastetoshare.repositories.TagRepository
@@ -43,6 +45,7 @@ class MapViewModel(
     private val ingredientRepository: IngredientRepository,
     private val tagRepository: TagRepository,
     private val userRepository: UserRepository,
+    private val countryRepository: CountryRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MapUIState())
@@ -76,12 +79,29 @@ class MapViewModel(
             initialValue = emptySet<String>()
         )
 
-    val topRecipesURLsByCountries: StateFlow<Map<Tag, List<String>>> = recipeRepository.getTopRecipesURLsByCountries()
+    private val topRecipeByCountryTags: StateFlow<Map<Tag, List<String>>> = recipeRepository.getTopRecipesURLsByCountries()
+        .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyMap()
+        )
+
+    private val countries: StateFlow<List<Country>> = countryRepository.getCountries()
+        .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+        )
+
+    val topRecipesURLsByCountries: StateFlow<Map<Pair<Tag,Country?>, List<String>>> = combine(topRecipeByCountryTags, countries){
+        top, countryList -> top.mapKeys {entry -> Pair(entry.key, countryList.find { it.name == entry.key.name }) }
+    }
         .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyMap()
     )
+
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class, FlowPreview::class)
     val rawRecipes: StateFlow<List<RawRecipePreview>> =
@@ -234,6 +254,7 @@ class MapViewModel(
                         ingredientRepository = application.container.ingredientRepository,
                         tagRepository = application.container.tagRepository,
                         userRepository = application.container.userRepository,
+                        countryRepository = application.container.countryRepository
                     ) as T
                 }
             }

@@ -177,6 +177,23 @@
     { "ingredientId": "14", "name": "Seaweed", "unitOfMeasurementToCaloryPerUnit": {"g": 45}, "photoURL": null, "isUserCreated": false, "userId": null }
   ],
 
+  "countries": [
+    { "countryId": "53", "name": "France",      "lat": 46.2276,  "lng": 2.2137,    "size": 551.0  },
+    { "countryId": "54", "name": "Italy",       "lat": 41.8719,  "lng": 12.5674,   "size": 301.0  },
+    { "countryId": "55", "name": "Japan",       "lat": 36.2048,  "lng": 138.2529,  "size": 378.0  },
+    { "countryId": "56", "name": "Mexico",      "lat": 23.6345,  "lng": -102.5528, "size": 1964.0 },
+    { "countryId": "57", "name": "India",       "lat": 20.5937,  "lng": 78.9629,   "size": 1660.0 },
+    { "countryId": "58", "name": "China",       "lat": 35.8617,  "lng": 104.1954,  "size": 3206.0 },
+    { "countryId": "59", "name": "USA",         "lat": 37.0902,  "lng": -95.7129,  "size": 3800.0 },
+    { "countryId": "60", "name": "Spain",       "lat": 40.4637,  "lng": -3.7492,   "size": 505.0  },
+    { "countryId": "61", "name": "Greece",      "lat": 39.0742,  "lng": 21.8243,   "size": 132.0  },
+    { "countryId": "62", "name": "Thailand",    "lat": 15.8700,  "lng": 100.9925,  "size": 513.0  },
+    { "countryId": "63", "name": "Brazil",      "lat": -14.2350, "lng": -51.9253,  "size": 4328.0 },
+    { "countryId": "64", "name": "Morocco",     "lat": 31.7917,  "lng": -7.0926,   "size": 447.0  },
+    { "countryId": "65", "name": "South Korea", "lat": 35.9078,  "lng": 127.7669,  "size": 100.0  },
+    { "countryId": "66", "name": "Vietnam",     "lat": 14.0583,  "lng": 108.2772,  "size": 331.0  }
+  ],
+
   "recipes": [
     {
       "recipeId": "100",

@@ -1,7 +1,7 @@
 package com.example.tastetoshare.screens
 
 import android.graphics.drawable.BitmapDrawable
-import android.location.Geocoder
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.ExperimentalGridApi
 import androidx.compose.foundation.layout.Grid
@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -28,17 +28,24 @@ import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.example.tastetoshare.data.Cost
 import com.example.tastetoshare.data.Difficulty
+import com.example.tastetoshare.data.entities.Country
 import com.example.tastetoshare.data.entities.Ingredient
 import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.data.entities.Tag
 import com.example.tastetoshare.viewmodels.MapViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.VisibleRegion
+import com.google.maps.android.SphericalUtil
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 
 @Composable
@@ -111,7 +118,7 @@ fun MapScreen(
     onAuthRequired: () -> Unit,
     showBottomSheet: Boolean,
     hideBottomSheet: () -> Unit,
-    topRecipesURLsByCountries: Map<Tag, List<String>>
+    topRecipesURLsByCountries: Map<Pair<Tag,Country?>, List<String>>
 ){
     val singapore = LatLng(1.35, 103.87)
     val cameraPositionState = rememberCameraPositionState {
@@ -122,15 +129,9 @@ fun MapScreen(
         cameraPositionState = cameraPositionState
     ) {
 
-        val geocoder = Geocoder(LocalContext.current, LocalLocale.current.platformLocale)
         topRecipesURLsByCountries.entries.forEach {
-            val addresses = geocoder.getFromLocationName(it.key.name, 1)
-
-            if (!addresses.isNullOrEmpty()) {
-                val countryAddress = addresses[0]
-
-                val countryCenter = LatLng(countryAddress.latitude, countryAddress.longitude)
-                RecipesMarker(countryCenter, topRecipesURLsByCountries.values.firstOrNull()?: emptyList(), cameraPositionState)
+            if(it.key.second != null){
+                RecipesMarker(LatLng(it.key.second?.lat?:0.0, it.key.second?.lng?:0.0), it.key.second?.size?:0.1, topRecipesURLsByCountries.values.firstOrNull()?: emptyList(), cameraPositionState)
             }
         }
     }
@@ -168,6 +169,7 @@ fun MapScreen(
 @Composable
 fun RecipesMarker(
     location: LatLng,
+    countrySize: Double,
     urls: List<String>,
     cameraPositionState: CameraPositionState
 ) {
@@ -192,7 +194,10 @@ fun RecipesMarker(
         }
     }
 
-    val currentZoom = cameraPositionState.position.zoom
+    val currentZoom:Double = cameraPositionState.position.zoom.toDouble()
+    val km = ( (40000/2.0.pow(currentZoom))) * 2
+    Log.d("DEBUG", "extent in km: $km")
+    //val targetSize = (10000/ km + 1).toInt() * 1.dp
 
     val targetSize = when {
         currentZoom >= 15f -> 72.dp
@@ -204,6 +209,35 @@ fun RecipesMarker(
         else        -> 10.dp
     }
 
+
+
+    val density = LocalDensity.current
+    val visibleRegion = cameraPositionState.projection?.visibleRegion
+
+    var distanceDp = 1.dp
+    var distanceKm = 1.0
+
+    if(visibleRegion != null){
+        distanceKm = SphericalUtil.computeDistanceBetween(
+            visibleRegion.farLeft,
+            cameraPositionState.position.target
+        )/1000
+
+        val farLeftPoint = cameraPositionState.projection?.toScreenLocation(visibleRegion.farLeft)
+        val centerPoint = cameraPositionState.projection?.toScreenLocation(cameraPositionState.position.target)
+
+        if (farLeftPoint != null && centerPoint != null){
+            val dx = (farLeftPoint.x - centerPoint.x).toDouble()
+            val dy = (farLeftPoint.y - centerPoint.y).toDouble()
+            val distancePx = sqrt(dx * dx + dy * dy)
+            distanceDp = with(density) { distancePx.toFloat().toDp() }
+        }
+    }
+
+    val dpMetersRatio = distanceKm/(distanceDp/1.dp)
+
+    val maxNbOfRecipesShownPerRow = min(((countrySize*2)/((targetSize/1.dp)*dpMetersRatio)).toInt(), 5)
+    Log.d("DEBUG", "maxNbOfRecipesShownPerRow: $maxNbOfRecipesShownPerRow")
     MarkerComposable(
         state = markerState,
         keys = arrayOf(bitmaps, targetSize),
@@ -211,10 +245,10 @@ fun RecipesMarker(
 
         Grid(
             config = {
-                repeat(3) {
+                repeat(maxNbOfRecipesShownPerRow) {
                     column(targetSize)
                 }
-                repeat(3) {
+                repeat(maxNbOfRecipesShownPerRow) {
                     row(targetSize)
                 }
             }

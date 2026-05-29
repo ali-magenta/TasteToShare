@@ -17,6 +17,8 @@ import androidx.lifecycle.lifecycleScope
 import com.example.tastetoshare.data.WrapperDB
 import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.navigation.AppNavigation
+import com.example.tastetoshare.repositories.CountryRepository
+import com.example.tastetoshare.repositories.FirebaseCountryRepository
 import com.example.tastetoshare.repositories.FirebaseIngredientRepository
 import com.example.tastetoshare.repositories.FirebaseNotificationRepository
 import com.example.tastetoshare.repositories.FirebaseRecipeRepository
@@ -70,6 +72,9 @@ class AppContainer {
     val notificationRepository: NotificationRepository by lazy {
         FirebaseNotificationRepository(firestore)
     }
+    val countryRepository: CountryRepository by lazy {
+        FirebaseCountryRepository(firestore)
+    }
 }
 
 class TasteToShareApp : Application() {
@@ -104,7 +109,9 @@ class TasteToShareApp : Application() {
         MainScope().launch(Dispatchers.IO) {
             (container.notificationRepository as? FirebaseNotificationRepository)?.initializeData(wrapperDB.notifications)
         }
-
+        MainScope().launch(Dispatchers.IO) {
+            (container.countryRepository as? FirebaseCountryRepository)?.initializeData(wrapperDB.countries)
+        }
 
         createNotificationChannels()
     }

@@ -1,5 +1,6 @@
 package com.example.tastetoshare.data
 
+import com.example.tastetoshare.data.entities.Country
 import com.example.tastetoshare.data.entities.Ingredient
 import com.example.tastetoshare.data.entities.Notification
 import com.example.tastetoshare.data.entities.Recipe
@@ -13,5 +14,6 @@ data class WrapperDB (
     val tags: List<Tag>,
     val ingredients: List<Ingredient>,
     val reviews: List<Review>,
-    val notifications: List<Notification>
+    val notifications: List<Notification>,
+    val countries: List<Country>
 )
