@@ -9,11 +9,11 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.navigation.toRoute
-import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.TasteToShareApp
 import com.example.tastetoshare.data.Cost
 import com.example.tastetoshare.data.Difficulty
 import com.example.tastetoshare.data.NotificationType
+import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.entities.Ingredient
 import com.example.tastetoshare.data.entities.Notification
 import com.example.tastetoshare.data.entities.Recipe
@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -266,142 +267,154 @@ class CreateRecipeViewModel(
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    fun saveRecipe(){
+    fun saveRecipe(onAuthRequired: () -> Unit){
         if (!validateStepsStep())
             return
 
-        var hasErrors = false
-        if(_uiState.value.title.isBlank()){
-            _uiState.update { it.copy(titleError = "You must provide a title for the recipe") }
-            hasErrors = true
-        }
-        if(_uiState.value.preparationTime == null){
-            _uiState.update { it.copy(preparationTimeError = "You must provide a preparation time for the recipe") }
-            hasErrors = true
-        }
-        if(_uiState.value.recipeIngredients.isEmpty()){
-            _uiState.update { it.copy(recipeIngredientsError = "You must provide ingredients for the recipe") }
-            hasErrors = true
-        }
-        if(_uiState.value.steps.isEmpty()){
-            _uiState.update { it.copy(stepsError = "You must provide steps for the recipe") }
-            hasErrors = true
-        }
-        Log.d("debugRecipe", "HasErrors: $hasErrors")
+        val userId = SessionManagerFacade.currentUserStateFlow.value
+        if (userId.isNullOrBlank()) onAuthRequired()
+        else {
 
-        if(hasErrors){
-            _uiState.update { it.copy(hasErrors = true) }
-        }
-        else{
-            _uiState.update { it.copy(isSaving = true) }
-            // Compute calories before saving
-            var computedCalories: Int? = 0
-            for (recipeIngredient in _uiState.value.recipeIngredients) {
-                val cal = recipeIngredient.ingredient.unitOfMeasurementToCaloryPerUnit[recipeIngredient.customUnitOfMeasurement]
-                if (cal == null) {
-                    computedCalories = null
-                    break
-                }
-                computedCalories = (computedCalories ?: 0) +
-                        cal * recipeIngredient.quantity.toInt()
+            var hasErrors = false
+            if (_uiState.value.title.isBlank()) {
+                _uiState.update { it.copy(titleError = "You must provide a title for the recipe") }
+                hasErrors = true
             }
+            if (_uiState.value.preparationTime == null) {
+                _uiState.update { it.copy(preparationTimeError = "You must provide a preparation time for the recipe") }
+                hasErrors = true
+            }
+            if (_uiState.value.recipeIngredients.isEmpty()) {
+                _uiState.update { it.copy(recipeIngredientsError = "You must provide ingredients for the recipe") }
+                hasErrors = true
+            }
+            if (_uiState.value.steps.isEmpty()) {
+                _uiState.update { it.copy(stepsError = "You must provide steps for the recipe") }
+                hasErrors = true
+            }
+            Log.d("debugRecipe", "HasErrors: $hasErrors")
 
-            setCalories(computedCalories)
-
-            viewModelScope.launch {
-                Log.d("STATE", "saving=${_uiState.value.isSaving}")
-
-                var newRecipe: Recipe
-                val recipeIdFromEdit = _uiState.value.recipeIdFromEdit
-                if(recipeIdFromEdit != null){
-                    Log.d("parent recipe when editing", "_uiState.value.parentRecipeId=${_uiState.value.parentRecipeId}")
-                    // 1 : Edited
-                    val recipe = recipeRepository.getRecipeById(recipeIdFromEdit).first()
-                    newRecipe = Recipe(
-                        creationDate = recipe.creationDate,
-                        recipeId = recipe.recipeId,
-                        originalRecipeId = _uiState.value.parentRecipeId,
-                        authorId = SessionManager.CURRENT_LOGGED_IN_USER_ID,
-                        title = _uiState.value.title,
-                        description = _uiState.value.description,
-                        photoURL = _uiState.value.photoURL ?: "",
-                        preparationTime = _uiState.value.preparationTime!!,
-                        servings = _uiState.value.servings,
-                        rating = recipe.rating,
-                        numberOfRatings = recipe.numberOfRatings,
-                        difficulty = _uiState.value.difficulty,
-                        cost = _uiState.value.cost,
-                        calories = computedCalories,
-                        ingredients = _uiState.value.recipeIngredients,
-                        steps = _uiState.value.steps,
-                        tags = _uiState.value.selectedOtherTags +
-                                _uiState.value.selectedDietaryRestrictionTags +
-                                _uiState.value.selectedCuisineTypeTags +
-                                listOfNotNull(_uiState.value.selectedCountryOfOrigin),
-                        reviews = recipe.reviews
-                    )
-
-                }
-                else{
-                    // 2: Created or duplicated
-                    newRecipe = Recipe(
-                        originalRecipeId = _uiState.value.parentRecipeId,
-                        authorId = SessionManager.CURRENT_LOGGED_IN_USER_ID,
-                        title = _uiState.value.title,
-                        description = _uiState.value.description,
-                        photoURL = _uiState.value.photoURL?: "",
-                        preparationTime = _uiState.value.preparationTime!!,
-                        servings = _uiState.value.servings,
-                        rating = 0.0f,
-                        numberOfRatings = 0,
-                        difficulty = _uiState.value.difficulty,
-                        cost = _uiState.value.cost,
-                        calories = computedCalories,
-                        ingredients = _uiState.value.recipeIngredients,
-                        steps = _uiState.value.steps,
-                        tags = _uiState.value.selectedOtherTags +
-                                _uiState.value.selectedDietaryRestrictionTags +
-                                _uiState.value.selectedCuisineTypeTags +
-                                listOfNotNull(_uiState.value.selectedCountryOfOrigin),
-                        reviews = emptyList()
-                    )
-                }
-
-                recipeRepository.addOrOverrideRecipe(newRecipe)
-                //_uiState.update { it.copy(savedRecipeId = newRecipe.recipeId) }
-                newRecipe.ingredients.forEach {
-                    if(it.ingredient.isUserCreated){
-                        ingredientRepository.addOrOverrideIngredient(it.ingredient)
+            if (hasErrors) {
+                _uiState.update { it.copy(hasErrors = true) }
+            } else {
+                _uiState.update { it.copy(isSaving = true) }
+                // Compute calories before saving
+                var computedCalories: Int? = 0
+                for (recipeIngredient in _uiState.value.recipeIngredients) {
+                    val cal =
+                        recipeIngredient.ingredient.unitOfMeasurementToCaloryPerUnit[recipeIngredient.customUnitOfMeasurement]
+                    if (cal == null) {
+                        computedCalories = null
+                        break
                     }
+                    computedCalories = (computedCalories ?: 0) +
+                            cal * recipeIngredient.quantity.toInt()
                 }
 
-                // To change by a firebase script
-                val isDuplicated = recipeIdFromEdit == null && _uiState.value.parentRecipeId != null
-                if (isDuplicated)
-                {
-                    val originalRecipeId = _uiState.value.parentRecipeId!!
-                    val originalRecipe = recipeRepository.getRecipeById(originalRecipeId).firstOrNull()
+                setCalories(computedCalories)
 
-                    // remove this if for testing on the logged account
-                    // (while we don't have firebase repository for notifications and can't test on 2 devices simultaneously)
-                    if (originalRecipe != null && originalRecipe.authorId != SessionManager.CURRENT_LOGGED_IN_USER_ID) {
-                        val notification = Notification(
-                            userId = originalRecipe?.authorId ?: "101",
-                            recipeId = newRecipe.recipeId,
-                            type = NotificationType.DUPLICATED_RECIPE,
-                            title = "Recipe Duplicated! \uD83D\uDD04",
-                            message = "Someone was inspired by your ${originalRecipe?.title} and created their own version."
+                viewModelScope.launch {
+                    Log.d("STATE", "saving=${_uiState.value.isSaving}")
+
+                    var newRecipe: Recipe
+                    val recipeIdFromEdit = _uiState.value.recipeIdFromEdit
+                    if (recipeIdFromEdit != null) {
+                        Log.d(
+                            "parent recipe when editing",
+                            "_uiState.value.parentRecipeId=${_uiState.value.parentRecipeId}"
                         )
-                        notificationRepository.addNotification(notification)
-                        //notificationService.dispatchNotification(notification.toUi(newRecipe))
+                        // 1 : Edited
+                        val recipe = recipeRepository.getRecipeById(recipeIdFromEdit).first()
+                        newRecipe = Recipe(
+                            creationDate = recipe.creationDate,
+                            recipeId = recipe.recipeId,
+                            originalRecipeId = _uiState.value.parentRecipeId,
+                            authorId = userId,
+                            title = _uiState.value.title,
+                            description = _uiState.value.description,
+                            photoURL = _uiState.value.photoURL ?: "",
+                            preparationTime = _uiState.value.preparationTime!!,
+                            servings = _uiState.value.servings,
+                            rating = recipe.rating,
+                            numberOfRatings = recipe.numberOfRatings,
+                            difficulty = _uiState.value.difficulty,
+                            cost = _uiState.value.cost,
+                            calories = computedCalories,
+                            ingredients = _uiState.value.recipeIngredients,
+                            steps = _uiState.value.steps,
+                            tags = _uiState.value.selectedOtherTags +
+                                    _uiState.value.selectedDietaryRestrictionTags +
+                                    _uiState.value.selectedCuisineTypeTags +
+                                    listOfNotNull(_uiState.value.selectedCountryOfOrigin),
+                            reviews = recipe.reviews
+                        )
+
+                    } else {
+                        // 2: Created or duplicated
+                        newRecipe = Recipe(
+                            originalRecipeId = parentRecipeId,
+                            authorId = userId,
+                            title = _uiState.value.title,
+                            description = _uiState.value.description,
+                            photoURL = _uiState.value.photoURL ?: "",
+                            preparationTime = _uiState.value.preparationTime!!,
+                            servings = _uiState.value.servings,
+                            rating = 0.0f,
+                            numberOfRatings = 0,
+                            difficulty = _uiState.value.difficulty,
+                            cost = _uiState.value.cost,
+                            calories = computedCalories,
+                            ingredients = _uiState.value.recipeIngredients,
+                            steps = _uiState.value.steps,
+                            tags = _uiState.value.selectedOtherTags +
+                                    _uiState.value.selectedDietaryRestrictionTags +
+                                    _uiState.value.selectedCuisineTypeTags +
+                                    listOfNotNull(_uiState.value.selectedCountryOfOrigin),
+                            reviews = emptyList()
+                        )
                     }
+
+                    recipeRepository.addOrOverrideRecipe(newRecipe)
+                    //_uiState.update { it.copy(savedRecipeId = newRecipe.recipeId) }
+                    newRecipe.ingredients.forEach {
+                        if (it.ingredient.isUserCreated) {
+                            ingredientRepository.addOrOverrideIngredient(it.ingredient)
+                        }
+                    }
+
+                    // To change by a firebase script
+                    val isDuplicated = recipeIdFromEdit == null && parentRecipeId != null
+                    if (isDuplicated) {
+                        val originalRecipeId = parentRecipeId
+                        val originalRecipe =
+                            recipeRepository.getRecipeById(originalRecipeId).firstOrNull()
+
+                        // remove this if for testing on the logged account
+                        // (while we don't have firebase repository for notifications and can't test on 2 devices simultaneously)
+                        if (originalRecipe != null && originalRecipe.authorId != userId) {
+                            val notification = Notification(
+                                userId = originalRecipe.authorId,
+                                recipeId = newRecipe.recipeId,
+                                type = NotificationType.DUPLICATED_RECIPE,
+                                title = "Recipe Duplicated! \uD83D\uDD04",
+                                message = "Someone was inspired by your ${originalRecipe?.title} and created their own version."
+                            )
+                            notificationRepository.addNotification(notification)
+                            //notificationService.dispatchNotification(notification.toUi(newRecipe))
+                        }
+                    }
+
+                    Log.d("debugRecipe", "Recipe saved $newRecipe")
+
+                    isInitialized = false
+                    _uiState.update {
+                        it.copy(
+                            savedRecipeId = newRecipe.recipeId,
+                            isSaving = false
+                        )
+                    }
+                    Log.d("STATE", "saving=${_uiState.value.isSaving}")
                 }
-
-                Log.d("debugRecipe", "Recipe saved $newRecipe")
-
-                isInitialized = false
-                _uiState.update { it.copy(savedRecipeId = newRecipe.recipeId, isSaving = false) }
-                Log.d("STATE", "saving=${_uiState.value.isSaving}")
             }
         }
     }

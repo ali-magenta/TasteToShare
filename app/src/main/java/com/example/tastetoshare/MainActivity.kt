@@ -42,11 +42,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
-
-object SessionManager {
-    var CURRENT_LOGGED_IN_USER_ID: String = "unlogged"
-}
-
 class AppContainer {
 
     private val firestore: FirebaseFirestore by lazy {

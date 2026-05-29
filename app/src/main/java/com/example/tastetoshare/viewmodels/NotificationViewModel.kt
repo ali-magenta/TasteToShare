@@ -7,9 +7,9 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.TasteToShareApp
 import com.example.tastetoshare.data.NotificationType
+import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.entities.Notification
 import com.example.tastetoshare.data.uiClasses.UINotification
 import com.example.tastetoshare.data.uiClasses.toUi
@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -38,13 +39,19 @@ class NotificationViewModel(
     private val _uiState = MutableStateFlow(NotificationUIState())
     val uiState: StateFlow<NotificationUIState> = _uiState.asStateFlow()
 
-    private val _userId = MutableStateFlow(SessionManager.CURRENT_LOGGED_IN_USER_ID)
+    private val currentUserId: StateFlow<String?> = SessionManagerFacade.currentUserStateFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = SessionManagerFacade.currentUserStateFlow.value
+        )
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     val notifications: StateFlow<List<UINotification>> =
-        _userId
+        currentUserId
             .flatMapLatest { userId ->
-                notificationRepository.getNotifications(userId = userId)
+                if (userId != null) notificationRepository.getNotifications(userId = userId)
+                else flowOf(emptyList())
             }
             .flatMapLatest { notifications ->
                 val flows = notifications.map { notification ->
@@ -62,12 +69,14 @@ class NotificationViewModel(
             )
 
     fun sendRecommendationNotification() {
+        val userId = SessionManagerFacade.currentUserStateFlow.value
+        if (userId.isNullOrBlank()) return
         viewModelScope.launch {
             val recipe = recipeRepository.getRecipeById("100").first()
             val notification = Notification(
                 notificationId = "fakeRecommendation",
                 creationDate = System.currentTimeMillis(),
-                userId = _userId.value,
+                userId = userId,
                 recipeId = recipe.recipeId,
                 type = NotificationType.RECOMMENDED_RECIPE,
                 title = "Some recommendation for you!",
@@ -78,12 +87,14 @@ class NotificationViewModel(
     }
 
     fun sendReviewNotification() {
+        val userId = SessionManagerFacade.currentUserStateFlow.value
+        if (userId.isNullOrBlank()) return
         viewModelScope.launch {
             val recipe = recipeRepository.getRecipeById("100").first()
             val notification = Notification(
                 notificationId = "fakeReview",
                 creationDate = System.currentTimeMillis(),
-                userId = _userId.value,
+                userId = userId,
                 recipeId = recipe.recipeId,
                 reviewId = recipe.reviews.first().reviewId,
                 type = NotificationType.NEW_REVIEW,
@@ -96,12 +107,14 @@ class NotificationViewModel(
     }
 
     fun sendDuplicateNotification() {
+        val userId = SessionManagerFacade.currentUserStateFlow.value
+        if (userId.isNullOrBlank()) return
         viewModelScope.launch {
             val recipe = recipeRepository.getRecipeById("101").first()
             val notification = Notification(
                 notificationId = "fakeDuplication",
                 creationDate = System.currentTimeMillis(),
-                userId = _userId.value,
+                userId = userId,
                 recipeId = recipe.recipeId,
                 type = NotificationType.DUPLICATED_RECIPE,
                 title = "Your recipe was duplicated!",

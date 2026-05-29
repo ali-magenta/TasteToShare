@@ -432,7 +432,7 @@ class FirebaseRecipeRepository(
             val updatedRecipe = recipe.copy(
                 photoURL = photoUrl,
                 steps = updatedSteps,
-                originalRecipeId = currentRecipe?.originalRecipeId
+                originalRecipeId = recipe.originalRecipeId ?: currentRecipe?.originalRecipeId
             )
             recipeCollection.document(updatedRecipe.recipeId).set(updatedRecipe).await()
 

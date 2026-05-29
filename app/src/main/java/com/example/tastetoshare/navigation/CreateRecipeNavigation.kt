@@ -19,8 +19,9 @@ import com.example.tastetoshare.viewmodels.CreateRecipeViewModel
 fun NavGraphBuilder.createRecipeGraph(
     navCtrl: NavController,
     onRecipeCreated: (String) -> Unit,
-    onNavigateToPictureDialog: (Boolean) -> Unit
-) {
+    onNavigateToPictureDialog: (Boolean) -> Unit,
+    onAuthRequired: () -> Unit,
+    ) {
     navigation<CreateRecipeGraphRoute>(startDestination = BasicInfoStepRoute) {
 
         composable<BasicInfoStepRoute> { backStackEntry ->
@@ -144,7 +145,7 @@ fun NavGraphBuilder.createRecipeGraph(
                     onNextClick = {
                         if (viewModel.validateTagsStep())
                         {
-                            viewModel.saveRecipe()
+                            viewModel.saveRecipe(onAuthRequired)
                         }
                     },
                 )

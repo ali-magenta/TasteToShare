@@ -1,7 +1,6 @@
 package com.example.tastetoshare.services.notifications
 
 import android.util.Log
-import com.example.tastetoshare.SessionManager
 import com.example.tastetoshare.TasteToShareApp
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -10,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.example.tastetoshare.services.notifications.NotificationService
 import com.example.tastetoshare.data.NotificationType
+import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.entities.Recipe
 import com.example.tastetoshare.data.uiClasses.UINotification
 import com.example.tastetoshare.data.uiClasses.UIRecipePreview
@@ -29,7 +29,7 @@ class TasteToShareMessagingService : FirebaseMessagingService() {
         val recipeTitle = data["recipeTitle"] ?: "Recipe"
         val recipePreview = Recipe(recipeId = recipeId, title = recipeTitle)
 
-        val currentUserId = SessionManager.CURRENT_LOGGED_IN_USER_ID
+        val currentUserId = SessionManagerFacade.currentUserStateFlow.value
         val intendedUserId = data["userId"] ?: ""
 
         // if the user connected on phone is not the one intended
@@ -56,12 +56,12 @@ class TasteToShareMessagingService : FirebaseMessagingService() {
         super.onNewToken(token)
         Log.d("FCM_DEBUG", "Token refresh : $token")
 
-        val userId = SessionManager.CURRENT_LOGGED_IN_USER_ID
-        if (userId != "unlogged") {
+        val currentUserId = SessionManagerFacade.currentUserStateFlow.value
+        if (!currentUserId.isNullOrBlank()) {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val app = application as TasteToShareApp
-                    app.container.userRepository.syncFcmToken(userId)
+                    app.container.userRepository.syncFcmToken(currentUserId)
                 }
                 catch (e: Exception) {
                     Log.e("FCM_DEBUG", "Token renew error", e)
