@@ -1,13 +1,16 @@
 package com.example.tastetoshare.screens
 
 import android.graphics.drawable.BitmapDrawable
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.ExperimentalGridApi
 import androidx.compose.foundation.layout.Grid
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,11 +18,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -35,14 +41,12 @@ import com.example.tastetoshare.data.entities.Tag
 import com.example.tastetoshare.viewmodels.MapViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.VisibleRegion
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
-import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -75,6 +79,7 @@ fun MapDestination(
         selectedIngredients = uiState.selectedIngredients,
         selectedCuisine = uiState.selectedCuisine,
         selectedDietary = uiState.selectedDietary,
+        selectedCountry = uiState.selectedCountry,
         onSearchTextChanged = viewModel::onSearchTextChanged,
         onDifficultySelected = viewModel::onDifficultySelected,
         onCostSelected = viewModel::onCostSelected,
@@ -87,6 +92,7 @@ fun MapDestination(
         onAuthRequired = onAuthRequired,
         showBottomSheet = uiState.showBottomSheet,
         hideBottomSheet = viewModel::hideBottomSheet,
+        openBottomSheet = viewModel::openBottomSheet,
         topRecipesURLsByCountries = topRecipesURLsByCountries
     )
 }
@@ -106,6 +112,7 @@ fun MapScreen(
     selectedIngredients: List<Ingredient>,
     selectedCuisine: Tag?,
     selectedDietary: Tag?,
+    selectedCountry: Tag?,
     onSearchTextChanged: (String) -> Unit,
     onDifficultySelected: (Difficulty?) -> Unit,
     onCostSelected: (Cost?) -> Unit,
@@ -118,7 +125,8 @@ fun MapScreen(
     onAuthRequired: () -> Unit,
     showBottomSheet: Boolean,
     hideBottomSheet: () -> Unit,
-    topRecipesURLsByCountries: Map<Pair<Tag,Country?>, List<String>>
+    topRecipesURLsByCountries: Map<Pair<Tag, Country?>, List<String>>,
+    openBottomSheet: (Tag) -> Unit
 ){
     val singapore = LatLng(1.35, 103.87)
     val cameraPositionState = rememberCameraPositionState {
@@ -131,12 +139,24 @@ fun MapScreen(
 
         topRecipesURLsByCountries.entries.forEach {
             if(it.key.second != null){
-                RecipesMarker(LatLng(it.key.second?.lat?:0.0, it.key.second?.lng?:0.0), it.key.second?.size?:0.1, topRecipesURLsByCountries.values.firstOrNull()?: emptyList(), cameraPositionState)
+                RecipesMarker(
+                    LatLng(it.key.second?.lat?:0.0,
+                        it.key.second?.lng?:0.0),
+                    it.key.second?.size?:0.1,
+                    it.value,
+                    cameraPositionState,
+                ) { openBottomSheet(it.key.first) }
             }
         }
     }
     if(showBottomSheet){
         ModalBottomSheet(onDismissRequest = { hideBottomSheet() }) {
+            Text(
+                text ="Recipes from ${selectedCountry?.name?:""}",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
             RecipeListScreen(
                 recipes = recipes,
                 ingredients = ingredients,
@@ -171,7 +191,8 @@ fun RecipesMarker(
     location: LatLng,
     countrySize: Double,
     urls: List<String>,
-    cameraPositionState: CameraPositionState
+    cameraPositionState: CameraPositionState,
+    onClick: () -> Unit
 ) {
     val context = LocalContext.current
     val markerState = remember { MarkerState(position = location) }
@@ -195,9 +216,6 @@ fun RecipesMarker(
     }
 
     val currentZoom:Double = cameraPositionState.position.zoom.toDouble()
-    val km = ( (40000/2.0.pow(currentZoom))) * 2
-    Log.d("DEBUG", "extent in km: $km")
-    //val targetSize = (10000/ km + 1).toInt() * 1.dp
 
     val targetSize = when {
         currentZoom >= 15f -> 72.dp
@@ -218,10 +236,12 @@ fun RecipesMarker(
     var distanceKm = 1.0
 
     if(visibleRegion != null){
-        distanceKm = SphericalUtil.computeDistanceBetween(
-            visibleRegion.farLeft,
-            cameraPositionState.position.target
-        )/1000
+//        distanceKm = SphericalUtil.computeDistanceBetween(
+//            visibleRegion.farLeft,
+//            cameraPositionState.position.target
+//        )/1000
+
+        distanceKm = (4000/2.0.pow(currentZoom))*10.0
 
         val farLeftPoint = cameraPositionState.projection?.toScreenLocation(visibleRegion.farLeft)
         val centerPoint = cameraPositionState.projection?.toScreenLocation(cameraPositionState.position.target)
@@ -235,12 +255,21 @@ fun RecipesMarker(
     }
 
     val dpMetersRatio = distanceKm/(distanceDp/1.dp)
+    val proposedNbPerRow = ((countrySize*2)/((targetSize/1.dp)*dpMetersRatio)).toInt()
 
-    val maxNbOfRecipesShownPerRow = min(((countrySize*2)/((targetSize/1.dp)*dpMetersRatio)).toInt(), 5)
-    Log.d("DEBUG", "maxNbOfRecipesShownPerRow: $maxNbOfRecipesShownPerRow")
+    var sizeSqrt = sqrt(urls.size.toDouble()).toInt()
+    if(urls.size % sizeSqrt != 0){
+        sizeSqrt = sizeSqrt + 1
+    }
+
+
+    val maxNbOfRecipesShownPerRow = min(min(proposedNbPerRow, sizeSqrt), 5)
     MarkerComposable(
         state = markerState,
-        keys = arrayOf(bitmaps, targetSize),
+        keys = arrayOf(bitmaps, targetSize, maxNbOfRecipesShownPerRow),
+        anchor = Offset(0.5f, 0.5f),
+        onClick = { onClick()
+            true }
     ) {
 
         Grid(
@@ -254,11 +283,12 @@ fun RecipesMarker(
             }
         ) {
             bitmaps.forEachIndexed { index, bitmap ->
-                if (index < 9){
+                if (index < maxNbOfRecipesShownPerRow*maxNbOfRecipesShownPerRow){
                     Image(
                         bitmap = bitmap,
                         contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize()
+                            .clip(CircleShape),
                         contentScale = ContentScale.Crop
                     )
                 }

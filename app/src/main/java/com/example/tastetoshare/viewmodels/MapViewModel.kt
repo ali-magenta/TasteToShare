@@ -211,10 +211,12 @@ class MapViewModel(
         _uiState.update { it.copy(showBottomSheet = false)}
     }
 
-    fun showBottomSheet() {
-        _uiState.update { it.copy(showBottomSheet = true)}
+    fun openBottomSheet(country: Tag){
+        _uiState.update { it.copy(
+            selectedCountry = country,
+            showBottomSheet = true
+        )}
     }
-
 
 
     fun onToggleSaved(recipeId: String, onAuthRequired: () -> Unit) {
