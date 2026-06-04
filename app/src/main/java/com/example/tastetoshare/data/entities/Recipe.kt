@@ -16,7 +16,7 @@ data class Recipe @OptIn(ExperimentalUuidApi::class) constructor(
     val preparationTime: Int = 0,
     val servings : Int = 0,
     val rating : Float = 0F,
-    val numberOfRatings : Long = -1,
+    val numberOfRatings : Long = 0,
     val difficulty : Difficulty = Difficulty.EASY,
     val cost: Cost = Cost.CHEAP,
     val calories: Int? = null,

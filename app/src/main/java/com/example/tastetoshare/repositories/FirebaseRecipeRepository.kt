@@ -12,6 +12,7 @@ import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.data.entities.Recipe
 import com.example.tastetoshare.data.entities.Review
 import com.example.tastetoshare.data.entities.Tag
+import com.example.tastetoshare.data.entities.User
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.snapshots
 import com.google.firebase.storage.FirebaseStorage
@@ -32,6 +33,7 @@ class FirebaseRecipeRepository(
 
     private val storageRef = storage.reference
     private val recipeCollection = firestore.collection(FirebaseCollections.RECIPES)
+    private val userCollection = firestore.collection(FirebaseCollections.USERS)
 
     suspend fun initializeData(recipes: List<Recipe>) {
         val existing = recipeCollection.limit(1).get().await()
@@ -529,13 +531,54 @@ class FirebaseRecipeRepository(
             val updatedReview = review.copy(
                 photosUrl = uploadReviewImages(review.reviewId, review.photosUrl)
             )
-            val ref = recipeCollection.document(recipeId)
-            val snapshot = ref.get()
-                .await() // a simpler get().await() and update().await() combination. Unlike transactions, these operations are automatically queued by Firestore and synced to the server once the connection is restored, allowing them to work offline.
-            val recipe= snapshot.toObject(Recipe::class.java)
-            if(recipe != null){
-                ref.update(Recipe::reviews.name, recipe.reviews + updatedReview).await()
-            }
+            val refRecipe = recipeCollection.document(recipeId)
+
+            firestore.runTransaction { transaction ->
+
+                val recipeSnapshot = transaction.get(refRecipe)
+                val recipe = recipeSnapshot.toObject(Recipe::class.java)
+                    ?: throw Exception("Recipe not found when adding a review")
+
+                val refUser = userCollection.document(recipe.authorId)
+                val userSnapshot = transaction.get(refUser)
+                val user = userSnapshot.toObject(User::class.java)
+                    ?: throw Exception("Recipe author not found when adding a review")
+
+                // Update recipe reviews and rating
+                val updatedReviews = recipe.reviews + updatedReview
+                val rating = updatedReview.rating?.toFloat()
+                val newNumberOfRatings = recipe.numberOfRatings + if (rating != null) 1 else 0
+
+                val newRating = if (rating != null) {
+                    ((recipe.rating * recipe.numberOfRatings) + rating) / newNumberOfRatings
+                } else {
+                    recipe.rating
+                }
+
+                transaction.update(
+                    refRecipe,
+                        Recipe::reviews.name, updatedReviews,
+                        Recipe::numberOfRatings.name, newNumberOfRatings,
+                        Recipe::rating.name, newRating
+                )
+
+                // Update user rating and counters
+                val newUserRatings = user.numberOfRatings + if (rating != null) 1 else 0
+                val newUserReviews = user.numberOfReviews + 1
+
+                val newUserAverage = if (rating != null) {
+                    ((user.averageRating * user.numberOfRatings) + rating) / newUserRatings
+                } else {
+                    user.averageRating
+                }
+
+                transaction.update(
+                    refUser,
+                    User::numberOfRatings.name, newUserRatings,
+                    User::numberOfReviews.name, newUserReviews,
+                    User::averageRating.name, newUserAverage
+                )
+            }.await()
         } catch (e: Exception) {
             Log.e("FirebaseCatRepository", "Error toggling favorite", e)
         }
@@ -555,24 +598,71 @@ class FirebaseRecipeRepository(
 
     override suspend fun deleteReview(recipeId: String, reviewId: String) {
         try {
-            val ref = recipeCollection.document(recipeId)
-            val snapshot = ref.get()
-                .await() // a simpler get().await() and update().await() combination. Unlike transactions, these operations are automatically queued by Firestore and synced to the server once the connection is restored, allowing them to work offline.
-            val recipe= snapshot.toObject(Recipe::class.java)
-            if(recipe != null){
-                ref.update(Recipe::reviews.name, recipe.reviews.filter { it.reviewId != reviewId }).await()
+            val refRecipe = recipeCollection.document(recipeId)
 
-                val folderRef = storageRef.child("reviews/$reviewId")
-                val files = folderRef.listAll().await()
+            firestore.runTransaction { transaction ->
 
-                try {
-                    files.items.forEach { fileRef ->
-                        fileRef.delete().await()
+                val recipeSnapshot = transaction.get(refRecipe)
+                val recipe = recipeSnapshot.toObject(Recipe::class.java)
+                    ?: throw Exception("Recipe not found when deleting a review")
+
+                val refUser = userCollection.document(recipe.authorId)
+                val userSnapshot = transaction.get(refUser)
+                val user = userSnapshot.toObject(User::class.java)
+                    ?: throw Exception("Recipe author not found when adding a review")
+
+                // Update recipe reviews and rating
+                val reviewToDelete = recipe.reviews.find { it.reviewId == reviewId }
+                    ?: throw Exception("Review to delete not found")
+                val updatedReviews = recipe.reviews.filter { it.reviewId != reviewId }
+                val deletedRating = reviewToDelete.rating?.toFloat()
+                val newNumberOfRatings = (recipe.numberOfRatings - if (deletedRating != null) 1 else 0).coerceAtLeast(0)
+
+                val newRating = if (deletedRating != null) {
+                    if (newNumberOfRatings > 0) {
+                        ((recipe.rating * recipe.numberOfRatings) - deletedRating) / newNumberOfRatings
+                    } else {
+                        0f
                     }
-                } catch (e: Exception) {
-                    Log.e("FirebaseStorage", "Failed deleting review images", e)
+                } else {
+                    recipe.rating
                 }
 
+                transaction.update(
+                    refRecipe,
+                    Recipe::reviews.name, updatedReviews,
+                    Recipe::numberOfRatings.name, newNumberOfRatings,
+                    Recipe::rating.name, newRating
+                )
+
+                // Update user rating and counters
+                val newUserRatings = (user.numberOfRatings - if (deletedRating != null) 1 else 0).coerceAtLeast(0)
+                val newUserReviews = (user.numberOfReviews - 1).coerceAtLeast(0)
+
+                val newUserAverage = if (deletedRating != null) {
+                    if (newUserRatings > 0) {
+                        ((user.averageRating * user.numberOfRatings) - deletedRating) / newUserRatings
+                    } else {
+                        0f
+                    }
+                } else {
+                    user.averageRating
+                }
+
+                transaction.update(
+                    refUser,
+                    User::numberOfRatings.name, newUserRatings,
+                    User::numberOfReviews.name, newUserReviews,
+                    User::averageRating.name, newUserAverage
+                )
+            }.await()
+
+            // delete images AFTER Firestore update
+            val folderRef = storageRef.child("reviews/$reviewId")
+            val files = folderRef.listAll().await()
+
+            files.items.forEach { fileRef ->
+                fileRef.delete().await()
             }
         } catch (e: Exception) {
             Log.e("FirebaseCatRepository", "Error toggling favorite", e)
