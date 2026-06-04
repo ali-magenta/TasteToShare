@@ -108,6 +108,17 @@ class ProfileViewModel(
                 initialValue = emptyList()
             )
 
+    val recipeRatings: StateFlow<List<Float>> =
+        userRecipes
+            .map { recipes ->
+                recipes.map { it.rating }
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
+
     fun toggleMyRecipesAnalyticsTab(value: Boolean) {
         _uiState.update { it.copy(isShowingMyRecipes = value) }
     }

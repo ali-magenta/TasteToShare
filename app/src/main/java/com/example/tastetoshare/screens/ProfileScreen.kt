@@ -28,7 +28,9 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,6 +50,14 @@ import com.example.tastetoshare.screens.components.RecipeCard
 import com.example.tastetoshare.screens.components.TagsRow
 import com.example.tastetoshare.viewmodels.ProfileUIState
 import com.example.tastetoshare.viewmodels.ProfileViewModel
+import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
+import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianLayerRangeProvider
+import com.patrykandpatrick.vico.compose.cartesian.data.columnSeries
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 
 @Composable
 fun ProfileDestination(
@@ -61,10 +71,12 @@ fun ProfileDestination(
     val user by viewModel.user.collectAsStateWithLifecycle()
     val userRecipes by viewModel.userRecipes.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val recipeRatings by viewModel.recipeRatings.collectAsStateWithLifecycle()
 
     ProfileScreen(
             user = user,
             recipes = userRecipes,
+            recipeRatings = recipeRatings,
             uiState = uiState,
             onNavigateToRecipeProposal = onNavigateToRecipeProposal,
             isOwnProfile = user.userId == uiState.currentUserId,
@@ -81,6 +93,7 @@ fun ProfileDestination(
 fun ProfileScreen(
     user: User,
     recipes: List<UIRecipePreview>,
+    recipeRatings: List<Float>,
     uiState: ProfileUIState,
     onNavigateToRecipeProposal: (String) -> Unit,
     isOwnProfile: Boolean,
@@ -161,7 +174,7 @@ fun ProfileScreen(
                 1 -> {
                     // Analytics tab
                     item {
-                        ProfileAnalytics(user)
+                        ProfileAnalytics(user, recipeRatings)
                     }
                 }
             }
@@ -194,7 +207,7 @@ fun ProfileScreen(
 }
 
 @Composable
-fun ProfileAnalytics(user: User) {
+fun ProfileAnalytics(user: User, recipeRatings: List<Float>) {
     Column(
         modifier = Modifier
             .fillMaxWidth(),
@@ -203,6 +216,28 @@ fun ProfileAnalytics(user: User) {
     ) {
         Row() {
 
+            /*I think we could have a graph with the rating of the previous 5/10 recipes
+            and maybe another graph with the number of reviews/number of recipes created per month
+             */
+            val modelProducer = remember { CartesianChartModelProducer() }
+            LaunchedEffect(Unit) {
+                modelProducer.runTransaction {
+                    columnSeries { series(recipeRatings) }
+                }
+            }
+            CartesianChartHost(
+                rememberCartesianChart(
+                    rememberColumnCartesianLayer(
+                        rangeProvider = CartesianLayerRangeProvider.fixed(
+                            minY = 0.0,
+                            maxY = 5.0
+                        )
+                    ),
+                    startAxis = VerticalAxis.rememberStart(),
+                    bottomAxis = HorizontalAxis.rememberBottom(),
+                ),
+                modelProducer,
+            )
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
