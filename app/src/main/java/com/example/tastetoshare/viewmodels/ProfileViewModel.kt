@@ -111,13 +111,31 @@ class ProfileViewModel(
     val recipeRatings: StateFlow<List<Float>> =
         userRecipes
             .map { recipes ->
-                recipes.map { it.rating }
+                recipes.sortedByDescending { it.creationDate }
+                    .map { it.rating }
             }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = emptyList()
             )
+
+    val userRatingPerRecipePerLastTwelveMonth: StateFlow<List<Double>> =
+        combine(
+            recipeRepository.getRecipesCountPerLastTwelveMonths(userId),
+            recipeRepository.getRecipesRatingCountPerLastTwelveMonths(userId)
+        ) { counts, ratings ->
+
+            List(12) { index ->
+                val count = counts[index]
+                val ratingCount = ratings[index].toDouble()
+                if (count == 0) 0.0 else ratingCount / count
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = List(12) { 0.0 }
+        )
 
     fun toggleMyRecipesAnalyticsTab(value: Boolean) {
         _uiState.update { it.copy(isShowingMyRecipes = value) }
@@ -296,6 +314,14 @@ class ProfileViewModel(
         return isValidForm
     }
 
+    fun hideEngagementPopUp() {
+        _uiState.update { it.copy(isShowingEngagementInfoPopUp = false) }
+    }
+
+    fun showEngagementPopUp() {
+        _uiState.update { it.copy(isShowingEngagementInfoPopUp = true) }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
@@ -336,7 +362,8 @@ data class ProfileUIState(
     val isLoading: Boolean = false,
     val isGalleryOpen: Boolean = false,
     val isSaving: Boolean = false,
-    val currentUserId: String? = null
+    val currentUserId: String? = null,
+    var isShowingEngagementInfoPopUp: Boolean = false
 )
 
 

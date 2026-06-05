@@ -192,6 +192,54 @@ class FirebaseRecipeRepository(
         }
     }
 
+    override fun getRecipesCountPerLastTwelveMonths(userId: String): Flow<List<Int>> {
+        return recipeCollection.snapshots()
+            .map { it.toObjects(Recipe::class.java) }
+            .map { recipes ->
+
+                val now = System.currentTimeMillis()
+                val oneMonth = TimeUnit.DAYS.toMillis(30)
+                val counts = MutableList(12) { 0 }
+
+                val userRecipes = recipes.filter { it.authorId == userId }
+                for (index in 0 until 12) {
+                    val end = now - index * oneMonth
+                    val start = now - (index + 1) * oneMonth
+
+                    counts[index] = userRecipes.count { recipe ->
+                        recipe.creationDate in start until end
+                    }
+                }
+                counts
+            }
+    }
+
+    override fun getRecipesRatingCountPerLastTwelveMonths(userId: String): Flow<List<Long>> {
+        return recipeCollection.snapshots()
+            .map { it.toObjects(Recipe::class.java) }
+            .map { recipes ->
+                val now = System.currentTimeMillis()
+                val oneMonthMs = TimeUnit.DAYS.toMillis(30)
+                val sums = MutableList(12) { 0L }
+
+                val userRecipes = recipes.filter { it.authorId == userId }
+
+                for (index in 0 until 12) {
+                val end = now - index * oneMonthMs
+                val start = now - (index + 1) * oneMonthMs
+
+                sums[index] = userRecipes.sumOf { recipe ->
+                    if (recipe.creationDate in start until end) {
+                        recipe.numberOfRatings
+                    } else {
+                        0
+                    }
+                }
+            }
+                sums
+            }
+    }
+
     override fun getRecipesPreviewBySearch(
         restrictedRecipeIdList : List<String>?,
         searchString: String?,

@@ -8,12 +8,13 @@ import com.example.tastetoshare.data.entities.Review
 import com.example.tastetoshare.data.entities.Tag
 import com.example.tastetoshare.data.entities.RawRecipePreview
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 
 interface RecipeRepository {
     fun getRecipeById(recipeId: String): Flow<Recipe>
     fun getRecipesPreviewByUserId(userId: String): Flow<List<RawRecipePreview>>
     fun getRecentRecipesPreviewByUserId(userId: String): Flow<List<RawRecipePreview>>
+    fun getRecipesCountPerLastTwelveMonths(userId: String): Flow<List<Int>>
+    fun getRecipesRatingCountPerLastTwelveMonths(userId: String): Flow<List<Long>>
     fun getRecipesPreviewBySearch(
         restrictedRecipeIdList : List<String>? = null,
         searchString: String? = null,

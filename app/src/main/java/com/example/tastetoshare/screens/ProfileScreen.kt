@@ -17,16 +17,22 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -58,6 +64,7 @@ import com.patrykandpatrick.vico.compose.cartesian.data.CartesianLayerRangeProvi
 import com.patrykandpatrick.vico.compose.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import kotlin.math.max
 
 @Composable
 fun ProfileDestination(
@@ -72,21 +79,25 @@ fun ProfileDestination(
     val userRecipes by viewModel.userRecipes.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val recipeRatings by viewModel.recipeRatings.collectAsStateWithLifecycle()
+    val userRatingPerRecipePerLastTwelveMonth by viewModel.userRatingPerRecipePerLastTwelveMonth.collectAsStateWithLifecycle()
 
     ProfileScreen(
-            user = user,
-            recipes = userRecipes,
-            recipeRatings = recipeRatings,
-            uiState = uiState,
-            onNavigateToRecipeProposal = onNavigateToRecipeProposal,
-            isOwnProfile = user.userId == uiState.currentUserId,
-            edit = onNavigateToEditProfile,
-            toggleMyRecipesAnalyticsTab = viewModel::toggleMyRecipesAnalyticsTab,
-            onViewAllRecipes = {onViewAllRecipes(user.userId)},
-            onToggleSaved = viewModel::onToggleSaved,
-            onAuthRequired = onAuthRequired
-        )
-    }
+        user = user,
+        recipes = userRecipes,
+        recipeRatings = recipeRatings,
+        userRatingPerRecipePerLastTwelveMonth = userRatingPerRecipePerLastTwelveMonth,
+        uiState = uiState,
+        onNavigateToRecipeProposal = onNavigateToRecipeProposal,
+        isOwnProfile = user.userId == uiState.currentUserId,
+        edit = onNavigateToEditProfile,
+        toggleMyRecipesAnalyticsTab = viewModel::toggleMyRecipesAnalyticsTab,
+        onViewAllRecipes = { onViewAllRecipes(user.userId) },
+        onToggleSaved = viewModel::onToggleSaved,
+        onAuthRequired = onAuthRequired,
+        hideEngagementPopUp = viewModel::hideEngagementPopUp,
+        showEngagementPopUp = viewModel::showEngagementPopUp
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,6 +105,7 @@ fun ProfileScreen(
     user: User,
     recipes: List<UIRecipePreview>,
     recipeRatings: List<Float>,
+    userRatingPerRecipePerLastTwelveMonth: List<Double>,
     uiState: ProfileUIState,
     onNavigateToRecipeProposal: (String) -> Unit,
     isOwnProfile: Boolean,
@@ -101,7 +113,9 @@ fun ProfileScreen(
     toggleMyRecipesAnalyticsTab: (Boolean) -> Unit,
     onViewAllRecipes: () -> Unit,
     onToggleSaved: (String, () -> Unit) -> Unit,
-    onAuthRequired: () -> Unit
+    onAuthRequired: () -> Unit,
+    hideEngagementPopUp: () -> Unit,
+    showEngagementPopUp: () -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val isVertical = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -114,7 +128,7 @@ fun ProfileScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(bottom = 20.dp)
     ) {
-        item{
+        item {
             Spacer(Modifier.height(16.dp))
             Column(
                 modifier = Modifier
@@ -122,7 +136,7 @@ fun ProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
-                if (!isVertical){
+                if (!isVertical) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         ProfileHeader(user, Modifier.size(160.dp))
                         Spacer(modifier = Modifier.width(16.dp))
@@ -133,14 +147,19 @@ fun ProfileScreen(
                     ProfileInfo(user)
                 }
                 TagsRow(user.preferences, MaterialTheme.typography.titleMedium)
-                if (isOwnProfile)
-                {
+                if (isOwnProfile) {
                     EditProfileButton(user, edit)
                 }
             }
         }
 
-        item{MyRecipesAnalyticsTab(uiState.isShowingMyRecipes, isOwnProfile, toggleMyRecipesAnalyticsTab)}
+        item {
+            MyRecipesAnalyticsTab(
+                uiState.isShowingMyRecipes,
+                isOwnProfile,
+                toggleMyRecipesAnalyticsTab
+            )
+        }
         if (isOwnProfile) {
             val selectedTabIndex = if (uiState.isShowingMyRecipes) 0 else 1
 
@@ -148,17 +167,21 @@ fun ProfileScreen(
                 0 -> {
                     // My recipes tab
                     if (recipes.isEmpty()) {
-                        item{NoRecipes()}
+                        item { NoRecipes() }
                     } else {
-                        item{
+                        item {
                             Row(
-                                modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight(),
                                 horizontalArrangement = Arrangement.End,
                             ) {
                                 Text(
-                                    modifier = Modifier.padding(0.dp).clickable {
-                                        onViewAllRecipes()
-                                    },
+                                    modifier = Modifier
+                                        .padding(0.dp)
+                                        .clickable {
+                                            onViewAllRecipes()
+                                        },
                                     color = MaterialTheme.colorScheme.primary,
                                     textDecoration = TextDecoration.Underline,
                                     text = "View All",
@@ -166,7 +189,12 @@ fun ProfileScreen(
                             }
                         }
                         items(recipes.size) { index ->
-                            RecipeCard(recipes[index], onNavigateToRecipeProposal, onToggleSaved, onAuthRequired)
+                            RecipeCard(
+                                recipes[index],
+                                onNavigateToRecipeProposal,
+                                onToggleSaved,
+                                onAuthRequired
+                            )
                         }
                     }
                 }
@@ -174,24 +202,27 @@ fun ProfileScreen(
                 1 -> {
                     // Analytics tab
                     item {
-                        ProfileAnalytics(user, recipeRatings)
+                        ProfileAnalytics(uiState, hideEngagementPopUp, showEngagementPopUp, user, recipeRatings, userRatingPerRecipePerLastTwelveMonth)
                     }
                 }
             }
-        }
-        else {
+        } else {
             if (recipes.isEmpty()) {
                 item { NoRecipes() }
             } else {
-                item{
+                item {
                     Row(
-                        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
                         horizontalArrangement = Arrangement.End,
                     ) {
                         Text(
-                            modifier = Modifier.padding(0.dp).clickable {
-                                onViewAllRecipes()
-                            },
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .clickable {
+                                    onViewAllRecipes()
+                                },
                             color = MaterialTheme.colorScheme.primary,
                             textDecoration = TextDecoration.Underline,
                             text = "View All",
@@ -199,7 +230,12 @@ fun ProfileScreen(
                     }
                 }
                 items(recipes.size) { index ->
-                    RecipeCard(recipe= recipes[index], onNavigateToDetails= onNavigateToRecipeProposal, onToggleSaved, onAuthRequired)
+                    RecipeCard(
+                        recipe = recipes[index],
+                        onNavigateToDetails = onNavigateToRecipeProposal,
+                        onToggleSaved,
+                        onAuthRequired
+                    )
                 }
             }
         }
@@ -207,24 +243,93 @@ fun ProfileScreen(
 }
 
 @Composable
-fun ProfileAnalytics(user: User, recipeRatings: List<Float>) {
+fun ProfileAnalytics(
+    uiState: ProfileUIState,
+    hideEngagementPopUp: () -> Unit,
+    showEngagementPopUp: () -> Unit,
+    user: User,
+    recipeRatings: List<Float>,
+    userRatingPerRecipePerLastTwelveMonth: List<Double>
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        Row() {
+        val engagementPerMonthModelProducer = remember { CartesianChartModelProducer() }
+        LaunchedEffect(Unit) {
+            engagementPerMonthModelProducer.runTransaction {
+                columnSeries { series(
+                    x = userRatingPerRecipePerLastTwelveMonth.indices.map { it + 1 },
+                    y = userRatingPerRecipePerLastTwelveMonth
+                ) }
+            }
+        }
+        Column{
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Engagement past Months",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
-            /*I think we could have a graph with the rating of the previous 5/10 recipes
-            and maybe another graph with the number of reviews/number of recipes created per month
-             */
-            val modelProducer = remember { CartesianChartModelProducer() }
-            LaunchedEffect(Unit) {
-                modelProducer.runTransaction {
-                    columnSeries { series(recipeRatings) }
+                IconButton(onClick = showEngagementPopUp) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "What is engagement?"
+                    )
                 }
             }
+
+            if (uiState.isShowingEngagementInfoPopUp) {
+                AlertDialog(
+                    onDismissRequest = hideEngagementPopUp,
+                    confirmButton = {
+                        TextButton(onClick = hideEngagementPopUp) {
+                            Text("OK")
+                        }
+                    },
+                    title = { Text("Engagement") },
+                    text = {
+                        Text("Engagement measures how many ratings users gave to recipes created in a given month divided by the number of recipes created in that month. " +
+                                "It reflects the level of interaction received for recipes created in that month and is displayed for the previous 12 months")
+                    }
+                )
+            }
+            CartesianChartHost(
+                rememberCartesianChart(
+                    rememberColumnCartesianLayer(
+                        rangeProvider = CartesianLayerRangeProvider.fixed(
+                            minY = 0.0,
+                            maxY = max(userRatingPerRecipePerLastTwelveMonth.maxOrNull() ?: 0.0, 1.0)
+                        )
+                    ),
+                    startAxis = VerticalAxis.rememberStart(),
+                    bottomAxis = HorizontalAxis.rememberBottom(),
+                ),
+                engagementPerMonthModelProducer,
+            )
+        }
+
+        val recipeRatingModelProducer = remember { CartesianChartModelProducer() }
+        LaunchedEffect(Unit) {
+            recipeRatingModelProducer.runTransaction {
+                columnSeries { series(
+                    x = userRatingPerRecipePerLastTwelveMonth.indices.map { it + 1 },
+                    y = recipeRatings) }
+            }
+        }
+        Column{
+            Text(
+                text = "Rating past 5 Recipes",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
             CartesianChartHost(
                 rememberCartesianChart(
                     rememberColumnCartesianLayer(
@@ -236,9 +341,10 @@ fun ProfileAnalytics(user: User, recipeRatings: List<Float>) {
                     startAxis = VerticalAxis.rememberStart(),
                     bottomAxis = HorizontalAxis.rememberBottom(),
                 ),
-                modelProducer,
+                recipeRatingModelProducer,
             )
         }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -273,7 +379,7 @@ fun AnalyticsCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.tertiary
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
             modifier = Modifier
@@ -301,7 +407,11 @@ fun AnalyticsCard(
 }
 
 @Composable
-fun MyRecipesAnalyticsTab(isShowingMyRecipes: Boolean, isOwnProfile: Boolean, toggleMyRecipesAnalyticsTab: (Boolean) -> Unit){
+fun MyRecipesAnalyticsTab(
+    isShowingMyRecipes: Boolean,
+    isOwnProfile: Boolean,
+    toggleMyRecipesAnalyticsTab: (Boolean) -> Unit
+) {
     val tabs = if (isOwnProfile) {
         listOf("Recent Recipes", "Analytics")
     } else {
@@ -331,8 +441,7 @@ fun MyRecipesAnalyticsTab(isShowingMyRecipes: Boolean, isOwnProfile: Boolean, to
             Tab(
                 selected = isSelected,
                 onClick = {
-                    if (isOwnProfile)
-                    {
+                    if (isOwnProfile) {
                         toggleMyRecipesAnalyticsTab(index == 0)
                     }
                 },

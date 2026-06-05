@@ -84,6 +84,14 @@ class PaperDbRecipeRepository: RecipeRepository {
         }
     }
 
+    override fun getRecipesCountPerLastTwelveMonths(userId: String): Flow<List<Int>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getRecipesRatingCountPerLastTwelveMonths(userId: String): Flow<List<Long>> {
+        TODO("Not yet implemented")
+    }
+
     override fun getRecipesPreviewBySearch(
         restrictedRecipeIdList : List<String>?,
         searchString: String?,
