@@ -170,7 +170,8 @@ class FirebaseRecipeRepository(
             }.map { recipes ->
             recipes
                 .filter { it.authorId == userId }
-                .take(5)    //naive implementation, should add a created at field in the future
+                .sortedByDescending { it.creationDate }
+                .take(5)
                 .map { recipe ->
                     RawRecipePreview(
                         recipeId = recipe.recipeId,
