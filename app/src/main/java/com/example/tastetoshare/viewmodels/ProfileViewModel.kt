@@ -120,13 +120,13 @@ class ProfileViewModel(
                 initialValue = emptyList()
             )
 
-    val userRatingPerRecipePerLastTwelveMonth: StateFlow<List<Double>> =
+    val userRatingPerRecipePerLastSixMonth: StateFlow<List<Double>> =
         combine(
-            recipeRepository.getRecipesCountPerLastTwelveMonths(userId),
-            recipeRepository.getRecipesRatingCountPerLastTwelveMonths(userId)
+            recipeRepository.getRecipesCountPerLastSixMonths(userId),
+            recipeRepository.getRecipesRatingCountPerLastSixMonths(userId)
         ) { counts, ratings ->
 
-            List(12) { index ->
+            List(6) { index ->
                 val count = counts[index]
                 val ratingCount = ratings[index].toDouble()
                 if (count == 0) 0.0 else ratingCount / count
@@ -134,7 +134,7 @@ class ProfileViewModel(
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = List(12) { 0.0 }
+            initialValue = List(6) { 0.0 }
         )
 
     fun toggleMyRecipesAnalyticsTab(value: Boolean) {

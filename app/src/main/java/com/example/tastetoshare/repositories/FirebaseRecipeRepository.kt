@@ -193,17 +193,17 @@ class FirebaseRecipeRepository(
         }
     }
 
-    override fun getRecipesCountPerLastTwelveMonths(userId: String): Flow<List<Int>> {
+    override fun getRecipesCountPerLastSixMonths(userId: String): Flow<List<Int>> {
         return recipeCollection.snapshots()
             .map { it.toObjects(Recipe::class.java) }
             .map { recipes ->
 
                 val now = System.currentTimeMillis()
                 val oneMonth = TimeUnit.DAYS.toMillis(30)
-                val counts = MutableList(12) { 0 }
+                val counts = MutableList(6) { 0 }
 
                 val userRecipes = recipes.filter { it.authorId == userId }
-                for (index in 0 until 12) {
+                for (index in 0 until 6) {
                     val end = now - index * oneMonth
                     val start = now - (index + 1) * oneMonth
 
@@ -215,17 +215,17 @@ class FirebaseRecipeRepository(
             }
     }
 
-    override fun getRecipesRatingCountPerLastTwelveMonths(userId: String): Flow<List<Long>> {
+    override fun getRecipesRatingCountPerLastSixMonths(userId: String): Flow<List<Long>> {
         return recipeCollection.snapshots()
             .map { it.toObjects(Recipe::class.java) }
             .map { recipes ->
                 val now = System.currentTimeMillis()
                 val oneMonthMs = TimeUnit.DAYS.toMillis(30)
-                val sums = MutableList(12) { 0L }
+                val sums = MutableList(6) { 0L }
 
                 val userRecipes = recipes.filter { it.authorId == userId }
 
-                for (index in 0 until 12) {
+                for (index in 0 until 6) {
                 val end = now - index * oneMonthMs
                 val start = now - (index + 1) * oneMonthMs
 

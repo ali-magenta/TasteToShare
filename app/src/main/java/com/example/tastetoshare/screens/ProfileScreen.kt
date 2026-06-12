@@ -61,6 +61,7 @@ import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianLayerRangeProvider
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.compose.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
@@ -79,13 +80,13 @@ fun ProfileDestination(
     val userRecipes by viewModel.userRecipes.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val recipeRatings by viewModel.recipeRatings.collectAsStateWithLifecycle()
-    val userRatingPerRecipePerLastTwelveMonth by viewModel.userRatingPerRecipePerLastTwelveMonth.collectAsStateWithLifecycle()
+    val userRatingPerRecipePerLastSixMonth by viewModel.userRatingPerRecipePerLastSixMonth.collectAsStateWithLifecycle()
 
     ProfileScreen(
         user = user,
         recipes = userRecipes,
         recipeRatings = recipeRatings,
-        userRatingPerRecipePerLastTwelveMonth = userRatingPerRecipePerLastTwelveMonth,
+        userRatingPerRecipePerLastSixMonth = userRatingPerRecipePerLastSixMonth,
         uiState = uiState,
         onNavigateToRecipeProposal = onNavigateToRecipeProposal,
         isOwnProfile = user.userId == uiState.currentUserId,
@@ -105,7 +106,7 @@ fun ProfileScreen(
     user: User,
     recipes: List<UIRecipePreview>,
     recipeRatings: List<Float>,
-    userRatingPerRecipePerLastTwelveMonth: List<Double>,
+    userRatingPerRecipePerLastSixMonth: List<Double>,
     uiState: ProfileUIState,
     onNavigateToRecipeProposal: (String) -> Unit,
     isOwnProfile: Boolean,
@@ -202,7 +203,7 @@ fun ProfileScreen(
                 1 -> {
                     // Analytics tab
                     item {
-                        ProfileAnalytics(uiState, hideEngagementPopUp, showEngagementPopUp, user, recipeRatings, userRatingPerRecipePerLastTwelveMonth)
+                        ProfileAnalytics(uiState, hideEngagementPopUp, showEngagementPopUp, user, recipeRatings, userRatingPerRecipePerLastSixMonth)
                     }
                 }
             }
@@ -249,7 +250,7 @@ fun ProfileAnalytics(
     showEngagementPopUp: () -> Unit,
     user: User,
     recipeRatings: List<Float>,
-    userRatingPerRecipePerLastTwelveMonth: List<Double>
+    userRatingPerRecipePerLastSixMonth: List<Double>
 ) {
     Column(
         modifier = Modifier
@@ -261,11 +262,17 @@ fun ProfileAnalytics(
         LaunchedEffect(Unit) {
             engagementPerMonthModelProducer.runTransaction {
                 columnSeries { series(
-                    x = userRatingPerRecipePerLastTwelveMonth.indices.map { it + 1 },
-                    y = userRatingPerRecipePerLastTwelveMonth
+                    x = userRatingPerRecipePerLastSixMonth.indices.map { it + 1 },
+                    y = userRatingPerRecipePerLastSixMonth
                 ) }
             }
         }
+        val bottomAxisEngagement = HorizontalAxis.rememberBottom(
+            valueFormatter = CartesianValueFormatter { _, x, _ ->
+                "-${x.toInt()}M"
+            },
+            itemPlacer = HorizontalAxis.ItemPlacer.aligned(spacing = { 1 })
+        )
         Column{
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -296,7 +303,7 @@ fun ProfileAnalytics(
                     title = { Text("Engagement") },
                     text = {
                         Text("Engagement measures how many ratings users gave to recipes created in a given month divided by the number of recipes created in that month. " +
-                                "It reflects the level of interaction received for recipes created in that month and is displayed for the previous 12 months")
+                                "It reflects the level of interaction received for recipes created in that month and is displayed for the previous 6 months")
                     }
                 )
             }
@@ -305,13 +312,14 @@ fun ProfileAnalytics(
                     rememberColumnCartesianLayer(
                         rangeProvider = CartesianLayerRangeProvider.fixed(
                             minY = 0.0,
-                            maxY = max(userRatingPerRecipePerLastTwelveMonth.maxOrNull() ?: 0.0, 1.0)
+                            maxY = max(userRatingPerRecipePerLastSixMonth.maxOrNull() ?: 0.0, 1.0)
                         )
                     ),
                     startAxis = VerticalAxis.rememberStart(),
-                    bottomAxis = HorizontalAxis.rememberBottom(),
+                    bottomAxis = bottomAxisEngagement,
                 ),
                 engagementPerMonthModelProducer,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
 
@@ -319,10 +327,16 @@ fun ProfileAnalytics(
         LaunchedEffect(Unit) {
             recipeRatingModelProducer.runTransaction {
                 columnSeries { series(
-                    x = userRatingPerRecipePerLastTwelveMonth.indices.map { it + 1 },
+                    x = recipeRatings.indices.map { it + 1 },
                     y = recipeRatings) }
             }
         }
+        val bottomAxisRecipeRating = HorizontalAxis.rememberBottom(
+            valueFormatter = CartesianValueFormatter { _, x, _ ->
+                "-${x.toInt()}R"
+            },
+            itemPlacer = HorizontalAxis.ItemPlacer.aligned(spacing = { 1 })
+        )
         Column{
             Text(
                 text = "Rating past 5 Recipes",
@@ -339,7 +353,7 @@ fun ProfileAnalytics(
                         )
                     ),
                     startAxis = VerticalAxis.rememberStart(),
-                    bottomAxis = HorizontalAxis.rememberBottom(),
+                    bottomAxis = bottomAxisRecipeRating,
                 ),
                 recipeRatingModelProducer,
             )
