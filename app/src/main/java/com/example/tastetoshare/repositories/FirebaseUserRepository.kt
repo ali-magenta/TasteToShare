@@ -124,6 +124,45 @@ class FirebaseUserRepository(
         }
     }
 
+    override suspend fun addIngredientListToShoppingList(userId: String, recipeIngredientList: List<RecipeIngredient>) {
+        try {
+            val ref = userCollection.document(userId)
+            val snapshot = ref.get()
+                .await() // a simpler get().await() and update().await() combination. Unlike transactions, these operations are automatically queued by Firestore and synced to the server once the connection is restored, allowing them to work offline.
+            val user= snapshot.toObject(User::class.java)
+            if(user != null){
+                ref.update(User::shoppingList.name, user.shoppingList + recipeIngredientList).await()
+            }
+        } catch (e: Exception) {
+            Log.e("FirebaseRepository", "Error addIngredientListToShoppingList", e)
+        }
+    }
+
+    override suspend fun updateIngredientFromShoppingList(userId: String, recipeIngredientId: String, quantity: Float?, unitOfMeasurement: String?) {
+        try {
+            val ref = userCollection.document(userId)
+            val snapshot = ref.get()
+                .await() // a simpler get().await() and update().await() combination. Unlike transactions, these operations are automatically queued by Firestore and synced to the server once the connection is restored, allowing them to work offline.
+            val user = snapshot.toObject(User::class.java)
+
+            if (user != null) {
+                val updatedShoppingList = user.shoppingList.map { recipeIngredient ->
+                    if (recipeIngredient.recipeIngredientId == recipeIngredientId) {
+                        recipeIngredient.copy(
+                            quantity = quantity ?: recipeIngredient.quantity,
+                            customUnitOfMeasurement = unitOfMeasurement ?: recipeIngredient.customUnitOfMeasurement
+                        )
+                    } else {
+                        recipeIngredient
+                    }
+                }
+                ref.update(User::shoppingList.name, updatedShoppingList).await()
+            }
+        } catch (e: Exception) {
+            Log.e("FirebaseRepository", "Error updateIngredientFromShoppingList", e)
+        }
+    }
+
     override suspend fun deleteIngredientFromShoppingList(userId: String, recipeIngredientId: String){
         try {
             val ref = userCollection.document(userId)

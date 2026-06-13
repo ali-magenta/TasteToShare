@@ -33,6 +33,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class RecipeDetailsViewModel(
     savedStateHandle: SavedStateHandle,
@@ -97,6 +99,23 @@ class RecipeDetailsViewModel(
         val currentServings = _selectedServings.value ?: recipe.value.servings
         if (currentServings > 1)
             _selectedServings.value = currentServings - 1
+    }
+
+    @OptIn(ExperimentalUuidApi::class)
+    fun addIngredientListToShoppingList() {
+        viewModelScope.launch {
+            currentUserId.value?.let { userId ->
+                val ingredientsWithNewIds = adjustedIngredients.value.map { ingredient ->
+                    ingredient.copy(
+                        recipeIngredientId = Uuid.random().toString()
+                    )
+                }
+                userRepository.addIngredientListToShoppingList(
+                    userId,
+                    ingredientsWithNewIds
+                )
+            }
+        }
     }
 
     fun deleteRecipe() {

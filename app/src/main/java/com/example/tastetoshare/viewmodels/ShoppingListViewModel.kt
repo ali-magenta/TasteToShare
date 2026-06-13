@@ -82,39 +82,6 @@ class ShoppingListViewModel(
             initialValue = emptyList<RecipeIngredient>()
         )
 
-    fun removeIngredient(recipeIngredientId: String){
-        viewModelScope.launch {
-            userRepository.deleteIngredientFromShoppingList(currentUserId.value ?: "", recipeIngredientId)
-        }
-    }
-
-    fun validateIngredientStep(): Boolean {
-        var hasErrors = false
-        if(_uiState.value.recipeIngredients.isEmpty()){
-            _uiState.update { it.copy(recipeIngredientsError = "You must provide ingredients for the recipe") }
-            hasErrors = true
-        }
-
-        return !hasErrors
-    }
-
-    fun setFieldSearchIngredient(fieldSearchIngredient: String){
-        _uiState.update { it.copy(
-            fieldSearchIngredient = fieldSearchIngredient,
-            recipeIngredientsError = "",
-            ingredientError = ""
-        )
-        }
-    }
-
-    fun setSelectedIngredient(selectedIngredient: Ingredient){
-        _uiState.update { it.copy(selectedIngredient = selectedIngredient,
-            fieldIngredientUnit = selectedIngredient.unitOfMeasurementToCaloryPerUnit.keys.firstOrNull()?: "",
-            recipeIngredientsError = "",
-            ingredientError = ""
-        ) }
-    }
-
     fun addIngredient(){
         _uiState.update {
             val error = when {
@@ -148,6 +115,90 @@ class ShoppingListViewModel(
                 userRepository.addIngredientToShoppingList(currentUserId.value ?: "", _uiState.value.recipeIngredient!!)
             }
         }
+    }
+
+    fun removeIngredient(recipeIngredientId: String){
+        viewModelScope.launch {
+            userRepository.deleteIngredientFromShoppingList(currentUserId.value ?: "", recipeIngredientId)
+        }
+    }
+
+    fun editIngredient() {
+        val error = when {
+            _uiState.value.selectedIngredient == null -> "Missing ingredient"
+            _uiState.value.fieldIngredientQuantity.toFloatOrNull() == null ||
+                    _uiState.value.fieldIngredientQuantity.toFloat() <= 0f -> "Invalid quantity"
+            _uiState.value.fieldIngredientUnit.isBlank() -> "Missing unit"
+            else -> ""
+        }
+
+        if (error.isNotEmpty()) {
+            _uiState.update { it.copy(ingredientError = error) }
+            return
+        }
+
+        if (_uiState.value.recipeIngredientIdToEdit != null && currentUserId.value != null) {
+            viewModelScope.launch {
+                userRepository.updateIngredientFromShoppingList(
+                    userId = currentUserId.value!!,
+                    recipeIngredientId = _uiState.value.recipeIngredientIdToEdit!!,
+                    quantity = _uiState.value.fieldIngredientQuantity.toFloat(),
+                    unitOfMeasurement = _uiState.value.fieldIngredientUnit
+                )
+
+                _uiState.update {
+                    it.copy(
+                        ingredientError = "",
+                        recipeIngredientsError = "",
+                        selectedIngredient = null,
+                        fieldIngredientUnit = "",
+                        fieldIngredientQuantity = "",
+                        fieldSearchIngredient = "",
+                        recipeIngredientIdToEdit = null,
+                        isEditMode = false
+                    )
+                }
+            }
+        }
+    }
+
+    fun setEditMode(recipeIngredientId: String) {
+        val recipeIngredientToEdit = shoppingList.value.find { it.recipeIngredientId == recipeIngredientId }
+        _uiState.update { it.copy(
+            isEditMode = true,
+            selectedIngredient = recipeIngredientToEdit?.ingredient,
+            recipeIngredientIdToEdit = recipeIngredientToEdit?.recipeIngredientId,
+            fieldIngredientQuantity = recipeIngredientToEdit?.quantity.toString(),
+            fieldIngredientUnit = recipeIngredientToEdit?.customUnitOfMeasurement ?: ""
+        )
+        }
+    }
+
+    fun validateIngredientStep(): Boolean {
+        var hasErrors = false
+        if(_uiState.value.recipeIngredients.isEmpty()){
+            _uiState.update { it.copy(recipeIngredientsError = "You must provide ingredients for the recipe") }
+            hasErrors = true
+        }
+
+        return !hasErrors
+    }
+
+    fun setFieldSearchIngredient(fieldSearchIngredient: String){
+        _uiState.update { it.copy(
+            fieldSearchIngredient = fieldSearchIngredient,
+            recipeIngredientsError = "",
+            ingredientError = ""
+        )
+        }
+    }
+
+    fun setSelectedIngredient(selectedIngredient: Ingredient){
+        _uiState.update { it.copy(selectedIngredient = selectedIngredient,
+            fieldIngredientUnit = selectedIngredient.unitOfMeasurementToCaloryPerUnit.keys.firstOrNull()?: "",
+            recipeIngredientsError = "",
+            ingredientError = ""
+        ) }
     }
 
     fun setFieldIngredientQuantity(fieldIngredientQuantity: String){
@@ -190,6 +241,9 @@ data class ShoppingListUIState(
 
     val recipeIngredientsError: String = "",
     val ingredientError: String = "",
+
+    val isEditMode: Boolean = false,
+    val recipeIngredientIdToEdit: String? = null,
 
     val displayedIngredients: List<Ingredient> = emptyList(),
     val fieldSearchIngredient: String = "",

@@ -1,6 +1,5 @@
 package com.example.tastetoshare.screens.components
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

@@ -48,6 +48,22 @@ class PaperDbUserRepository: UserRepository {
         TODO("Not yet implemented")
     }
 
+    override suspend fun addIngredientListToShoppingList(
+        userId: String,
+        recipeIngredientList: List<RecipeIngredient>
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateIngredientFromShoppingList(
+        userId: String,
+        recipeIngredientId: String,
+        quantity: Float?,
+        unitOfMeasurement: String?
+    ) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun updateUser(
         user: User
     ) {

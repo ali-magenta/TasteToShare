@@ -10,6 +10,8 @@ interface UserRepository {
     fun getShoppingListByUserId(userId: String): Flow<List<RecipeIngredient>>
     suspend fun deleteIngredientFromShoppingList(userId: String, recipeIngredientId: String)
     suspend fun addIngredientToShoppingList(userId: String, recipeIngredient: RecipeIngredient)
+    suspend fun addIngredientListToShoppingList(userId: String, recipeIngredientList: List<RecipeIngredient>)
+    suspend fun updateIngredientFromShoppingList(userId: String, recipeIngredientId: String, quantity: Float?, unitOfMeasurement: String?)
     suspend fun updateUser(user: User)
     suspend fun addUser(user: User)
     suspend fun addSavedRecipe(userId : String, recipeId : String)
