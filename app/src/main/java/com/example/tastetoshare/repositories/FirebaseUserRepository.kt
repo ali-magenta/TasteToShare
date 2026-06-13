@@ -15,6 +15,7 @@ import kotlinx.coroutines.tasks.await
 import kotlin.collections.plus
 import androidx.core.net.toUri
 import com.example.tastetoshare.data.entities.Recipe
+import com.example.tastetoshare.data.entities.RecipeIngredient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -97,6 +98,43 @@ class FirebaseUserRepository(
                 snapshot.toObjects(User::class.java)
             }.map { users ->
             users.find { it.userId == userId }?.savedRecipeIds?.toSet() ?: emptySet()
+        }
+    }
+
+    override fun getShoppingListByUserId(userId: String): Flow<List<RecipeIngredient>> {
+        return userCollection.snapshots()
+            .map { snapshot ->
+                snapshot.toObjects(User::class.java)
+            }.map { users ->
+                users.find{ it.userId == userId }?.shoppingList ?: emptyList()
+            }
+    }
+
+    override suspend fun addIngredientToShoppingList(userId: String, recipeIngredient: RecipeIngredient) {
+        try {
+            val ref = userCollection.document(userId)
+            val snapshot = ref.get()
+                .await() // a simpler get().await() and update().await() combination. Unlike transactions, these operations are automatically queued by Firestore and synced to the server once the connection is restored, allowing them to work offline.
+            val user= snapshot.toObject(User::class.java)
+            if(user != null){
+                ref.update(User::shoppingList.name, user.shoppingList + recipeIngredient).await()
+            }
+        } catch (e: Exception) {
+            Log.e("FirebaseRepository", "Error addIngredientToShoppingList", e)
+        }
+    }
+
+    override suspend fun deleteIngredientFromShoppingList(userId: String, recipeIngredientId: String){
+        try {
+            val ref = userCollection.document(userId)
+            val snapshot = ref.get()
+                .await() // a simpler get().await() and update().await() combination. Unlike transactions, these operations are automatically queued by Firestore and synced to the server once the connection is restored, allowing them to work offline.
+            val user= snapshot.toObject(User::class.java)
+            if(user != null){
+                ref.update(User::shoppingList.name, user.shoppingList.filter { it.recipeIngredientId != recipeIngredientId }).await()
+            }
+        } catch (e: Exception) {
+            Log.e("FirebaseRepository", "Error deleteTriedRecipe", e)
         }
     }
 
@@ -218,6 +256,21 @@ class FirebaseUserRepository(
 
     override suspend fun deleteSavedRecipe(userId: String, recipeId: String) {
         try {
+            val ref = userCollection.document(userId)
+            val snapshot = ref.get()
+                .await() // a simpler get().await() and update().await() combination. Unlike transactions, these operations are automatically queued by Firestore and synced to the server once the connection is restored, allowing them to work offline.
+            val user= snapshot.toObject(User::class.java)
+            if(user != null){
+                ref.update(User::savedRecipeIds.name, user.savedRecipeIds.filter { it != recipeId }).await()
+            }
+        } catch (e: Exception) {
+            Log.e("FirebaseRepository", "Error deleteSavedRecipe", e)
+        }
+    }
+
+
+    override suspend fun deleteTriedRecipe(userId: String, recipeId: String){
+        try {
             val userRef = userCollection.document(userId)
             val recipeRef = recipeCollection.document(recipeId)
 
@@ -250,21 +303,6 @@ class FirebaseUserRepository(
                     )
                 }
             }.await()
-        } catch (e: Exception) {
-            Log.e("FirebaseRepository", "Error deleteSavedRecipe", e)
-        }
-    }
-
-
-    override suspend fun deleteTriedRecipe(userId: String, recipeId: String){
-        try {
-            val ref = userCollection.document(userId)
-            val snapshot = ref.get()
-                .await() // a simpler get().await() and update().await() combination. Unlike transactions, these operations are automatically queued by Firestore and synced to the server once the connection is restored, allowing them to work offline.
-            val user= snapshot.toObject(User::class.java)
-            if(user != null){
-                ref.update(User::triedRecipeIds.name, user.triedRecipeIds.filter { it != recipeId }).await()
-            }
         } catch (e: Exception) {
             Log.e("FirebaseRepository", "Error deleteTriedRecipe", e)
         }

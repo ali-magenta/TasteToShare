@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class ShoppingListViewModel(
     savedStateHandle: SavedStateHandle,
@@ -68,25 +69,22 @@ class ShoppingListViewModel(
                 initialValue = emptyList()
             )
 
-
-    //@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class, FlowPreview::class)
-    //val shoppingList: StateFlow<List<RecipeIngredient>> =
-    //    uiState
-    //        .debounce(300)
-    //        .flatMapLatest { state ->
-    //            userRepository.getShoppingListByUserId(
-    //                currentUserId
-    //            )
-    //        }
-    //        .stateIn(
-    //            scope = viewModelScope,
-    //            started = SharingStarted.WhileSubscribed(5000),
-    //            initialValue = emptyList<RawRecipePreview>()
-    //        )
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    val shoppingList: StateFlow<List<RecipeIngredient>> =
+        loggedInUser
+            .debounce(300)
+            .flatMapLatest { user ->
+                userRepository.getShoppingListByUserId(user.userId)
+            }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList<RecipeIngredient>()
+        )
 
     fun removeIngredient(recipeIngredientId: String){
-        _uiState.update { uiState ->
-            uiState.copy(recipeIngredients = uiState.recipeIngredients.filter { it.recipeIngredientId != recipeIngredientId })
+        viewModelScope.launch {
+            userRepository.deleteIngredientFromShoppingList(currentUserId.value ?: "", recipeIngredientId)
         }
     }
 
@@ -136,13 +134,18 @@ class ShoppingListViewModel(
                 )
 
                 it.copy(
-                    recipeIngredients = it.recipeIngredients + newRecipeIngredient,
+                    recipeIngredient = newRecipeIngredient,
                     recipeIngredientsError = "",
                     selectedIngredient = null,
                     fieldIngredientUnit = "",
                     fieldIngredientQuantity = "",
                     fieldSearchIngredient = ""
                 )
+            }
+        }
+        if (_uiState.value.ingredientError == "" && _uiState.value.recipeIngredient != null){
+            viewModelScope.launch {
+                userRepository.addIngredientToShoppingList(currentUserId.value ?: "", _uiState.value.recipeIngredient!!)
             }
         }
     }
@@ -183,6 +186,7 @@ class ShoppingListViewModel(
 
 data class ShoppingListUIState(
     val recipeIngredients : List<RecipeIngredient> = emptyList(),
+    val recipeIngredient : RecipeIngredient? = null,
 
     val recipeIngredientsError: String = "",
     val ingredientError: String = "",

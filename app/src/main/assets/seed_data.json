@@ -56,7 +56,10 @@
       ],
       "savedRecipeIds" : [],
       "triedRecipeIds" : [],
-      "shoppingList" : []
+      "shoppingList" : [
+        { "recipeIngredientId": "ri2", "ingredient": { "ingredientId": "2", "name": "Chickpeas", "unitOfMeasurementToCaloryPerUnit": {"g": 164}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 165.0, "customUnitOfMeasurement": "g" },
+        { "recipeIngredientId": "ri3", "ingredient": { "ingredientId": "3", "name": "Spinach", "unitOfMeasurementToCaloryPerUnit": {"g": 23}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 60.0, "customUnitOfMeasurement": "g" }
+      ]
     }
   ],
 

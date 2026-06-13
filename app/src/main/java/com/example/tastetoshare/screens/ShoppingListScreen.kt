@@ -39,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tastetoshare.R
 import com.example.tastetoshare.data.entities.Ingredient
+import com.example.tastetoshare.data.entities.RecipeIngredient
 import com.example.tastetoshare.screens.components.AutocompleteSearchBar
 import com.example.tastetoshare.screens.components.IngredientItem
 import com.example.tastetoshare.screens.components.NextStep
@@ -54,9 +55,11 @@ fun ShoppingListDestination(
 {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val ingredients by viewModel.ingredients.collectAsStateWithLifecycle()
+    val shoppingList by viewModel.shoppingList.collectAsStateWithLifecycle()
 
     ShippingListScreen(
         ingredients = ingredients,
+        shoppingList = shoppingList,
         uiState = uiState,
         onDeleteClick = viewModel::removeIngredient,
         onNextClick = viewModel::validateIngredientStep,
@@ -71,6 +74,7 @@ fun ShoppingListDestination(
 @Composable
 fun ShippingListScreen(
     ingredients: List<Ingredient>,
+    shoppingList: List<RecipeIngredient>,
     uiState: ShoppingListUIState,
     onDeleteClick: (String) -> Unit,
     onNextClick: () -> Unit,
@@ -230,7 +234,7 @@ fun ShippingListScreen(
             }
         }
 
-        uiState.recipeIngredients.forEach({ ingredient ->
+        shoppingList.forEach({ ingredient ->
             item{
                 IngredientItem(
                     name = ingredient.ingredient.name,

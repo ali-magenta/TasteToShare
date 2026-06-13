@@ -325,10 +325,11 @@ fun ProfileAnalytics(
 
         val recipeRatingModelProducer = remember { CartesianChartModelProducer() }
         LaunchedEffect(Unit) {
+            val chartRatings = recipeRatings.ifEmpty { List(5) { 0.0 } }
             recipeRatingModelProducer.runTransaction {
                 columnSeries { series(
-                    x = recipeRatings.indices.map { it + 1 },
-                    y = recipeRatings) }
+                    x = chartRatings.indices.map { it + 1 },
+                    y = chartRatings) }
             }
         }
         val bottomAxisRecipeRating = HorizontalAxis.rememberBottom(

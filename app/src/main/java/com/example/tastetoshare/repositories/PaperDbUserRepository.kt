@@ -1,5 +1,6 @@
 package com.example.tastetoshare.repositories
 
+import com.example.tastetoshare.data.entities.RecipeIngredient
 import com.example.tastetoshare.data.entities.User
 import io.paperdb.Paper
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +28,24 @@ class PaperDbUserRepository: UserRepository {
         return _users.map { users ->
             users.find { it.userId == userId }?.savedRecipeIds?.toSet() ?: emptySet()
         }
+    }
+
+    override fun getShoppingListByUserId(userId: String): Flow<List<RecipeIngredient>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteIngredientFromShoppingList(
+        userId: String,
+        recipeIngredientId: String
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun addIngredientToShoppingList(
+        userId: String,
+        recipeIngredient: RecipeIngredient
+    ) {
+        TODO("Not yet implemented")
     }
 
     override suspend fun updateUser(
