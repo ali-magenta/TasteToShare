@@ -37,10 +37,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.storage
 import com.google.gson.Gson
-import io.paperdb.Paper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+
+val INITIALIZE_DB = true
 
 class AppContainer {
 
@@ -78,10 +79,12 @@ class TasteToShareApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        Paper.init(this)
-        Paper.book().destroy()
-        val jsonString =
-            applicationContext.assets.open("seed_data.json").bufferedReader().use { it.readText() }
+
+        var jsonString = ""
+        if(INITIALIZE_DB){
+            jsonString = applicationContext.assets.open("seed_data.json").bufferedReader().use { it.readText() }
+        }
+
         val wrapperDB = Gson().fromJson(jsonString, WrapperDB::class.java)
 
         container = AppContainer()

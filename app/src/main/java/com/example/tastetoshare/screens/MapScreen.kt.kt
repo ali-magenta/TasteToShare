@@ -1,11 +1,14 @@
 package com.example.tastetoshare.screens
 
 import android.graphics.drawable.BitmapDrawable
+import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalGridApi
 import androidx.compose.foundation.layout.Grid
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -236,10 +239,6 @@ fun RecipesMarker(
     var distanceKm = 1.0
 
     if(visibleRegion != null){
-//        distanceKm = SphericalUtil.computeDistanceBetween(
-//            visibleRegion.farLeft,
-//            cameraPositionState.position.target
-//        )/1000
 
         distanceKm = (4000/2.0.pow(currentZoom))*10.0
 
@@ -258,39 +257,40 @@ fun RecipesMarker(
     val proposedNbPerRow = ((countrySize*2)/((targetSize/1.dp)*dpMetersRatio)).toInt()
 
     var sizeSqrt = sqrt(urls.size.toDouble()).toInt()
-    if(urls.size % sizeSqrt != 0){
+    if(urls.size != sizeSqrt * sizeSqrt){
         sizeSqrt = sizeSqrt + 1
     }
 
 
     val maxNbOfRecipesShownPerRow = min(min(proposedNbPerRow, sizeSqrt), 5)
-    MarkerComposable(
-        state = markerState,
-        keys = arrayOf(bitmaps, targetSize, maxNbOfRecipesShownPerRow),
-        anchor = Offset(0.5f, 0.5f),
-        onClick = { onClick()
-            true }
-    ) {
-
-        Grid(
-            config = {
-                repeat(maxNbOfRecipesShownPerRow) {
-                    column(targetSize)
-                }
-                repeat(maxNbOfRecipesShownPerRow) {
-                    row(targetSize)
-                }
-            }
+    if(maxNbOfRecipesShownPerRow > 0){
+        MarkerComposable(
+            state = markerState,
+            keys = arrayOf(bitmaps, targetSize, maxNbOfRecipesShownPerRow),
+            anchor = Offset(0.5f, 0.5f),
+            onClick = { onClick()
+                true }
         ) {
-            bitmaps.forEachIndexed { index, bitmap ->
-                if (index < maxNbOfRecipesShownPerRow*maxNbOfRecipesShownPerRow){
-                    Image(
-                        bitmap = bitmap,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize()
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
+            Grid(
+                config = {
+                    repeat(maxNbOfRecipesShownPerRow) {
+                        column(targetSize)
+                    }
+                    repeat(maxNbOfRecipesShownPerRow) {
+                        row(targetSize)
+                    }
+                }
+            ) {
+                bitmaps.forEachIndexed { index, bitmap ->
+                    if (index < maxNbOfRecipesShownPerRow*maxNbOfRecipesShownPerRow){
+                        Image(
+                            bitmap = bitmap,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize()
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
                 }
             }
         }

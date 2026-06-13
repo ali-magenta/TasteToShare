@@ -38,7 +38,15 @@ class FirebaseRecipeRepository(
     suspend fun initializeData(recipes: List<Recipe>) {
         val existing = recipeCollection.limit(1).get().await()
         if (existing.isEmpty) {
-            val updatedRecipes = recipes.map { recipe ->
+
+            firestore.runBatch { batch ->
+                recipes.forEach { recipe ->
+                    val docRef = recipeCollection.document(recipe.recipeId)
+                    batch.set(docRef, recipe)
+                }
+            }.await()
+
+            recipes.forEach { recipe ->
                 val uploadedRecipePhoto = if (recipe.photoURL.startsWith("http")) {
                     uploadExternalImageToFirebase(
                         recipe.photoURL,
@@ -76,19 +84,15 @@ class FirebaseRecipeRepository(
                     review.copy(photosUrl = uploadedPhotos)
                 }
 
-                recipe.copy(
-                    photoURL = uploadedRecipePhoto,
-                    steps = updatedSteps,
-                    reviews = updatedReviews
-                )
-            }
+                recipeCollection.document(recipe.recipeId).update(
+                    mapOf(
+                        "photoURL" to uploadedRecipePhoto,
+                        "steps" to updatedSteps,
+                        "reviews" to updatedReviews
+                    )
+                ).await()
 
-            firestore.runBatch { batch ->
-                updatedRecipes.forEach { recipe ->
-                    val docRef = recipeCollection.document(recipe.recipeId)
-                    batch.set(docRef, recipe)
-                }
-            }.await()
+            }
         }
     }
 
