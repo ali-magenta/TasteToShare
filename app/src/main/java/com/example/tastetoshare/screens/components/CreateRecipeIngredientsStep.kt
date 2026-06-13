@@ -58,7 +58,7 @@ fun IngredientsStep(
     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item {
             Text(
-                text = "Ingredients",
+                text = "Shopping list",
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp
             )

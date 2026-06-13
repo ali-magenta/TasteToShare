@@ -19,6 +19,7 @@
       ],
       "savedRecipeIds" : ["100", "102"],
       "triedRecipeIds" : [],
+      "shoppingList" : [],
       "averageRating": "4.6",
       "numberOfRatings": "107",
       "numberOfRecipeTriedByOthers": "105",
@@ -37,7 +38,8 @@
         { "tagId": "5", "type": "Other", "name": "Quick" }
       ],
       "savedRecipeIds" : [],
-      "triedRecipeIds" : []
+      "triedRecipeIds" : [],
+      "shoppingList" : []
     },
     {
       "userId": "103",
@@ -53,7 +55,8 @@
         { "tagId": "43", "type": "Other", "name": "Healthy" }
       ],
       "savedRecipeIds" : [],
-      "triedRecipeIds" : []
+      "triedRecipeIds" : [],
+      "shoppingList" : []
     }
   ],
 
