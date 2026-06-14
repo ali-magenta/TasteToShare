@@ -250,70 +250,64 @@ fun RecipesMarker(
 
     LaunchedEffect(urls) {
         val loader = ImageLoader(context)
-        urls.forEach {
-            val request = ImageRequest.Builder(context)
-                .data(it)
-                .size(128, 128)
-                .allowHardware(false)
-                .build()
-
-            val result = (loader.execute(request) as? SuccessResult)?.drawable
-            val bitmap = (result as? BitmapDrawable)?.bitmap?.asImageBitmap()
-            if(bitmap != null){
-                bitmaps = bitmaps + bitmap
+        val loadedBitmaps = urls.map { url ->
+            async {
+                val request = ImageRequest.Builder(context)
+                    .data(url)
+                    .size(128, 128)
+                    .allowHardware(false)
+                    .build()
+                val result = (loader.execute(request) as? SuccessResult)?.drawable
+                (result as? BitmapDrawable)?.bitmap?.asImageBitmap()
             }
-        }
-    }
+        }.awaitAll().filterNotNull()
 
-    val currentZoom:Double = cameraPositionState.position.zoom.toDouble()
-
-    val targetSize = when {
-        currentZoom >= 15f -> 72.dp
-        currentZoom >= 12f -> 56.dp
-        currentZoom >= 10f -> 40.dp
-        currentZoom >= 5f -> 50.dp
-        currentZoom >= 4f -> 40.dp
-        currentZoom >= 3f -> 30.dp
-        else        -> 10.dp
+        bitmaps = loadedBitmaps
     }
 
 
+    val targetSize = 48.dp
 
     val density = LocalDensity.current
-    val visibleRegion = cameraPositionState.projection?.visibleRegion
+    val maxNbOfRecipesShownPerRow by remember {
+        derivedStateOf {
+            // compute on change of these states
+            val currentZoom = cameraPositionState.position.zoom.toDouble()
+            val visibleRegion = cameraPositionState.projection?.visibleRegion
 
-    var distanceDp = 1.dp
-    var distanceKm = 1.0
+            var distanceDp = 1.dp
+            var distanceKm = 1.0
 
-    if(visibleRegion != null){
+            if(visibleRegion != null){
 
-        distanceKm = (4000/2.0.pow(currentZoom))*10.0
+                distanceKm = (4000/2.0.pow(currentZoom))*10.0
 
-        val farLeftPoint = cameraPositionState.projection?.toScreenLocation(visibleRegion.farLeft)
-        val centerPoint = cameraPositionState.projection?.toScreenLocation(cameraPositionState.position.target)
+                val farLeftPoint = cameraPositionState.projection?.toScreenLocation(visibleRegion.farLeft)
+                val centerPoint = cameraPositionState.projection?.toScreenLocation(cameraPositionState.position.target)
 
-        if (farLeftPoint != null && centerPoint != null){
-            val dx = (farLeftPoint.x - centerPoint.x).toDouble()
-            val dy = (farLeftPoint.y - centerPoint.y).toDouble()
-            val distancePx = sqrt(dx * dx + dy * dy)
-            distanceDp = with(density) { distancePx.toFloat().toDp() }
+                if (farLeftPoint != null && centerPoint != null){
+                    val dx = (farLeftPoint.x - centerPoint.x).toDouble()
+                    val dy = (farLeftPoint.y - centerPoint.y).toDouble()
+                    val distancePx = sqrt(dx * dx + dy * dy)
+                    distanceDp = with(density) { distancePx.toFloat().toDp() }
+                }
+            }
+
+            val dpMetersRatio = distanceKm/(distanceDp/1.dp).coerceAtLeast(0.01f)
+            val proposedNbPerRow = ((countrySize*2)/((targetSize/1.dp)*dpMetersRatio)).toInt()
+
+            var sizeSqrt = sqrt(urls.size.toDouble()).toInt()
+            if(urls.size != sizeSqrt * sizeSqrt){
+                sizeSqrt = sizeSqrt + 1
+            }
+            min(min(proposedNbPerRow, sizeSqrt), 5) // UI get updated only when this value change
         }
     }
 
-    val dpMetersRatio = distanceKm/(distanceDp/1.dp)
-    val proposedNbPerRow = ((countrySize*2)/((targetSize/1.dp)*dpMetersRatio)).toInt()
-
-    var sizeSqrt = sqrt(urls.size.toDouble()).toInt()
-    if(urls.size != sizeSqrt * sizeSqrt){
-        sizeSqrt = sizeSqrt + 1
-    }
-
-
-    val maxNbOfRecipesShownPerRow = min(min(proposedNbPerRow, sizeSqrt), 5)
-    if(maxNbOfRecipesShownPerRow > 0){
+    if(maxNbOfRecipesShownPerRow > 0 && bitmaps.isNotEmpty()){
         MarkerComposable(
             state = markerState,
-            keys = arrayOf(bitmaps, targetSize, maxNbOfRecipesShownPerRow),
+            keys = arrayOf(bitmaps, maxNbOfRecipesShownPerRow),
             anchor = Offset(0.5f, 0.5f),
             onClick = { onClick()
                 true }
