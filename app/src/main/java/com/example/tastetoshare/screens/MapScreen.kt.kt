@@ -29,6 +29,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -59,7 +60,8 @@ import kotlin.math.sqrt
 fun MapDestination(
     onNavigateToDetails: (recipeId: String) -> Unit,
     onAuthRequired: () -> Unit,
-    viewModel: MapViewModel = viewModel(factory = MapViewModel.Factory)
+    viewModel: MapViewModel = viewModel(factory = MapViewModel.Factory),
+    bottomPadding: Dp = 0.dp
 ) {
 
     val recipes by viewModel.recipes.collectAsStateWithLifecycle()
@@ -96,7 +98,8 @@ fun MapDestination(
         showBottomSheet = uiState.showBottomSheet,
         hideBottomSheet = viewModel::hideBottomSheet,
         openBottomSheet = viewModel::openBottomSheet,
-        topRecipesURLsByCountries = topRecipesURLsByCountries
+        topRecipesURLsByCountries = topRecipesURLsByCountries,
+        bottomPadding = bottomPadding
     )
 }
 
@@ -129,7 +132,8 @@ fun MapScreen(
     showBottomSheet: Boolean,
     hideBottomSheet: () -> Unit,
     topRecipesURLsByCountries: Map<Pair<Tag, Country?>, List<String>>,
-    openBottomSheet: (Tag) -> Unit
+    openBottomSheet: (Tag) -> Unit,
+    bottomPadding: Dp = 0.dp
 ){
     val singapore = LatLng(1.35, 103.87)
     val cameraPositionState = rememberCameraPositionState {
@@ -181,7 +185,8 @@ fun MapScreen(
                 onDietarySelected = onDietarySelected,
                 onNavigateToDetails = onNavigateToDetails,
                 onToggleSaved = onToggleSaved,
-                onAuthRequired = onAuthRequired
+                onAuthRequired = onAuthRequired,
+                bottomPadding = bottomPadding
             )
         }
     }

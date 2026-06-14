@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +24,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,7 +34,6 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -44,6 +43,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -57,7 +57,8 @@ import com.example.tastetoshare.viewmodels.SavedTriedViewModel
 fun SavedRecipeDestination(
     onNavigateToRecipeDetails: (recipeId: String) -> Unit,
     onAuthRequired: () -> Unit,
-    viewModel: SavedTriedViewModel = viewModel(factory = SavedTriedViewModel.Factory)
+    viewModel: SavedTriedViewModel = viewModel(factory = SavedTriedViewModel.Factory),
+    bottomPadding: Dp = 0.dp
 ) {
 
     val savedRecipes by viewModel.savedRecipes.collectAsStateWithLifecycle()
@@ -74,7 +75,8 @@ fun SavedRecipeDestination(
         onToggleSaved = viewModel::onToggleSaved,
         hideUnsavePopUp = viewModel::hideUnsavePopUp,
         showUnsavePopUp = viewModel::showUnsavePopUp,
-        onAuthRequired = onAuthRequired
+        onAuthRequired = onAuthRequired,
+        bottomPadding = bottomPadding
     )
 }
 
@@ -90,7 +92,8 @@ fun SavedTriedScreen(
     onTabSelected: (Int) -> Unit,
     hideUnsavePopUp: () -> Unit,
     showUnsavePopUp: (String) -> Unit,
-    onAuthRequired: () -> Unit
+    onAuthRequired: () -> Unit,
+    bottomPadding: Dp = 0.dp
 ) {
     val tabs = listOf("Saved", "Tried")
     val currentRecipes = if (uiState.selectedTabIndex == 0) savedRecipes else triedRecipes
@@ -99,7 +102,8 @@ fun SavedTriedScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(bottom = bottomPadding + 16.dp)
         ) {
             item {
                 TabRow(
@@ -179,11 +183,6 @@ fun SavedTriedScreen(
                         RecipeListCard(recipe, onToggleSaved, {showUnsavePopUp(recipe.recipeId)}, onAuthRequired)
                     }
                 }
-            }
-
-            // extra spacer to avoid cutting the last element
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
 

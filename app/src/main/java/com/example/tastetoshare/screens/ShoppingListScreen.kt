@@ -7,10 +7,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun ShoppingListDestination(
     // viewModel: ShoppingListViewModel = viewModel(factory = ShoppingListViewModel.provideFactory())
+    bottomPadding: Dp = 0.dp
 )
 {
     Column(
