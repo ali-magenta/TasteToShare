@@ -9,6 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalGridApi
 import androidx.compose.foundation.layout.Grid
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,6 +20,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +58,8 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlin.math.min
 import kotlin.math.pow
@@ -148,7 +152,7 @@ fun MapScreen(
 
     val fallbackPosition = LatLng(48.0, 14.0) // Center of europe
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(fallbackPosition, 4.0f)
+        position = CameraPosition.fromLatLngZoom(fallbackPosition, 4.5f)
     }
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
@@ -159,9 +163,10 @@ fun MapScreen(
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     if (location != null) {
                         val userLatLng = LatLng(location.latitude, location.longitude)
+                        Log.d("MapScreen", "User location : ${userLatLng}")
                         scope.launch {
                             cameraPositionState.animate(
-                                com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(userLatLng, 4.0f)
+                                com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(userLatLng, 4.5f)
                             )
                         }
                     }
@@ -177,7 +182,8 @@ fun MapScreen(
     }
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
-        cameraPositionState = cameraPositionState
+        cameraPositionState = cameraPositionState,
+        contentPadding = PaddingValues(bottom = bottomPadding + 16.dp)
     ) {
 
         topRecipesURLsByCountries.entries.forEach {
