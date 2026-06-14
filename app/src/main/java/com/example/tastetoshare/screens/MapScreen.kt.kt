@@ -1,7 +1,10 @@
 package com.example.tastetoshare.screens
 
+import android.Manifest
 import android.graphics.drawable.BitmapDrawable
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalGridApi
@@ -19,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,6 +47,7 @@ import com.example.tastetoshare.data.entities.Ingredient
 import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.data.entities.Tag
 import com.example.tastetoshare.viewmodels.MapViewModel
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.SphericalUtil
@@ -51,6 +56,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.launch
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -135,9 +141,39 @@ fun MapScreen(
     openBottomSheet: (Tag) -> Unit,
     bottomPadding: Dp = 0.dp
 ){
-    val singapore = LatLng(1.35, 103.87)
+    val context = LocalContext.current
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    val scope = rememberCoroutineScope()
+
+    val fallbackPosition = LatLng(48.0, 14.0) // Center of europe
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(singapore, 10f)
+        position = CameraPosition.fromLatLngZoom(fallbackPosition, 4.0f)
+    }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            try {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    if (location != null) {
+                        val userLatLng = LatLng(location.latitude, location.longitude)
+                        scope.launch {
+                            cameraPositionState.animate(
+                                com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(userLatLng, 4.0f)
+                            )
+                        }
+                    }
+                }
+            } catch (e: SecurityException) {
+                Log.e("MapScreen", "Security error : ", e)
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        locationPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
     }
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
