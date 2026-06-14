@@ -1,5 +1,6 @@
 package com.example.tastetoshare.services.notifications
 
+import androidx.compose.material3.SnackbarDuration
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 
@@ -19,5 +20,6 @@ data class SnackbarAction(
 )
 data class SnackbarEvent(
     val message: String,
-    val action: SnackbarAction? = null
+    val action: SnackbarAction? = null,
+    val duration: SnackbarDuration = SnackbarDuration.Long
 )

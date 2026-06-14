@@ -1,5 +1,6 @@
 package com.example.tastetoshare.viewmodels
 
+import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -21,6 +22,8 @@ import com.example.tastetoshare.repositories.NotificationRepository
 import com.example.tastetoshare.repositories.RecipeRepository
 import com.example.tastetoshare.repositories.UserRepository
 import com.example.tastetoshare.services.notifications.NotificationService
+import com.example.tastetoshare.services.notifications.SnackbarController
+import com.example.tastetoshare.services.notifications.SnackbarEvent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -115,6 +118,13 @@ class RecipeDetailsViewModel(
                     ingredientsWithNewIds
                 )
             }
+
+            SnackbarController.sendEvent(
+                SnackbarEvent(
+                    message = "Ingredients added to the shopping list!",
+                    duration = SnackbarDuration.Short
+                )
+            )
         }
     }
 

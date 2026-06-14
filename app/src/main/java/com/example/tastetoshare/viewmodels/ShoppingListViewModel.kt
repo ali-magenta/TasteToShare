@@ -174,16 +174,6 @@ class ShoppingListViewModel(
         }
     }
 
-    fun validateIngredientStep(): Boolean {
-        var hasErrors = false
-        if(_uiState.value.recipeIngredients.isEmpty()){
-            _uiState.update { it.copy(recipeIngredientsError = "You must provide ingredients for the recipe") }
-            hasErrors = true
-        }
-
-        return !hasErrors
-    }
-
     fun setFieldSearchIngredient(fieldSearchIngredient: String){
         _uiState.update { it.copy(
             fieldSearchIngredient = fieldSearchIngredient,
@@ -236,7 +226,6 @@ class ShoppingListViewModel(
 }
 
 data class ShoppingListUIState(
-    val recipeIngredients : List<RecipeIngredient> = emptyList(),
     val recipeIngredient : RecipeIngredient? = null,
 
     val recipeIngredientsError: String = "",

@@ -67,7 +67,6 @@ fun ShoppingListDestination(
         shoppingList = shoppingList,
         uiState = uiState,
         onDeleteClick = viewModel::removeIngredient,
-        onNextClick = viewModel::validateIngredientStep,
         onIngredientSearchChange = viewModel::setFieldSearchIngredient,
         onIngredientClick = viewModel::setSelectedIngredient,
         onAddIngredientClick = viewModel::addIngredient,
@@ -84,7 +83,6 @@ fun ShippingListScreen(
     shoppingList: List<RecipeIngredient>,
     uiState: ShoppingListUIState,
     onDeleteClick: (String) -> Unit,
-    onNextClick: () -> Unit,
     onIngredientSearchChange: (String) -> Unit,
     onIngredientClick: (Ingredient) -> Unit,
     onAddIngredientClick: () -> Unit,
@@ -193,7 +191,9 @@ fun ShippingListScreen(
                     )
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.addstep),
+                        painter = if(uiState.isEditMode)
+                            painterResource(id = R.drawable.edit)
+                        else painterResource(id = R.drawable.addstep),
                         contentDescription = "Add or edit ingredient icon",
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -234,7 +234,7 @@ fun ShippingListScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "${uiState.recipeIngredients.size} ITEMS",
+                        text = "${shoppingList.size} ITEMS",
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
@@ -255,11 +255,6 @@ fun ShippingListScreen(
                 )
             }
         })
-
-        item {
-            errorAlertBox(uiState.recipeIngredientsError)
-            NextStep(onNextClick)
-        }
     }
 }
 
@@ -335,10 +330,10 @@ fun ShoppingListEntry(
             modifier = Modifier.size(40.dp)
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.trash),
-                contentDescription = "trash icon",
+                painter = painterResource(id = R.drawable.edit),
+                contentDescription = "edit icon",
                 modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.error
+                tint = MaterialTheme.colorScheme.primary
             )
         }
         IconButton(
