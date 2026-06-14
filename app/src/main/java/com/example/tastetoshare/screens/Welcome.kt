@@ -35,6 +35,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tastetoshare.viewmodels.WelcomeViewModel
+import android.app.Activity
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 @Composable
 fun WelcomeDestination(
@@ -54,6 +58,31 @@ fun WelcomeScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        DisposableEffect(view) {
+            val window = (context as Activity).window
+            val insetsController = WindowCompat.getInsetsController(window, view)
+
+            val originalNavBarColor = window.navigationBarColor
+            val originalStatusBarColor = window.statusBarColor
+            val originalIsLightNavIcons = insetsController.isAppearanceLightNavigationBars
+            val originalIsLightStatusIcons = insetsController.isAppearanceLightStatusBars
+
+            window.navigationBarColor = android.graphics.Color.BLACK
+            window.statusBarColor = android.graphics.Color.BLACK
+            insetsController.isAppearanceLightNavigationBars = false
+            insetsController.isAppearanceLightStatusBars = false
+
+            onDispose {
+                window.navigationBarColor = originalNavBarColor
+                window.statusBarColor = originalStatusBarColor
+                insetsController.isAppearanceLightNavigationBars = originalIsLightNavIcons
+                insetsController.isAppearanceLightStatusBars = originalIsLightStatusIcons
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
