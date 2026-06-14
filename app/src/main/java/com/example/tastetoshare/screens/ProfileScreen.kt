@@ -260,11 +260,13 @@ fun ProfileAnalytics(
     ) {
         val engagementPerMonthModelProducer = remember { CartesianChartModelProducer() }
         LaunchedEffect(Unit) {
-            engagementPerMonthModelProducer.runTransaction {
-                columnSeries { series(
-                    x = userRatingPerRecipePerLastSixMonth.indices.map { it + 1 },
-                    y = userRatingPerRecipePerLastSixMonth
-                ) }
+            if (userRatingPerRecipePerLastSixMonth.isNotEmpty()) {
+                engagementPerMonthModelProducer.runTransaction {
+                    columnSeries { series(
+                        x = userRatingPerRecipePerLastSixMonth.indices.map { it + 1 },
+                        y = userRatingPerRecipePerLastSixMonth
+                    ) }
+                }
             }
         }
         val bottomAxisEngagement = HorizontalAxis.rememberBottom(
@@ -307,28 +309,32 @@ fun ProfileAnalytics(
                     }
                 )
             }
-            CartesianChartHost(
-                rememberCartesianChart(
-                    rememberColumnCartesianLayer(
-                        rangeProvider = CartesianLayerRangeProvider.fixed(
-                            minY = 0.0,
-                            maxY = max(userRatingPerRecipePerLastSixMonth.maxOrNull() ?: 0.0, 1.0)
-                        )
+            if (userRatingPerRecipePerLastSixMonth.isNotEmpty()) {
+                CartesianChartHost(
+                    rememberCartesianChart(
+                        rememberColumnCartesianLayer(
+                            rangeProvider = CartesianLayerRangeProvider.fixed(
+                                minY = 0.0,
+                                maxY = max(userRatingPerRecipePerLastSixMonth.maxOrNull() ?: 0.0, 1.0)
+                            )
+                        ),
+                        startAxis = VerticalAxis.rememberStart(),
+                        bottomAxis = bottomAxisEngagement,
                     ),
-                    startAxis = VerticalAxis.rememberStart(),
-                    bottomAxis = bottomAxisEngagement,
-                ),
-                engagementPerMonthModelProducer,
-                modifier = Modifier.fillMaxWidth(),
-            )
+                    engagementPerMonthModelProducer,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
 
         val recipeRatingModelProducer = remember { CartesianChartModelProducer() }
         LaunchedEffect(Unit) {
-            recipeRatingModelProducer.runTransaction {
-                columnSeries { series(
-                    x = recipeRatings.indices.map { it + 1 },
-                    y = recipeRatings) }
+            if (recipeRatings.isNotEmpty()) {
+                recipeRatingModelProducer.runTransaction {
+                    columnSeries { series(
+                        x = recipeRatings.indices.map { it + 1 },
+                        y = recipeRatings) }
+                }
             }
         }
         val bottomAxisRecipeRating = HorizontalAxis.rememberBottom(
@@ -344,19 +350,21 @@ fun ProfileAnalytics(
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            CartesianChartHost(
-                rememberCartesianChart(
-                    rememberColumnCartesianLayer(
-                        rangeProvider = CartesianLayerRangeProvider.fixed(
-                            minY = 0.0,
-                            maxY = 5.0
-                        )
+            if (recipeRatings.isNotEmpty()) {
+                CartesianChartHost(
+                    rememberCartesianChart(
+                        rememberColumnCartesianLayer(
+                            rangeProvider = CartesianLayerRangeProvider.fixed(
+                                minY = 0.0,
+                                maxY = 5.0
+                            )
+                        ),
+                        startAxis = VerticalAxis.rememberStart(),
+                        bottomAxis = bottomAxisRecipeRating,
                     ),
-                    startAxis = VerticalAxis.rememberStart(),
-                    bottomAxis = bottomAxisRecipeRating,
-                ),
-                recipeRatingModelProducer,
-            )
+                    recipeRatingModelProducer,
+                )
+            }
         }
 
         Row(
