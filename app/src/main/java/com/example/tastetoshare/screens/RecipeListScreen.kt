@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -48,12 +46,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tastetoshare.data.Cost
 import com.example.tastetoshare.data.Difficulty
 import com.example.tastetoshare.data.entities.Ingredient
-import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.data.entities.Tag
+import com.example.tastetoshare.data.uiClasses.UIRecipePreview
 import com.example.tastetoshare.screens.recipeListComponents.FilterChipDropdown
 import com.example.tastetoshare.screens.recipeListComponents.FilterChipIngredients
 import com.example.tastetoshare.screens.recipeListComponents.RecipeListCard
-import com.example.tastetoshare.viewmodels.RecipeListUIState
 import com.example.tastetoshare.viewmodels.RecipeListViewModel
 
 @Composable
@@ -99,7 +96,7 @@ fun RecipeListDestination(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeListScreen(
-    recipes: List<RawRecipePreview>,
+    recipes: List<UIRecipePreview>,
     ingredients: List<Ingredient>,
     cuisineTags: List<Tag>,
     dietaryTags: List<Tag>,

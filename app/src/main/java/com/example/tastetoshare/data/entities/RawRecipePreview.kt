@@ -20,6 +20,5 @@ data class RawRecipePreview @OptIn(ExperimentalUuidApi::class) constructor(
     val cost: Cost = Cost.CHEAP,
     val calories: Int? = null,
     val ingredients : List<RecipeIngredient> = emptyList(),
-    val tags: List<Tag> = emptyList(),
-    val isSaved: Boolean = false
+    val tags: List<Tag> = emptyList()
 )

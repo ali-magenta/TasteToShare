@@ -7,17 +7,16 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.navigation.toRoute
 import com.example.tastetoshare.TasteToShareApp
 import com.example.tastetoshare.data.Cost
 import com.example.tastetoshare.data.Difficulty
 import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.entities.Country
 import com.example.tastetoshare.data.entities.Ingredient
-import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.data.entities.Tag
-import com.example.tastetoshare.navigation.MapRoute
-import com.example.tastetoshare.navigation.RecipeListRoute
+import com.example.tastetoshare.data.entities.User
+import com.example.tastetoshare.data.uiClasses.UIRecipePreview
+import com.example.tastetoshare.data.uiClasses.toUi
 import com.example.tastetoshare.repositories.CountryRepository
 import com.example.tastetoshare.repositories.IngredientRepository
 import com.example.tastetoshare.repositories.RecipeRepository
@@ -31,7 +30,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -68,16 +66,16 @@ class MapViewModel(
         )
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val savedIds: StateFlow<Set<String>> = currentUserId
-        .flatMapLatest { userId ->
-            if (userId != null) userRepository.getSavedRecipes(userId)
-            else flowOf(emptySet())
+    val loggedInUser: StateFlow<User> =
+        currentUserId.flatMapLatest{ userId ->
+            if (userId != null) userRepository.getUser(userId)
+            else flowOf(User())
         }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptySet<String>()
-        )
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = User()
+            )
 
     private val topRecipeByCountryTags: StateFlow<Map<Tag, List<String>>> = recipeRepository.getTopRecipesURLsByCountries()
         .stateIn(
@@ -104,7 +102,7 @@ class MapViewModel(
 
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class, FlowPreview::class)
-    val rawRecipes: StateFlow<List<RawRecipePreview>> =
+    val recipes: StateFlow<List<UIRecipePreview>> =
         uiState
             .debounce(300)
             .flatMapLatest { state ->
@@ -120,23 +118,15 @@ class MapViewModel(
                         state.selectedCountry?.let{add(it)}
                     }.ifEmpty { null }
                 )
+            }.combine(loggedInUser) {
+                    recipes, loggedInUser ->
+                recipes.map { it.toUi(loggedInUser) }
             }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
-                initialValue = emptyList<RawRecipePreview>()
+                initialValue = emptyList()
             )
-
-    val recipes: StateFlow<List<RawRecipePreview>> = combine(
-        rawRecipes, savedIds
-    ) { recipes, saved ->
-        recipes.map { it.copy(isSaved = it.recipeId in saved)}
-    }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList<RawRecipePreview>()
-        )
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     val ingredients: StateFlow<List<Ingredient>> =
@@ -223,7 +213,7 @@ class MapViewModel(
         if (isLoggedIn.value) {
             viewModelScope.launch {
                 val userId = SessionManagerFacade.currentUserStateFlow.value ?: return@launch
-                val currentlySaved = recipeId in (savedIds.value)
+                val currentlySaved = recipeId in loggedInUser.value.savedRecipeIds
                 if (currentlySaved) {
                     userRepository.deleteSavedRecipe(userId, recipeId)
                 } else {

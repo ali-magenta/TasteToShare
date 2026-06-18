@@ -11,6 +11,8 @@ import com.example.tastetoshare.TasteToShareApp
 import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.data.entities.User
+import com.example.tastetoshare.data.uiClasses.UIRecipePreview
+import com.example.tastetoshare.data.uiClasses.toUi
 import com.example.tastetoshare.repositories.RecipeRepository
 import com.example.tastetoshare.repositories.UserRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -71,30 +73,30 @@ class SavedTriedViewModel(
                 initialValue = emptyList<RawRecipePreview>()
             )
 
-    val savedRecipes: StateFlow<List<RawRecipePreview>> = combine(
+    val savedRecipes: StateFlow<List<UIRecipePreview>> = combine(
         rawRecipes, loggedInUser
     ) { recipes, user ->
         recipes
             .filter { it.recipeId in user.savedRecipeIds }
-            .map { it.copy(isSaved = true) }
+            .map { it.toUi(user) }
     }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList<RawRecipePreview>()
+            initialValue = emptyList()
         )
 
-    val triedRecipes: StateFlow<List<RawRecipePreview>> = combine(
+    val triedRecipes: StateFlow<List<UIRecipePreview>> = combine(
         rawRecipes, loggedInUser
     ) { recipes, user ->
         recipes
             .filter { it.recipeId in user.triedRecipeIds }
-            .map { it.copy(isSaved = it.recipeId in user.savedRecipeIds) }
+            .map { it.toUi(user) }
     }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList<RawRecipePreview>()
+            initialValue = emptyList()
         )
 
     fun onSearchTextChanged(search: String) {

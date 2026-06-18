@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -47,7 +46,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.tastetoshare.data.entities.RawRecipePreview
+import com.example.tastetoshare.data.uiClasses.UIRecipePreview
 import com.example.tastetoshare.screens.recipeListComponents.RecipeListCard
 import com.example.tastetoshare.ui.theme.DangerRed
 import com.example.tastetoshare.viewmodels.SavedTriedUIState
@@ -83,8 +82,8 @@ fun SavedRecipeDestination(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SavedTriedScreen(
-    savedRecipes: List<RawRecipePreview>,
-    triedRecipes: List<RawRecipePreview>,
+    savedRecipes: List<UIRecipePreview>,
+    triedRecipes: List<UIRecipePreview>,
     uiState: SavedTriedUIState,
     onSearchTextChanged: (String) -> Unit,
     onNavigateToDetails: (String) -> Unit,

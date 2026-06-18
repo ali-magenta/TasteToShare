@@ -1,5 +1,6 @@
 package com.example.tastetoshare.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,10 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Map
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,17 +24,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.tastetoshare.R
 import com.example.tastetoshare.data.uiClasses.UIRecipePreview
-import com.example.tastetoshare.screens.components.RecipeCard
 import com.example.tastetoshare.screens.components.RecipePreviewCardVertical
+import com.example.tastetoshare.screens.recipeListComponents.RecipeListCard
 import com.example.tastetoshare.viewmodels.HomepageUIState
 import com.example.tastetoshare.viewmodels.HomepageViewModel
 
@@ -148,7 +143,14 @@ fun HomepageScreen(
             )
         }
         items(topWeeklyRecipes) { recipe ->
-            RecipeCard(recipe, onNavigateToRecipeProposal, onSaveClick, onAuthRequired)
+            Box(
+                Modifier
+                    .padding(start = 17.dp, end = 16.dp)
+                    .clickable { onNavigateToRecipeProposal(recipe.recipeId) }
+                    .animateItem()
+            ) {
+                RecipeListCard(recipe, onSaveClick, null, onAuthRequired)
+            }
         }
     }
 }

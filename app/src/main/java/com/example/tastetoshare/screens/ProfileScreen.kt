@@ -53,8 +53,8 @@ import com.example.tastetoshare.data.entities.User
 import com.example.tastetoshare.data.uiClasses.UIRecipePreview
 import com.example.tastetoshare.screens.components.ProfileHeader
 import com.example.tastetoshare.screens.components.ProfileInfo
-import com.example.tastetoshare.screens.components.RecipeCard
 import com.example.tastetoshare.screens.components.TagsRow
+import com.example.tastetoshare.screens.recipeListComponents.RecipeListCard
 import com.example.tastetoshare.viewmodels.ProfileUIState
 import com.example.tastetoshare.viewmodels.ProfileViewModel
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
@@ -67,6 +67,7 @@ import com.patrykandpatrick.vico.compose.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 @Composable
 fun ProfileDestination(
@@ -194,12 +195,14 @@ fun ProfileScreen(
                             }
                         }
                         items(recipes.size) { index ->
-                            RecipeCard(
-                                recipes[index],
-                                onNavigateToRecipeProposal,
-                                onToggleSaved,
-                                onAuthRequired
-                            )
+                            Box(
+                                Modifier
+                                    .padding(start = 17.dp, end = 16.dp)
+                                    .clickable { onNavigateToRecipeProposal(recipes[index].recipeId) }
+                                    .animateItem()
+                            ) {
+                                RecipeListCard(recipes[index], onToggleSaved, null, onAuthRequired)
+                            }
                         }
                     }
                 }
@@ -235,12 +238,14 @@ fun ProfileScreen(
                     }
                 }
                 items(recipes.size) { index ->
-                    RecipeCard(
-                        recipe = recipes[index],
-                        onNavigateToDetails = onNavigateToRecipeProposal,
-                        onToggleSaved,
-                        onAuthRequired
-                    )
+                    Box(
+                        Modifier
+                            .padding(start = 17.dp, end = 16.dp)
+                            .clickable { onNavigateToRecipeProposal(recipes[index].recipeId) }
+                            .animateItem()
+                    ) {
+                        RecipeListCard(recipes[index], onToggleSaved, null, onAuthRequired)
+                    }
                 }
             }
         }
@@ -396,7 +401,7 @@ fun ProfileAnalytics(
             )
             AnalyticsCard(
                 label = "Average Rating",
-                value = "${user.averageRating}",
+                value = "${((user.averageRating * 100).roundToInt() / 100.0)}",
                 modifier = Modifier.weight(1f)
             )
             AnalyticsCard(

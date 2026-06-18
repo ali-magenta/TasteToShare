@@ -6,13 +6,11 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -35,11 +33,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.tastetoshare.R
-import com.example.tastetoshare.data.entities.RawRecipePreview
+import com.example.tastetoshare.data.uiClasses.UIRecipePreview
+import kotlin.math.roundToInt
 
 @Composable
 fun RecipeListCard(
-    recipe: RawRecipePreview,
+    recipe: UIRecipePreview,
     onSaveClick: (String, () -> Unit) -> Unit,
     showUnsavePopUp: (() -> Unit)?,
     onAuthRequired: () -> Unit
@@ -82,7 +81,7 @@ fun RecipeListCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "${recipe.rating} (${recipe.numberOfRatings} reviews)",
+                            text = "${((recipe.rating * 100).roundToInt() / 100.0)} (${recipe.numberOfRatings} reviews)",
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold
@@ -95,8 +94,9 @@ fun RecipeListCard(
                         modifier = Modifier.clickable(
                             enabled = true,
                             onClick = {
-                                if(recipe.isSaved && showUnsavePopUp != null) showUnsavePopUp()
-                                else onSaveClick(recipe.recipeId, onAuthRequired)}
+                                if (recipe.isSaved && showUnsavePopUp != null) showUnsavePopUp()
+                                else onSaveClick(recipe.recipeId, onAuthRequired)
+                            }
                         )
                     )
                 }

@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.tastetoshare.R
 import com.example.tastetoshare.data.entities.Recipe
+import kotlin.math.roundToInt
 
 
 @Composable
@@ -124,7 +125,7 @@ fun Rating(rating: Float, modifier: Modifier) {
         )
         Spacer(modifier = Modifier.width(7.dp))
         Text(
-            text = "$rating",
+            text = "${((rating * 100).roundToInt() / 100.0)}",
             fontWeight = FontWeight.Bold,
             color = Color.White
         )

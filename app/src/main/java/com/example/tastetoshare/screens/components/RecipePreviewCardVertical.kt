@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.tastetoshare.R
 import com.example.tastetoshare.data.uiClasses.UIRecipePreview
+import kotlin.math.roundToInt
 
 @Composable
 fun RecipePreviewCardVertical(
@@ -98,7 +99,7 @@ fun RecipePreviewCardVertical(
                     Spacer(modifier = Modifier.width(4.dp))
 
                     Text(
-                        text = "${recipe.rating} (${recipe.numberOfRatings} reviews)",
+                        text = "${((recipe.rating * 100).roundToInt() / 100.0)} (${recipe.numberOfRatings} reviews)",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold

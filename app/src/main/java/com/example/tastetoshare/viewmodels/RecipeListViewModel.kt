@@ -13,8 +13,10 @@ import com.example.tastetoshare.data.Cost
 import com.example.tastetoshare.data.Difficulty
 import com.example.tastetoshare.data.auth.SessionManagerFacade
 import com.example.tastetoshare.data.entities.Ingredient
-import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.data.entities.Tag
+import com.example.tastetoshare.data.entities.User
+import com.example.tastetoshare.data.uiClasses.UIRecipePreview
+import com.example.tastetoshare.data.uiClasses.toUi
 import com.example.tastetoshare.navigation.RecipeListRoute
 import com.example.tastetoshare.repositories.IngredientRepository
 import com.example.tastetoshare.repositories.RecipeRepository
@@ -92,6 +94,18 @@ class RecipeListViewModel(
             initialValue = SessionManagerFacade.currentUserStateFlow.value
         )
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val loggedInUser: StateFlow<User> =
+        currentUserId.flatMapLatest{ userId ->
+            if (userId != null) userRepository.getUser(userId)
+            else flowOf(User())
+        }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = User()
+            )
+
     private val isLoggedIn: StateFlow<Boolean> = SessionManagerFacade.currentUserStateFlow
         .map {it != null}
         .stateIn(
@@ -100,20 +114,8 @@ class RecipeListViewModel(
             initialValue = SessionManagerFacade.currentUserStateFlow.value != null
         )
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val savedIds: StateFlow<Set<String>> = currentUserId
-        .flatMapLatest { userId ->
-            if (userId != null) userRepository.getSavedRecipes(userId)
-            else flowOf(emptySet())
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptySet<String>()
-        )
-
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class, FlowPreview::class)
-    val rawRecipes: StateFlow<List<RawRecipePreview>> =
+    val recipes: StateFlow<List<UIRecipePreview>> =
         uiState
             .debounce(300)
             .flatMapLatest { state ->
@@ -128,23 +130,15 @@ class RecipeListViewModel(
                         state.selectedDietary?.let{add(it)}
                     }.ifEmpty { null }
                 )
+            }.combine(loggedInUser) {
+                    recipes, loggedInUser ->
+                recipes.map { it.toUi(loggedInUser) }
             }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
-                initialValue = emptyList<RawRecipePreview>()
+                initialValue = emptyList()
             )
-
-    val recipes: StateFlow<List<RawRecipePreview>> = combine(
-        rawRecipes, savedIds
-    ) { recipes, saved ->
-        recipes.map { it.copy(isSaved = it.recipeId in saved)}
-    }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList<RawRecipePreview>()
-        )
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     val ingredients: StateFlow<List<Ingredient>> =
@@ -215,7 +209,7 @@ class RecipeListViewModel(
         if (isLoggedIn.value) {
             viewModelScope.launch {
                 val userId = SessionManagerFacade.currentUserStateFlow.value ?: return@launch
-                val currentlySaved = recipeId in (savedIds.value)
+                val currentlySaved = recipeId in loggedInUser.value.savedRecipeIds
                 if (currentlySaved) {
                     userRepository.deleteSavedRecipe(userId, recipeId)
                 } else {

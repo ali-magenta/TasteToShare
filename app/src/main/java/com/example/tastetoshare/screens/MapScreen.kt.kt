@@ -6,13 +6,11 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalGridApi
 import androidx.compose.foundation.layout.Grid
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -46,13 +44,12 @@ import com.example.tastetoshare.data.Cost
 import com.example.tastetoshare.data.Difficulty
 import com.example.tastetoshare.data.entities.Country
 import com.example.tastetoshare.data.entities.Ingredient
-import com.example.tastetoshare.data.entities.RawRecipePreview
 import com.example.tastetoshare.data.entities.Tag
+import com.example.tastetoshare.data.uiClasses.UIRecipePreview
 import com.example.tastetoshare.viewmodels.MapViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.SphericalUtil
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MarkerComposable
@@ -117,7 +114,7 @@ fun MapDestination(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
-    recipes: List<RawRecipePreview>,
+    recipes: List<UIRecipePreview>,
     ingredients: List<Ingredient>,
     cuisineTags: List<Tag>,
     dietaryTags: List<Tag>,
