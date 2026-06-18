@@ -38,6 +38,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,7 +55,8 @@ import com.example.tastetoshare.viewmodels.ShoppingListViewModel
 
 @Composable
 fun ShoppingListDestination(
-    viewModel: ShoppingListViewModel = viewModel(factory = ShoppingListViewModel.Factory)
+    viewModel: ShoppingListViewModel = viewModel(factory = ShoppingListViewModel.Factory),
+    bottomPadding: Dp = 0.dp
 )
 {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -72,7 +74,8 @@ fun ShoppingListDestination(
         onQuantityChange = viewModel::setFieldIngredientQuantity,
         onUnitChange = viewModel::setFieldIngredientUnit,
         setEditMode = viewModel::setEditMode,
-        editIngredient = viewModel::editIngredient
+        editIngredient = viewModel::editIngredient,
+        bottomPadding = bottomPadding
     )
 }
 
@@ -88,7 +91,8 @@ fun ShoppingListScreen(
     onQuantityChange: (String) -> Unit,
     onUnitChange: (String) -> Unit,
     setEditMode: (String, String) -> Unit,
-    editIngredient: () -> Unit
+    editIngredient: () -> Unit,
+    bottomPadding: Dp
 ) {
     LazyColumn(
         modifier = Modifier
@@ -96,7 +100,7 @@ fun ShoppingListScreen(
             .padding(top = 4.dp, start = 17.dp, end = 17.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(bottom = 20.dp)
+        contentPadding = PaddingValues(bottom = bottomPadding + 20.dp)
     ) {
         item{
             AutocompleteSearchBar<Ingredient>(
