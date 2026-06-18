@@ -21,13 +21,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -38,6 +36,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -55,7 +54,8 @@ import java.time.format.DateTimeFormatter
 fun NotificationDestination(
     onNavigateToProfile: (userId: String) -> Unit,
     onNavigateToRecipeDetails: (recipeId: String) -> Unit,
-    viewModel: NotificationViewModel = viewModel(factory = NotificationViewModel.Factory)
+    viewModel: NotificationViewModel = viewModel(factory = NotificationViewModel.Factory),
+    bottomPadding: Dp = 0.dp
 ) {
     val notifications by viewModel.notifications.collectAsStateWithLifecycle()
 
@@ -65,7 +65,8 @@ fun NotificationDestination(
         notifications = notifications,
         sendRecommendationNotification = { viewModel.sendRecommendationNotification() },
         sendReviewNotification = { viewModel.sendReviewNotification() },
-        sendDuplicateNotification = { viewModel.sendDuplicateNotification() }
+        sendDuplicateNotification = { viewModel.sendDuplicateNotification() },
+        bottomPadding = bottomPadding
     )
 }
 
@@ -77,7 +78,8 @@ fun NotificationScreen(
     sendRecommendationNotification: () -> Unit,
     sendReviewNotification: () -> Unit,
     sendDuplicateNotification: () -> Unit,
-    notifications: List<UINotification>
+    notifications: List<UINotification>,
+    bottomPadding: Dp = 0.dp
 ) {
     Column(
         modifier = Modifier
@@ -138,7 +140,8 @@ fun NotificationScreen(
         }
         if (notifications.isNotEmpty()) {
             LazyColumn(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(bottom = bottomPadding + 16.dp)
             ) {
                 itemsIndexed(notifications) { index, notification ->
                     Spacer(modifier = Modifier.height(6.dp))

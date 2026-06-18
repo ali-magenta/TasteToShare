@@ -23,6 +23,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -33,6 +36,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.remote.creation.step
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,6 +65,7 @@ fun InstructionsStep(
     onNextClick: () -> Unit,
     onNavigateToPictureDialog: (Boolean) -> Unit,
     onSetPhotoTarget: (PhotoTarget) -> Unit,
+    moveStepUpOrDown: (stepIndex: Int, moveUp: Boolean) -> Unit,
     ) {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(bottom = 16.dp)
@@ -91,6 +96,8 @@ fun InstructionsStep(
                 imageUrl = step.photoURL,
                 onEditClick = {},
                 onDeleteClick = { onRemoveStepClick(step.stepId) },
+                onMoveUp = {moveStepUpOrDown(it, true)},
+                onMoveDown = {moveStepUpOrDown(it, false)},
             )
         }
 
@@ -120,7 +127,9 @@ fun InstructionStepCard(
     instructionText: String,
     imageUrl: String?,
     onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    onMoveUp: (stepIndex: Int) -> Unit,
+    onMoveDown: (stepIndex: Int) -> Unit,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
 
@@ -138,31 +147,94 @@ fun InstructionStepCard(
                 .fillMaxWidth()
                 .padding(16.dp),
         ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .background(MaterialTheme.colorScheme.primary, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stepNumber.toString(),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-            }
 
-            Spacer(modifier = Modifier.width(16.dp))
 
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(
-                    text = instructionText,
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    lineHeight = 24.sp
-                )
+                Row{
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(MaterialTheme.colorScheme.primary, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stepNumber.toString(),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Text(
+                        text = instructionText,
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 24.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(20.dp)
+                    ) {
+                        IconButton(
+                            onClick = { onMoveUp(stepNumber-1) },
+                            modifier = Modifier.size(30.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowUp,
+                                contentDescription = "Up arrow",
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                        IconButton(
+                            onClick = { onMoveDown(stepNumber-1) },
+                            modifier = Modifier.size(30.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = "Down arrow",
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                        IconButton(
+                            onClick = { expanded = true },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id= R.drawable.dropdownpoints),
+                                contentDescription = "Dropdown menu points",
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Modify") },
+                                onClick = {
+                                    expanded = false
+                                    onEditClick()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
+                                onClick = {
+                                    expanded = false
+                                    onDeleteClick()
+                                }
+                            )
+                        }
+                    }
+                }
+
 
                 imageUrl?.let {
                     if (it.isNotEmpty()) {
@@ -177,41 +249,6 @@ fun InstructionStepCard(
                             contentScale = ContentScale.Crop
                         )
                     }
-                }
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Box {
-                IconButton(
-                    onClick = { expanded = true },
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(id= R.drawable.dropdownpoints),
-                        contentDescription = "Dropdown menu points",
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Modify") },
-                        onClick = {
-                            expanded = false
-                            onEditClick()
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
-                        onClick = {
-                            expanded = false
-                            onDeleteClick()
-                        }
-                    )
                 }
             }
         }

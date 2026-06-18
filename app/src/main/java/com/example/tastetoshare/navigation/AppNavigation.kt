@@ -1,5 +1,7 @@
 package com.example.tastetoshare.navigation
 
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -16,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -147,11 +150,13 @@ fun AppNavigation() {
         NavHost(
             navController = navCtrl,
             startDestination = HomeRoute,
-            modifier = Modifier.padding(globalPadding)
+            modifier = Modifier.padding(
+                top = globalPadding.calculateTopPadding(),
+                start = globalPadding.calculateStartPadding(LayoutDirection.Ltr),
+                end = globalPadding.calculateEndPadding(LayoutDirection.Ltr)
+            )
         ) {
-            // Nested graph for login
-            //authGraph(navActions, navCtrl = navCtrl)
-
+            val bottomPadding = globalPadding.calculateBottomPadding()
             composable<HomeRoute>
             {
                 HomepageDestination(
@@ -160,6 +165,7 @@ fun AppNavigation() {
                     onSearchSubmit = { search -> navActions.navigateToRecipeList(searchString = search) },
                     onNavigateToMap = navActions::navigateToMap,
                     onAuthRequired = navActions::navigateToLogin,
+                    bottomPadding = bottomPadding,
                 )
             }
 
@@ -230,6 +236,7 @@ fun AppNavigation() {
                     onNavigateToRecipeProposal = { recipeId -> navActions.navigateToRecipeDetails(recipeId) },
                     onNavigateToEditProfile = {navActions.navigateToEditProfile(args.userId) },
                     onAuthRequired = navActions::navigateToLogin,
+                    bottomPadding = bottomPadding
                 )
             }
 
@@ -237,7 +244,8 @@ fun AppNavigation() {
                 EditProfileDestination(
                     onNavigateBack = { navActions.navigateBack()},
                     onNavigateToPictureDialog = {isFrontCamera -> navActions.navigateToPictureDialog(isFrontCamera)},
-                    getReturnedUri = navActions::getReturnedUriFlow
+                    getReturnedUri = navActions::getReturnedUriFlow,
+                    bottomPadding = bottomPadding
                 )
             }
 
@@ -277,7 +285,8 @@ fun AppNavigation() {
                     onNavigateToHome = { navActions.navigateToHomePage() },
                     onNavigateToPictureDialog = {isFrontCamera -> navActions.navigateToPictureDialog(isFrontCamera)},
                     onAuthRequired = navActions::navigateToLogin,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    bottomPadding = bottomPadding
                     // for final RecipeDetails (idk if we want to access shopping list when adding ingredients to it or not)
                     // onNavigateToShoppingList = {navActions.navigateToShoppingList()}
                 )
@@ -289,7 +298,8 @@ fun AppNavigation() {
                     onNavigateToDetails = { recipeId ->
                         navActions.navigateToRecipeDetails(recipeId)
                     },
-                    onAuthRequired = navActions::navigateToLogin
+                    onAuthRequired = navActions::navigateToLogin,
+                    bottomPadding = bottomPadding
                 )
             }
 
@@ -299,7 +309,8 @@ fun AppNavigation() {
                     onNavigateToDetails = { recipeId ->
                         navActions.navigateToRecipeDetails(recipeId)
                     },
-                    onAuthRequired = navActions::navigateToLogin
+                    onAuthRequired = navActions::navigateToLogin,
+                    bottomPadding = bottomPadding
                 )
             }
 
@@ -332,12 +343,15 @@ fun AppNavigation() {
                     onNavigateToRecipeDetails = { recipeId ->
                         navActions.navigateToRecipeDetails(recipeId)
                     },
+                    bottomPadding = bottomPadding
                     )
             }
 
             composable<ShoppingListRoute>
             {
-                ShoppingListDestination()
+                ShoppingListDestination(
+                    bottomPadding = bottomPadding
+                )
             }
 
             composable<SavedRecipeRoute>
@@ -346,7 +360,8 @@ fun AppNavigation() {
                     onNavigateToRecipeDetails = { recipeId ->
                         navActions.navigateToRecipeDetails(recipeId)
                     },
-                    onAuthRequired = navActions::navigateToLogin
+                    onAuthRequired = navActions::navigateToLogin,
+                    bottomPadding = bottomPadding
                 )
             }
         }

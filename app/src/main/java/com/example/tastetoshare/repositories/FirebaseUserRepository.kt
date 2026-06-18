@@ -29,30 +29,29 @@ class FirebaseUserRepository(
 
     private val storageRef = storage.reference
     private val userCollection = firestore.collection(FirebaseCollections.USERS)
-    private val recipeCollection = firestore.collection(FirebaseCollections.RECIPES)
+
 
     suspend fun initializeData(users: List<User>) {
         val existing = userCollection.limit(1).get().await()
         if (existing.isEmpty) {
-            val updatedUser = users.map { user ->
-                val uploadedUserPhoto = if (!user.photoURI.isNullOrBlank() && user.photoURI.startsWith("http")) {
-                    uploadExternalImageToFirebase(
-                        user.photoURI,
-                        "users/${user.userId}/profile_${System.currentTimeMillis()}.jpg"
-                    )
-                } else {
-                    user.photoURI
-                }
-                user.copy(
-                    photoURI = uploadedUserPhoto,
-                )
-            }
             firestore.runBatch { batch ->
-                updatedUser.forEach { user ->
+                users.forEach { user ->
                     val docRef = userCollection.document(user.userId)
                     batch.set(docRef, user)
                 }
             }.await()
+
+            users.forEach { user ->
+                if (!user.photoURI.isNullOrBlank() && user.photoURI.startsWith("http")) {
+                    val downloadedUrl = uploadExternalImageToFirebase(
+                        user.photoURI,
+                        "users/${user.userId}/profile_${System.currentTimeMillis()}.jpg"
+                    )
+                    userCollection.document(user.userId)
+                        .update("photoURI", downloadedUrl)
+                        .await()
+                }
+            }
         }
     }
 
@@ -284,7 +283,7 @@ class FirebaseUserRepository(
         try {
             val ref = userCollection.document(userId)
             val snapshot = ref.get()
-                .await() // a simpler get().await() and update().await() combination. Unlike transactions, these operations are automatically queued by Firestore and synced to the server once the connection is restored, allowing them to work offline.
+                .await()
             val user= snapshot.toObject(User::class.java)
             if(user != null){
                 ref.update(User::savedRecipeIds.name, user.savedRecipeIds + recipeId).await()
@@ -294,92 +293,46 @@ class FirebaseUserRepository(
         }
     }
 
+
     override suspend fun addTriedRecipe(userId: String, recipeId: String) {
         try {
-            val userRef = userCollection.document(userId)
-            val recipeRef = recipeCollection.document(recipeId)
-            firestore.runTransaction { transaction ->
-
-                val userSnapshot = transaction.get(userRef)
-                val user = userSnapshot.toObject(User::class.java)
-                    ?: throw Exception("Review author not found when adding a tried recipe")
-
-                val recipeSnapshot = transaction.get(recipeRef)
-                val recipe = recipeSnapshot.toObject(Recipe::class.java)
-                    ?: throw Exception("Recipe not found when adding a tried recipe")
-
-                if (recipeId !in user.triedRecipeIds) {
-                    transaction.update(
-                        userRef,
-                        User::triedRecipeIds.name, user.triedRecipeIds + recipeId
-                    )
-
-                    val recipeAuthorRef = userCollection.document(recipe.authorId)
-
-                    val recipeAuthorSnapshot = transaction.get(recipeAuthorRef)
-                    val recipeAuthor = recipeAuthorSnapshot.toObject(User::class.java)
-                        ?: throw Exception("Recipe author not found")
-
-                    transaction.update(
-                        recipeAuthorRef,
-                        User::numberOfRecipeTriedByOthers.name, (recipeAuthor.numberOfRecipeTriedByOthers + 1).coerceAtLeast(0)
-                    )
-                }
-            }.await()
+            val ref = userCollection.document(userId)
+            val snapshot = ref.get()
+                .await()
+            val user= snapshot.toObject(User::class.java)
+            if(user != null){
+                ref.update(User::triedRecipeIds.name, user.triedRecipeIds + recipeId).await()
+            }
         } catch (e: Exception) {
             Log.e("FirebaseRepository", "Error addTriedRecipe", e)
         }
     }
 
-    override suspend fun deleteSavedRecipe(userId: String, recipeId: String) {
+    override suspend fun deleteSavedRecipe(userId: String, recipeId: String){
         try {
             val ref = userCollection.document(userId)
             val snapshot = ref.get()
-                .await() // a simpler get().await() and update().await() combination. Unlike transactions, these operations are automatically queued by Firestore and synced to the server once the connection is restored, allowing them to work offline.
+                .await()
             val user= snapshot.toObject(User::class.java)
             if(user != null){
                 ref.update(User::savedRecipeIds.name, user.savedRecipeIds.filter { it != recipeId }).await()
             }
         } catch (e: Exception) {
-            Log.e("FirebaseRepository", "Error deleteSavedRecipe", e)
+            Log.e("FirebaseRepository", "Error deleteTriedRecipe", e)
         }
     }
 
 
+
     override suspend fun deleteTriedRecipe(userId: String, recipeId: String){
         try {
-            val userRef = userCollection.document(userId)
-            val recipeRef = recipeCollection.document(recipeId)
-
-            firestore.runTransaction { transaction ->
-
-                val userSnapshot = transaction.get(userRef)
-                val user = userSnapshot.toObject(User::class.java)
-                    ?: throw Exception("Review author not found when deleting a tried recipe")
-
-                val recipeSnapshot = transaction.get(recipeRef)
-                val recipe = recipeSnapshot.toObject(Recipe::class.java)
-                    ?: throw Exception("Recipe not found when deleting a tried recipe")
-
-                if (recipeId in user.triedRecipeIds) {
-
-                    transaction.update(
-                        userRef,
-                        User::triedRecipeIds.name, user.triedRecipeIds.filter { it != recipeId }
-                    )
-
-                    val recipeAuthorRef = userCollection.document(recipe.authorId)
-
-                    val recipeAuthorSnapshot = transaction.get(recipeAuthorRef)
-                    val recipeAuthor = recipeAuthorSnapshot.toObject(User::class.java)
-                        ?: throw Exception("Recipe author not found")
-
-                    transaction.update(
-                        recipeAuthorRef,
-                        User::numberOfRecipeTriedByOthers.name, (recipeAuthor.numberOfRecipeTriedByOthers - 1).coerceAtLeast(0)
-                    )
-                }
-            }.await()
+            val ref = userCollection.document(userId)
+            val snapshot = ref.get()
+                .await()
+            val user= snapshot.toObject(User::class.java)
+            if(user != null){
+                ref.update(User::triedRecipeIds.name, user.triedRecipeIds.filter { it != recipeId }).await()
+            }
         } catch (e: Exception) {
             Log.e("FirebaseRepository", "Error deleteTriedRecipe", e)
         }

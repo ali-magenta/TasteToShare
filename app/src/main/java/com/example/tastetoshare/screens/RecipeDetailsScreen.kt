@@ -42,6 +42,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -79,6 +80,7 @@ fun RecipeDetailsDestination(
     onAuthRequired: () -> Unit,
     // onNavigateToShoppingList: () -> Unit,
     viewModel: RecipeDetailsViewModel = viewModel(factory = RecipeDetailsViewModel.Factory),
+    bottomPadding: Dp = 0.dp
 )
 {
 
@@ -128,7 +130,8 @@ fun RecipeDetailsDestination(
         onSetPhotoTarget = viewModel::setPhotoTarget,
         onNavigateToPictureDialog = onNavigateToPictureDialog,
         onAuthRequired = onAuthRequired,
-        focusReviewId = focusReviewId
+        focusReviewId = focusReviewId,
+        bottomPadding = bottomPadding
     )
 }
 
@@ -167,7 +170,8 @@ fun RecipeDetailsScreen(
     onSetPhotoTarget: (PhotoReviewTarget) -> Unit,
     onNavigateToPictureDialog: (Boolean) -> Unit,
     onAuthRequired: () -> Unit,
-    focusReviewId: String? = null
+    focusReviewId: String? = null,
+    bottomPadding: Dp = 0.dp
 ) {
     val verticalScrollState = rememberScrollState()
     var reviewsSectionY by remember { mutableFloatStateOf(0f) }
@@ -470,7 +474,7 @@ fun RecipeDetailsScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(bottomPadding + 16.dp))
     }
 
     if (uiState.isShowingDeleteRecipePopUp) {

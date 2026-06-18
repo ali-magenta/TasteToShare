@@ -5,6 +5,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,6 +41,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -58,7 +60,8 @@ import com.example.tastetoshare.viewmodels.RecipeListViewModel
 fun RecipeListDestination(
     onNavigateToDetails: (recipeId: String) -> Unit,
     onAuthRequired: () -> Unit,
-    viewModel: RecipeListViewModel = viewModel(factory = RecipeListViewModel.Factory)
+    viewModel: RecipeListViewModel = viewModel(factory = RecipeListViewModel.Factory),
+    bottomPadding: Dp = 0.dp
 ) {
 
     val recipes by viewModel.recipes.collectAsStateWithLifecycle()
@@ -88,7 +91,8 @@ fun RecipeListDestination(
         onDietarySelected = viewModel::onDietarySelected,
         onNavigateToDetails = onNavigateToDetails,
         onToggleSaved = viewModel::onToggleSaved,
-        onAuthRequired = onAuthRequired
+        onAuthRequired = onAuthRequired,
+        bottomPadding = bottomPadding
     )
 }
 
@@ -115,12 +119,14 @@ fun RecipeListScreen(
     onDietarySelected: (Tag?) -> Unit,
     onNavigateToDetails: (String) -> Unit,
     onToggleSaved: (String, () -> Unit) -> Unit,
-    onAuthRequired: () -> Unit
+    onAuthRequired: () -> Unit,
+    bottomPadding: Dp = 0.dp
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        contentPadding = PaddingValues(bottom = bottomPadding + 16.dp)
         ) {
             item {
                 Column(
@@ -173,11 +179,6 @@ fun RecipeListScreen(
                 ) {
                     RecipeListCard(recipe, onToggleSaved, null, onAuthRequired)
                 }
-            }
-
-            // extra spacer to avoid cutting the last element
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
             }
     }
 }

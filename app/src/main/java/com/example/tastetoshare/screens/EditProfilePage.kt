@@ -48,6 +48,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -66,7 +67,8 @@ fun EditProfileDestination(
     onNavigateBack: () -> Unit,
     onNavigateToPictureDialog: (Boolean) -> Unit,
     getReturnedUri : () -> Flow<String?>,
-    viewModel: ProfileViewModel = viewModel(factory = ProfileViewModel.Factory)
+    viewModel: ProfileViewModel = viewModel(factory = ProfileViewModel.Factory),
+    bottomPadding: Dp = 0.dp
 ) {
 
     val user by viewModel.user.collectAsStateWithLifecycle()
@@ -98,6 +100,7 @@ fun EditProfileDestination(
             }
         },
         goBack = onNavigateBack,
+        bottomPadding = bottomPadding,
     )
 }
 
@@ -114,7 +117,8 @@ fun EditProfilePage(
     onPreferencesChange: (List<Tag>) -> Unit,
     onRoleChange: (String) -> Unit,
     saveChanges: () -> Unit,
-    goBack: () -> Unit
+    goBack: () -> Unit,
+    bottomPadding: Dp = 0.dp
 ) {
     BackHandler {
         goBack()
@@ -126,9 +130,11 @@ fun EditProfilePage(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .verticalScroll(scrollState),
+            .verticalScroll(scrollState)
+            .padding(bottom = bottomPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(24.dp),
+        
     ) {
         Box(
             modifier = Modifier.padding(16.dp),
@@ -591,4 +597,3 @@ fun SaveChangesButton(saveChanges: () -> Unit, saving: Boolean) {
             style = MaterialTheme.typography.titleMedium,
         )
     }}
-

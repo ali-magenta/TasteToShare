@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.visible
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -48,7 +47,6 @@ import com.example.tastetoshare.R
 import com.example.tastetoshare.data.entities.Ingredient
 import com.example.tastetoshare.data.entities.RecipeIngredient
 import com.example.tastetoshare.screens.components.AutocompleteSearchBar
-import com.example.tastetoshare.screens.components.NextStep
 import com.example.tastetoshare.screens.components.OutlinedTextFieldWithList
 import com.example.tastetoshare.screens.components.errorAlertBox
 import com.example.tastetoshare.viewmodels.ShoppingListUIState

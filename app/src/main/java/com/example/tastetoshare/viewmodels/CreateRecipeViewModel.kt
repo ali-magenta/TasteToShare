@@ -481,6 +481,40 @@ class CreateRecipeViewModel(
         ) }
     }
 
+    fun moveStepUpOrDown(stepIndex: Int, moveUp: Boolean){
+        if(moveUp && stepIndex > 0){
+            _uiState.update {state -> state.copy(steps = state.steps.mapIndexed { index, step ->
+                if(index == stepIndex){
+                    val element = state.steps.elementAt(stepIndex - 1)
+                    element.copy(order = element.order + 1)
+                }
+                else if (index == stepIndex - 1){
+                    val element = state.steps.elementAt(stepIndex)
+                    element.copy(order = element.order - 1)
+                }
+                else{
+                    step
+                }
+            }) }
+        }
+        else if(!moveUp && stepIndex < _uiState.value.steps.size - 1){
+            _uiState.update {state -> state.copy(steps = state.steps.mapIndexed { index, step ->
+                if(index == stepIndex){
+                    val element = state.steps.elementAt(stepIndex + 1)
+                    element.copy(order = element.order - 1)
+                }
+                else if (index == stepIndex + 1){
+                    val element = state.steps.elementAt(stepIndex)
+                    element.copy(order = element.order + 1)
+                }
+                else{
+                    step
+                }
+            }) }
+        }
+
+    }
+
     fun addIngredient(){
         _uiState.update {
             val error = when {
@@ -518,6 +552,7 @@ class CreateRecipeViewModel(
     }
 
     fun addStep(){
+        if(_uiState.value.fieldNewStepDescription != "")
         _uiState.update { uiState ->
             uiState.copy(
                 steps = uiState.steps + Step(photoURL = uiState.newStepPhotoURL, description = uiState.fieldNewStepDescription, order = uiState.steps.size+1),

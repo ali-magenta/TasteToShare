@@ -148,6 +148,7 @@ fun NavGraphBuilder.createRecipeGraph(
                             viewModel.saveRecipe(onAuthRequired)
                         }
                     },
+                    moveStepUpOrDown = viewModel::moveStepUpOrDown
                 )
             }
         }

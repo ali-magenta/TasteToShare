@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -46,7 +47,8 @@ fun HomepageDestination(
     onNavigateToRecipeProposal: (String) -> Unit,
     onNavigateToMap: () -> Unit,
     onSearchSubmit: (String) -> Unit,
-    onAuthRequired: () -> Unit
+    onAuthRequired: () -> Unit,
+    bottomPadding: Dp = 0.dp
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -65,7 +67,8 @@ fun HomepageDestination(
         onNavigateToMap = onNavigateToMap,
         onNavigateToRecipeProposal,
         viewModel::onToggleSaved,
-        onAuthRequired
+        onAuthRequired,
+        bottomPadding,
     )
 }
 
@@ -82,7 +85,8 @@ fun HomepageScreen(
     onNavigateToMap: () -> Unit,
     onNavigateToRecipeProposal: (String) -> Unit,
     onSaveClick: (String, () -> Unit) -> Unit,
-    onAuthRequired: () -> Unit
+    onAuthRequired: () -> Unit,
+    bottomPadding: Dp = 0.dp
 ) {
     LazyColumn(
         modifier = Modifier
@@ -90,7 +94,7 @@ fun HomepageScreen(
             .padding(top = 4.dp, start = 17.dp, end = 17.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(bottom = 20.dp)
+        contentPadding = PaddingValues(bottom = bottomPadding + 16.dp)
     ) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {

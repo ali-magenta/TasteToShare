@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "538526353666-d5cje01s49k41b2i951suv7mpctkhcjp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.tastetoshare",
+            "certificate_hash": "39bc54cfb9e46b3894e7e7bc7641546e29d5ceb0"
+          }
+        },
+        {
           "client_id": "538526353666-df3ofq45nsoihukda5b5caah5hbip3ut.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -27,6 +35,14 @@
           "android_info": {
             "package_name": "com.example.tastetoshare",
             "certificate_hash": "5e5f303cabaece2d84dafa5fb1c68cf2890be0fd"
+          }
+        },
+        {
+          "client_id": "538526353666-lfcrjmno58k5i9ruapqjscb8fstfnjok.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.tastetoshare",
+            "certificate_hash": "f99f3e8684280547139778d3b2cafae6d1d3e3d0"
           }
         },
         {

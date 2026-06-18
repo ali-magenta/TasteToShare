@@ -38,7 +38,15 @@ class FirebaseRecipeRepository(
     suspend fun initializeData(recipes: List<Recipe>) {
         val existing = recipeCollection.limit(1).get().await()
         if (existing.isEmpty) {
-            val updatedRecipes = recipes.map { recipe ->
+
+            firestore.runBatch { batch ->
+                recipes.forEach { recipe ->
+                    val docRef = recipeCollection.document(recipe.recipeId)
+                    batch.set(docRef, recipe)
+                }
+            }.await()
+
+            recipes.forEach { recipe ->
                 val uploadedRecipePhoto = if (recipe.photoURL.startsWith("http")) {
                     uploadExternalImageToFirebase(
                         recipe.photoURL,
@@ -76,19 +84,15 @@ class FirebaseRecipeRepository(
                     review.copy(photosUrl = uploadedPhotos)
                 }
 
-                recipe.copy(
-                    photoURL = uploadedRecipePhoto,
-                    steps = updatedSteps,
-                    reviews = updatedReviews
-                )
-            }
+                recipeCollection.document(recipe.recipeId).update(
+                    mapOf(
+                        "photoURL" to uploadedRecipePhoto,
+                        "steps" to updatedSteps,
+                        "reviews" to updatedReviews
+                    )
+                ).await()
 
-            firestore.runBatch { batch ->
-                updatedRecipes.forEach { recipe ->
-                    val docRef = recipeCollection.document(recipe.recipeId)
-                    batch.set(docRef, recipe)
-                }
-            }.await()
+            }
         }
     }
 
@@ -96,29 +100,36 @@ class FirebaseRecipeRepository(
         imageUrl: String,
         storagePath: String
     ): String = withContext(Dispatchers.IO) {
+        try {
+            val url = URL(imageUrl)
+            val connection = url.openConnection()
+            connection.connect()
 
-        val url = URL(imageUrl)
-        val connection = url.openConnection()
-        connection.connect()
-        val inputStream = connection.getInputStream()
-        val bitmap = BitmapFactory.decodeStream(inputStream)
-        if (bitmap == null) {
-            throw Exception("Failed to decode image")
+            val inputStream = connection.getInputStream()
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream.close()
+
+            if (bitmap == null) {
+                throw Exception("Failed to decode image")
+            }
+
+            val outputStream = ByteArrayOutputStream()
+            bitmap.compress(
+                Bitmap.CompressFormat.JPEG,
+                85,
+                outputStream
+            )
+
+            val compressedBytes = outputStream.toByteArray()
+
+            val storageRef = storage.reference.child(storagePath)
+            storageRef.putBytes(compressedBytes).await()
+
+            storageRef.downloadUrl.await().toString()
+        } catch (e: Exception) {
+            Log.e("FirebaseUpload", "Failed to upload image from URL: $imageUrl", e)
+            imageUrl
         }
-        inputStream.close()
-
-        //compress the image
-        val outputStream = ByteArrayOutputStream()
-        bitmap.compress(
-            Bitmap.CompressFormat.JPEG,
-            85,
-            outputStream
-        )
-        val compressedBytes = outputStream.toByteArray()
-
-        val storageRef = storage.reference.child(storagePath)
-        storageRef.putBytes(compressedBytes).await()
-        storageRef.downloadUrl.await().toString()
     }
 
     override fun getRecipeById(recipeId: String): Flow<Recipe> {

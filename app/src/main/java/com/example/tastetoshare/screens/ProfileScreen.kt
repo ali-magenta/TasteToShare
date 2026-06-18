@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -73,7 +74,8 @@ fun ProfileDestination(
     onNavigateToRecipeProposal: (String) -> Unit,
     onNavigateToEditProfile: () -> Unit,
     onAuthRequired: () -> Unit,
-    viewModel: ProfileViewModel = viewModel(factory = ProfileViewModel.Factory)
+    viewModel: ProfileViewModel = viewModel(factory = ProfileViewModel.Factory),
+    bottomPadding: Dp = 0.dp
 ) {
 
     val user by viewModel.user.collectAsStateWithLifecycle()
@@ -96,7 +98,8 @@ fun ProfileDestination(
         onToggleSaved = viewModel::onToggleSaved,
         onAuthRequired = onAuthRequired,
         hideEngagementPopUp = viewModel::hideEngagementPopUp,
-        showEngagementPopUp = viewModel::showEngagementPopUp
+        showEngagementPopUp = viewModel::showEngagementPopUp,
+        bottomPadding = bottomPadding
     )
 }
 
@@ -116,7 +119,8 @@ fun ProfileScreen(
     onToggleSaved: (String, () -> Unit) -> Unit,
     onAuthRequired: () -> Unit,
     hideEngagementPopUp: () -> Unit,
-    showEngagementPopUp: () -> Unit
+    showEngagementPopUp: () -> Unit,
+    bottomPadding: Dp = 0.dp
 ) {
     val configuration = LocalConfiguration.current
     val isVertical = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -127,7 +131,7 @@ fun ProfileScreen(
             .padding(start = 17.dp, end = 17.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(bottom = 20.dp)
+        contentPadding = PaddingValues(bottom = bottomPadding + 20.dp)
     ) {
         item {
             Spacer(Modifier.height(16.dp))
@@ -259,12 +263,14 @@ fun ProfileAnalytics(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         val engagementPerMonthModelProducer = remember { CartesianChartModelProducer() }
-        LaunchedEffect(Unit) {
-            engagementPerMonthModelProducer.runTransaction {
-                columnSeries { series(
-                    x = userRatingPerRecipePerLastSixMonth.indices.map { it + 1 },
-                    y = userRatingPerRecipePerLastSixMonth
-                ) }
+        LaunchedEffect(userRatingPerRecipePerLastSixMonth) {
+            if (userRatingPerRecipePerLastSixMonth.isNotEmpty()) {
+                engagementPerMonthModelProducer.runTransaction {
+                    columnSeries { series(
+                        x = userRatingPerRecipePerLastSixMonth.indices.map { it + 1 },
+                        y = userRatingPerRecipePerLastSixMonth
+                    ) }
+                }
             }
         }
         val bottomAxisEngagement = HorizontalAxis.rememberBottom(
@@ -273,7 +279,7 @@ fun ProfileAnalytics(
             },
             itemPlacer = HorizontalAxis.ItemPlacer.aligned(spacing = { 1 })
         )
-        Column{
+        Column {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -307,29 +313,39 @@ fun ProfileAnalytics(
                     }
                 )
             }
-            CartesianChartHost(
-                rememberCartesianChart(
-                    rememberColumnCartesianLayer(
-                        rangeProvider = CartesianLayerRangeProvider.fixed(
-                            minY = 0.0,
-                            maxY = max(userRatingPerRecipePerLastSixMonth.maxOrNull() ?: 0.0, 1.0)
-                        )
+            if (userRatingPerRecipePerLastSixMonth.isNotEmpty()) {
+                CartesianChartHost(
+                    rememberCartesianChart(
+                        rememberColumnCartesianLayer(
+                            rangeProvider = CartesianLayerRangeProvider.fixed(
+                                minY = 0.0,
+                                maxY = max(userRatingPerRecipePerLastSixMonth.maxOrNull() ?: 0.0, 1.0)
+                            )
+                        ),
+                        startAxis = VerticalAxis.rememberStart(),
+                        bottomAxis = bottomAxisEngagement,
                     ),
-                    startAxis = VerticalAxis.rememberStart(),
-                    bottomAxis = bottomAxisEngagement,
-                ),
-                engagementPerMonthModelProducer,
-                modifier = Modifier.fillMaxWidth(),
-            )
+                    engagementPerMonthModelProducer,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            } else {
+                Text(
+                    text = "No engagement data available",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
         }
 
         val recipeRatingModelProducer = remember { CartesianChartModelProducer() }
-        LaunchedEffect(Unit) {
-            val chartRatings = recipeRatings.ifEmpty { List(5) { 0.0 } }
-            recipeRatingModelProducer.runTransaction {
-                columnSeries { series(
-                    x = chartRatings.indices.map { it + 1 },
-                    y = chartRatings) }
+        LaunchedEffect(recipeRatings) {
+            if (recipeRatings.isNotEmpty()) {
+                recipeRatingModelProducer.runTransaction {
+                    columnSeries { series(
+                        x = recipeRatings.indices.map { it + 1 },
+                        y = recipeRatings) }
+                }
             }
         }
         val bottomAxisRecipeRating = HorizontalAxis.rememberBottom(
@@ -338,26 +354,35 @@ fun ProfileAnalytics(
             },
             itemPlacer = HorizontalAxis.ItemPlacer.aligned(spacing = { 1 })
         )
-        Column{
+        Column {
             Text(
                 text = "Rating past 5 Recipes",
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            CartesianChartHost(
-                rememberCartesianChart(
-                    rememberColumnCartesianLayer(
-                        rangeProvider = CartesianLayerRangeProvider.fixed(
-                            minY = 0.0,
-                            maxY = 5.0
-                        )
+            if (recipeRatings.isNotEmpty()) {
+                CartesianChartHost(
+                    rememberCartesianChart(
+                        rememberColumnCartesianLayer(
+                            rangeProvider = CartesianLayerRangeProvider.fixed(
+                                minY = 0.0,
+                                maxY = 5.0
+                            )
+                        ),
+                        startAxis = VerticalAxis.rememberStart(),
+                        bottomAxis = bottomAxisRecipeRating,
                     ),
-                    startAxis = VerticalAxis.rememberStart(),
-                    bottomAxis = bottomAxisRecipeRating,
-                ),
-                recipeRatingModelProducer,
-            )
+                    recipeRatingModelProducer,
+                )
+            } else {
+                Text(
+                    text = "No recipe rating data available",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
         }
 
         Row(
