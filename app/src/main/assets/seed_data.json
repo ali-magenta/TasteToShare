@@ -57,6 +57,7 @@
         "107",
         "112"
       ],
+      "shoppingList" : [],
       "averageRating": 4.6,
       "numberOfRatings": 107,
       "numberOfRecipeTriedByOthers": 105,
@@ -102,6 +103,7 @@
         "100",
         "105"
       ],
+      "shoppingList" : [],
       "averageRating": 4.8,
       "numberOfRatings": 89,
       "numberOfRecipeTriedByOthers": 78,
@@ -154,6 +156,10 @@
         "102",
         "106",
         "111"
+      ],
+      "shoppingList" : [
+        { "recipeIngredientId": "ri2", "ingredient": { "ingredientId": "2", "name": "Chickpeas", "unitOfMeasurementToCaloryPerUnit": {"g": 164}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 165.0, "customUnitOfMeasurement": "g" },
+        { "recipeIngredientId": "ri3", "ingredient": { "ingredientId": "3", "name": "Spinach", "unitOfMeasurementToCaloryPerUnit": {"g": 23}, "photoURL": null, "isUserCreated": false, "userId": null }, "quantity": 60.0, "customUnitOfMeasurement": "g" }
       ],
       "averageRating": 4.3,
       "numberOfRatings": 42,

@@ -111,6 +111,7 @@ fun RecipeDetailsDestination(
         selectedServings = selectedServings,
         author = author,
         uiState = uiState,
+        addIngredientListToShoppingList = viewModel::addIngredientListToShoppingList,
         onShowIngredients = viewModel::showIngredients,
         onIncreaseServingClicked = viewModel::increaseServings,
         onDecreaseServingClicked = viewModel::decreaseServings,
@@ -150,6 +151,7 @@ fun RecipeDetailsScreen(
     selectedServings: Int?,
     author: User,
     uiState: RecipeDetailsUIState,
+    addIngredientListToShoppingList: () -> Unit,
     onShowIngredients: (Boolean) -> Unit,
     onIncreaseServingClicked: () -> Unit,
     onDecreaseServingClicked: () -> Unit,
@@ -403,9 +405,7 @@ fun RecipeDetailsScreen(
                             Spacer(modifier = Modifier.height(10.dp))
                             Button(
                                 modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    //TODO add ingredients to shopping list
-                                },
+                                onClick = addIngredientListToShoppingList,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                                     contentColor = MaterialTheme.colorScheme.onTertiaryContainer

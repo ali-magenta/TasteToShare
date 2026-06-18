@@ -15,6 +15,7 @@ data class User @OptIn(ExperimentalUuidApi::class) constructor(
     val preferences: List<Tag> = emptyList(),
     val savedRecipeIds: List<String> = emptyList(),
     val triedRecipeIds: List<String> = emptyList(),
+    val shoppingList: List<RecipeIngredient> = emptyList(),
     val averageRating: Float = 0.0f,
     val numberOfRatings: Int = 0,
     val numberOfRecipeTriedByOthers: Int = 0,

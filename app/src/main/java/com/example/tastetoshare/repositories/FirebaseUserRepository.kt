@@ -14,12 +14,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import kotlin.collections.plus
 import androidx.core.net.toUri
-import com.example.tastetoshare.data.entities.Recipe
+import com.example.tastetoshare.data.entities.RecipeIngredient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.net.URL
-import kotlin.collections.map
 
 class FirebaseUserRepository(
     private val firestore: FirebaseFirestore,
@@ -96,6 +95,120 @@ class FirebaseUserRepository(
                 snapshot.toObjects(User::class.java)
             }.map { users ->
             users.find { it.userId == userId }?.savedRecipeIds?.toSet() ?: emptySet()
+        }
+    }
+
+    override fun getShoppingListByUserId(userId: String): Flow<List<RecipeIngredient>> {
+        return userCollection.snapshots()
+            .map { snapshot ->
+                snapshot.toObjects(User::class.java)
+            }.map { users ->
+                users.find{ it.userId == userId }?.shoppingList?.sortedBy { it.ingredient.name } ?: emptyList()
+            }
+    }
+
+    override suspend fun addIngredientToShoppingList(userId: String, recipeIngredient: RecipeIngredient) {
+        addIngredientListToShoppingList(userId, listOf(recipeIngredient))
+    }
+
+    override suspend fun addIngredientListToShoppingList(userId: String, recipeIngredientList: List<RecipeIngredient>) {
+        try {
+            val ref = userCollection.document(userId)
+            val snapshot = ref.get()
+                .await() // a simpler get().await() and update().await() combination. Unlike transactions, these operations are automatically queued by Firestore and synced to the server once the connection is restored, allowing them to work offline.
+            val user= snapshot.toObject(User::class.java)
+            if(user != null) {
+                val updatedList = user.shoppingList.toMutableList()
+
+                for (ingredient in recipeIngredientList) {
+                    val existIndex = updatedList.indexOfFirst {
+                        it.ingredient.ingredientId == ingredient.ingredient.ingredientId &&
+                        it.customUnitOfMeasurement.equals(ingredient.customUnitOfMeasurement, ignoreCase = true)
+                    }
+
+                    if (existIndex != -1) {
+                        val existIngredient = updatedList[existIndex]
+                        updatedList[existIndex] = existIngredient.copy(quantity = existIngredient.quantity + ingredient.quantity)
+                    }
+                    else updatedList.add(ingredient)
+                }
+
+                ref.update(User::shoppingList.name, updatedList).await()
+            }
+        } catch (e: Exception) {
+            Log.e("FirebaseRepository", "Error addIngredientListToShoppingList", e)
+        }
+    }
+
+    override suspend fun updateIngredientFromShoppingList(userId: String, ingredientId: String, oldUnitOfMeasurement: String, quantity: Float?, unitOfMeasurement: String?) {
+        try {
+            val ref = userCollection.document(userId)
+            val snapshot = ref.get()
+                .await() // a simpler get().await() and update().await() combination. Unlike transactions, these operations are automatically queued by Firestore and synced to the server once the connection is restored, allowing them to work offline.
+            val user = snapshot.toObject(User::class.java)
+
+            if (user != null) {
+                val targetUnit = unitOfMeasurement ?: oldUnitOfMeasurement
+                var ingToUpdate: RecipeIngredient? = null
+                val otherIngs = mutableListOf<RecipeIngredient>()
+
+                for (ing in user.shoppingList) {
+                    if (ing.ingredient.ingredientId == ingredientId &&
+                        ing.customUnitOfMeasurement.equals(oldUnitOfMeasurement, ignoreCase = true)
+                    ) {
+                        ingToUpdate = ing
+                    } else {
+                        otherIngs.add(ing)
+                    }
+                }
+                if (ingToUpdate != null) {
+                    val modifiedIng = ingToUpdate.copy(
+                        quantity = quantity ?: ingToUpdate.quantity,
+                        customUnitOfMeasurement = targetUnit
+                    )
+
+                    val existingIndex = otherIngs.indexOfFirst {
+                        it.ingredient.ingredientId == ingredientId && it.customUnitOfMeasurement.equals(
+                            targetUnit,
+                            ignoreCase = true
+                        )
+                    }
+
+                    val finalShoppingList = if (existingIndex != -1) {
+                        val existingIng = otherIngs[existingIndex]
+                        val mergedIng = existingIng.copy(
+                            quantity = existingIng.quantity + modifiedIng.quantity
+                        )
+                        otherIngs[existingIndex] = mergedIng
+                        otherIngs
+                    } else {
+                        otherIngs.add(modifiedIng)
+                        otherIngs
+                    }
+
+                    ref.update(User::shoppingList.name, finalShoppingList).await()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("FirebaseRepository", "Error updateIngredientFromShoppingList", e)
+        }
+    }
+
+    override suspend fun deleteIngredientFromShoppingList(userId: String, ingredientId: String, unitOfMeasurement: String?){
+        try {
+            val ref = userCollection.document(userId)
+            val snapshot = ref.get()
+                .await() // a simpler get().await() and update().await() combination. Unlike transactions, these operations are automatically queued by Firestore and synced to the server once the connection is restored, allowing them to work offline.
+            val user= snapshot.toObject(User::class.java)
+            if(user != null){
+                val filteredList = user.shoppingList.filterNot {
+                    it.ingredient.ingredientId == ingredientId &&
+                    it.customUnitOfMeasurement.equals(unitOfMeasurement, ignoreCase = true)
+                }
+                ref.update(User::shoppingList.name, filteredList).await()
+            }
+        } catch (e: Exception) {
+            Log.e("FirebaseRepository", "Error deleteTriedRecipe", e)
         }
     }
 
