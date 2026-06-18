@@ -197,7 +197,6 @@ fun ProfileScreen(
                         items(recipes.size) { index ->
                             Box(
                                 Modifier
-                                    .padding(start = 17.dp, end = 16.dp)
                                     .clickable { onNavigateToRecipeProposal(recipes[index].recipeId) }
                                     .animateItem()
                             ) {

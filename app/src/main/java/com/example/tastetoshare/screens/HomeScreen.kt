@@ -145,7 +145,6 @@ fun HomepageScreen(
         items(topWeeklyRecipes) { recipe ->
             Box(
                 Modifier
-                    .padding(start = 17.dp, end = 16.dp)
                     .clickable { onNavigateToRecipeProposal(recipe.recipeId) }
                     .animateItem()
             ) {
