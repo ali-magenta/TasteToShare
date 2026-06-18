@@ -349,9 +349,7 @@ fun AppNavigation() {
 
             composable<ShoppingListRoute>
             {
-                ShoppingListDestination(
-                    bottomPadding = bottomPadding
-                )
+                ShoppingListDestination()
             }
 
             composable<SavedRecipeRoute>

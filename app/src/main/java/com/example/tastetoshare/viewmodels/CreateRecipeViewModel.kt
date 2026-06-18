@@ -552,14 +552,19 @@ class CreateRecipeViewModel(
     }
 
     fun addStep(){
-        if(_uiState.value.fieldNewStepDescription != "")
-        _uiState.update { uiState ->
-            uiState.copy(
-                steps = uiState.steps + Step(photoURL = uiState.newStepPhotoURL, description = uiState.fieldNewStepDescription, order = uiState.steps.size+1),
-                newStepPhotoURL = "",
-                fieldNewStepDescription = "",
-                stepsError = ""
-            )
+        if(_uiState.value.fieldNewStepDescription != "") {
+            _uiState.update { uiState ->
+                uiState.copy(
+                    steps = uiState.steps + Step(
+                        photoURL = uiState.newStepPhotoURL,
+                        description = uiState.fieldNewStepDescription,
+                        order = uiState.steps.size + 1
+                    ),
+                    newStepPhotoURL = "",
+                    fieldNewStepDescription = "",
+                    stepsError = ""
+                )
+            }
         }
     }
 
