@@ -183,7 +183,8 @@ class CreateRecipeViewModel(
             selectedOtherTagsError = uiState.selectedOtherTagsError,
             selectedCountryOfOriginError = uiState.selectedCountryOfOriginError,
             hasErrors = uiState.hasErrors,
-            currentPhotoTarget = uiState.currentPhotoTarget
+            currentPhotoTarget = uiState.currentPhotoTarget,
+            isSaving = uiState.isSaving
         )
     }.stateIn(
         scope = viewModelScope,

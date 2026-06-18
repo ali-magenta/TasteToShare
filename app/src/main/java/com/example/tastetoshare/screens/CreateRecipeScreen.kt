@@ -54,7 +54,7 @@ fun CreateRecipeSharedLayout(
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             CircularProgressIndicator()
-                            Text("Saving review...")
+                            Text("Saving recipe...")
                         }
                     }
                 }
