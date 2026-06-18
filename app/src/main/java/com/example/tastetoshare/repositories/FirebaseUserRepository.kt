@@ -14,13 +14,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import kotlin.collections.plus
 import androidx.core.net.toUri
-import com.example.tastetoshare.data.entities.Recipe
 import com.example.tastetoshare.data.entities.RecipeIngredient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.net.URL
-import kotlin.collections.map
 
 class FirebaseUserRepository(
     private val firestore: FirebaseFirestore,
@@ -105,7 +103,7 @@ class FirebaseUserRepository(
             .map { snapshot ->
                 snapshot.toObjects(User::class.java)
             }.map { users ->
-                users.find{ it.userId == userId }?.shoppingList ?: emptyList()
+                users.find{ it.userId == userId }?.shoppingList?.sortedBy { it.ingredient.name } ?: emptyList()
             }
     }
 
