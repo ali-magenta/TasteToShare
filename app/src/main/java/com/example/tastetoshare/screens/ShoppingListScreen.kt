@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.visible
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -62,7 +63,7 @@ fun ShoppingListDestination(
     val ingredients by viewModel.ingredients.collectAsStateWithLifecycle()
     val shoppingList by viewModel.shoppingList.collectAsStateWithLifecycle()
 
-    ShippingListScreen(
+    ShoppingListScreen(
         ingredients = ingredients,
         shoppingList = shoppingList,
         uiState = uiState,
@@ -78,17 +79,17 @@ fun ShoppingListDestination(
 }
 
 @Composable
-fun ShippingListScreen(
+fun ShoppingListScreen(
     ingredients: List<Ingredient>,
     shoppingList: List<RecipeIngredient>,
     uiState: ShoppingListUIState,
-    onDeleteClick: (String) -> Unit,
+    onDeleteClick: (String, String) -> Unit,
     onIngredientSearchChange: (String) -> Unit,
     onIngredientClick: (Ingredient) -> Unit,
     onAddIngredientClick: () -> Unit,
     onQuantityChange: (String) -> Unit,
     onUnitChange: (String) -> Unit,
-    setEditMode: (String) -> Unit,
+    setEditMode: (String, String) -> Unit,
     editIngredient: () -> Unit
 ) {
     LazyColumn(
@@ -166,10 +167,13 @@ fun ShippingListScreen(
                             text = uiState.fieldIngredientUnit,
                             onTextChange = onUnitChange,
                             itemList = uiState.selectedIngredient?.unitOfMeasurementToCaloryPerUnit?.keys?.toList()?:emptyList(),
-                            itemText = { it },
-                            onItemSelect = onUnitChange,
+                            itemText = { if (it == "NO UNIT") "None" else it },
+                            onItemSelect = { selectedUnit ->
+                                onUnitChange(if (selectedUnit == "NO UNIT") "" else selectedUnit)
+                            },
                             placeholderText = "e.g. cups, tbsp, g",
-                            modifier = Modifier.padding(bottom = 0.dp).visible(uiState.selectedIngredient != null)
+                            modifier = Modifier
+                                .padding(bottom = 0.dp)
                         )
                     }
                 }
@@ -243,18 +247,19 @@ fun ShippingListScreen(
             }
         }
 
-        shoppingList.forEach({ ingredient ->
-            item{
+        items(items = shoppingList, key = { "${it.ingredient.ingredientId}_${it.customUnitOfMeasurement}" })
+            { recipeIngredient ->
+                val displayUnit = if (recipeIngredient.customUnitOfMeasurement == "NO UNIT") "" else recipeIngredient.customUnitOfMeasurement
+                val formattedQty = java.text.DecimalFormat("#.##").format(recipeIngredient.quantity)
                 ShoppingListEntry(
-                    name = ingredient.ingredient.name,
-                    quantity = ingredient.quantity.toString(),
-                    imageUrl = ingredient.ingredient.photoURL,
-                    unit = ingredient.customUnitOfMeasurement,
-                    onDeleteClick = { onDeleteClick(ingredient.recipeIngredientId) },
-                    onEditClick = { setEditMode(ingredient.recipeIngredientId) }
+                    name = recipeIngredient.ingredient.name,
+                    quantity = formattedQty,
+                    imageUrl = recipeIngredient.ingredient.photoURL,
+                    unit = displayUnit,
+                    onDeleteClick = { onDeleteClick(recipeIngredient.ingredient.ingredientId, recipeIngredient.customUnitOfMeasurement) },
+                    onEditClick = { setEditMode(recipeIngredient.ingredient.ingredientId, recipeIngredient.customUnitOfMeasurement) }
                 )
             }
-        })
     }
 }
 

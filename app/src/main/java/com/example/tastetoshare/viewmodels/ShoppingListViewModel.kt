@@ -87,17 +87,17 @@ class ShoppingListViewModel(
             val error = when {
                 it.selectedIngredient == null -> "Missing ingredient"
                 it.fieldIngredientQuantity.toFloatOrNull() == null || it.fieldIngredientQuantity.toFloat() <= 0f -> "Invalid quantity"
-                it.fieldIngredientUnit.isBlank() -> "Missing unit"
                 else -> ""
             }
             if(error != ""){
                 it.copy(ingredientError = error)
             }
             else{
+                val backendUnit = it.fieldIngredientUnit.ifBlank { "NO UNIT" }
                 val newRecipeIngredient = RecipeIngredient(
                     ingredient = it.selectedIngredient!!,
                     quantity = it.fieldIngredientQuantity.toFloat(),
-                    customUnitOfMeasurement = if (it.fieldIngredientUnit != "NO UNIT") it.fieldIngredientUnit else ""
+                    customUnitOfMeasurement = backendUnit
                 )
 
                 it.copy(
@@ -117,9 +117,9 @@ class ShoppingListViewModel(
         }
     }
 
-    fun removeIngredient(recipeIngredientId: String){
+    fun removeIngredient(ingredientId: String, unit: String){
         viewModelScope.launch {
-            userRepository.deleteIngredientFromShoppingList(currentUserId.value ?: "", recipeIngredientId)
+            userRepository.deleteIngredientFromShoppingList(currentUserId.value ?: "", ingredientId, unit)
         }
     }
 
@@ -128,7 +128,6 @@ class ShoppingListViewModel(
             _uiState.value.selectedIngredient == null -> "Missing ingredient"
             _uiState.value.fieldIngredientQuantity.toFloatOrNull() == null ||
                     _uiState.value.fieldIngredientQuantity.toFloat() <= 0f -> "Invalid quantity"
-            _uiState.value.fieldIngredientUnit.isBlank() -> "Missing unit"
             else -> ""
         }
 
@@ -137,13 +136,15 @@ class ShoppingListViewModel(
             return
         }
 
-        if (_uiState.value.recipeIngredientIdToEdit != null && currentUserId.value != null) {
+        if (_uiState.value.ingredientIdToEdit != null && _uiState.value.originalUnitToEdit != null && currentUserId.value != null) {
             viewModelScope.launch {
+                val backendUnit = _uiState.value.fieldIngredientUnit.ifBlank { "NO UNIT" }
                 userRepository.updateIngredientFromShoppingList(
                     userId = currentUserId.value!!,
-                    recipeIngredientId = _uiState.value.recipeIngredientIdToEdit!!,
+                    ingredientId = _uiState.value.ingredientIdToEdit!!,
+                    oldUnitOfMeasurement = _uiState.value.originalUnitToEdit!!,
                     quantity = _uiState.value.fieldIngredientQuantity.toFloat(),
-                    unitOfMeasurement = _uiState.value.fieldIngredientUnit
+                    unitOfMeasurement = backendUnit
                 )
 
                 _uiState.update {
@@ -154,7 +155,8 @@ class ShoppingListViewModel(
                         fieldIngredientUnit = "",
                         fieldIngredientQuantity = "",
                         fieldSearchIngredient = "",
-                        recipeIngredientIdToEdit = null,
+                        ingredientIdToEdit = null,
+                        originalUnitToEdit = null,
                         isEditMode = false
                     )
                 }
@@ -162,14 +164,20 @@ class ShoppingListViewModel(
         }
     }
 
-    fun setEditMode(recipeIngredientId: String) {
-        val recipeIngredientToEdit = shoppingList.value.find { it.recipeIngredientId == recipeIngredientId }
+    fun setEditMode(ingredientId: String, unit: String) {
+        val recipeIngredientToEdit = shoppingList.value.find {
+            it.ingredient.ingredientId == ingredientId &&
+            it.customUnitOfMeasurement == unit
+        }
+        val rawUnit = recipeIngredientToEdit?.customUnitOfMeasurement ?: ""
+        val unitDisplayed = if (rawUnit == "NO UNIT") "" else rawUnit
         _uiState.update { it.copy(
             isEditMode = true,
             selectedIngredient = recipeIngredientToEdit?.ingredient,
-            recipeIngredientIdToEdit = recipeIngredientToEdit?.recipeIngredientId,
+            ingredientIdToEdit = recipeIngredientToEdit?.ingredient?.ingredientId,
+            originalUnitToEdit = rawUnit,
             fieldIngredientQuantity = recipeIngredientToEdit?.quantity.toString(),
-            fieldIngredientUnit = recipeIngredientToEdit?.customUnitOfMeasurement ?: ""
+            fieldIngredientUnit = unitDisplayed
         )
         }
     }
@@ -184,8 +192,10 @@ class ShoppingListViewModel(
     }
 
     fun setSelectedIngredient(selectedIngredient: Ingredient){
+        val firstUnit = selectedIngredient.unitOfMeasurementToCaloryPerUnit.keys.firstOrNull() ?: ""
+        val displayedUnit = if (firstUnit == "NO UNIT") "" else firstUnit
         _uiState.update { it.copy(selectedIngredient = selectedIngredient,
-            fieldIngredientUnit = selectedIngredient.unitOfMeasurementToCaloryPerUnit.keys.firstOrNull()?: "",
+            fieldIngredientUnit = displayedUnit,
             recipeIngredientsError = "",
             ingredientError = ""
         ) }
@@ -232,7 +242,8 @@ data class ShoppingListUIState(
     val ingredientError: String = "",
 
     val isEditMode: Boolean = false,
-    val recipeIngredientIdToEdit: String? = null,
+    val ingredientIdToEdit: String? = null,
+    val originalUnitToEdit: String? = null,
 
     val displayedIngredients: List<Ingredient> = emptyList(),
     val fieldSearchIngredient: String = "",
