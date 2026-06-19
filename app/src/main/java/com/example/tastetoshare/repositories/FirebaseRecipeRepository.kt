@@ -376,7 +376,8 @@ class FirebaseRecipeRepository(
     }
 
     override fun getFilteredTopWeeklyRecipesPreview(
-        tags: List<Tag>?
+        tags: List<Tag>?,
+        userId: String
     ): Flow<List<RawRecipePreview>> {
         return recipeCollection.snapshots()
             .map { snapshot ->
@@ -386,6 +387,7 @@ class FirebaseRecipeRepository(
 
             recipes
                 .filter { it.creationDate >= oneWeekAgo }
+                .filter { recipe -> recipe.authorId != userId }
                 .filter { recipe ->
                     //TODO decide what to do when user has no preferences so the tag list passed in empty
                     // for now it retrieves all recipes (same as doing getTopWeekly)

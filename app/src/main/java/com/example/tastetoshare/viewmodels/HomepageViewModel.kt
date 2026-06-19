@@ -96,7 +96,7 @@ class HomepageViewModel (
     val yourTopRecipes: StateFlow<List<UIRecipePreview>> =
         loggedInUser
             .flatMapLatest { user ->
-                recipeRepository.getFilteredTopWeeklyRecipesPreview(user.preferences)
+                recipeRepository.getFilteredTopWeeklyRecipesPreview(user.preferences, loggedInUser.value.userId)
                     .map { recipes ->
                         recipes.map { it.toUi(user) }
                     }

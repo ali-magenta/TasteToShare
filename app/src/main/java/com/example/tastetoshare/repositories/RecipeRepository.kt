@@ -30,7 +30,7 @@ interface RecipeRepository {
     ): Flow<List<RawRecipePreview>>
     fun getTopWeeklyRecipesPreview(): Flow<List<RawRecipePreview>>
     fun getTopMonthlyRecipesPreview(): Flow<List<RawRecipePreview>>
-    fun getFilteredTopWeeklyRecipesPreview(tags : List<Tag>? = null): Flow<List<RawRecipePreview>>
+    fun getFilteredTopWeeklyRecipesPreview(tags: List<Tag>? = null, userId: String): Flow<List<RawRecipePreview>>
     fun getTopRecipesURLsByCountries(): Flow<Map<Tag, List<String>>>
     suspend fun addOrOverrideRecipe(recipe: Recipe): Any
     suspend fun deleteRecipe(recipeId : String)
