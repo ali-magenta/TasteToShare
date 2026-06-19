@@ -26,10 +26,11 @@ fun CreateRecipeSharedLayout(
     uiState: CreateRecipeUIState,
     content: @Composable () -> Unit
 ) {
+    val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = bottomInset + 8.dp)
     ) {
         StepIndicator(currentStep, 4)
 
