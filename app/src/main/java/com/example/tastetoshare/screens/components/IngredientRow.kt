@@ -28,7 +28,8 @@ import com.example.tastetoshare.data.entities.RecipeIngredient
 
 @Composable
 fun IngredientRow(recipeIngredient: RecipeIngredient, modifier: Modifier = Modifier) {
-    val unitOfMeasurement = recipeIngredient.customUnitOfMeasurement
+    val displayUnit = if (recipeIngredient.customUnitOfMeasurement == "NO UNIT") "" else recipeIngredient.customUnitOfMeasurement
+    val formattedQty = java.text.DecimalFormat("#.##").format(recipeIngredient.quantity)
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(25.dp),
@@ -51,7 +52,7 @@ fun IngredientRow(recipeIngredient: RecipeIngredient, modifier: Modifier = Modif
             )
             Spacer(modifier = Modifier.width(5.dp))
             Text(
-                text = "${"%.2f".format(recipeIngredient.quantity)} $unitOfMeasurement",
+                text = "${formattedQty} ${displayUnit}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Bold
