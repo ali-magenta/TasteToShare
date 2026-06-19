@@ -23,6 +23,14 @@ const handleDuplicatedRecipe = async (event) => {
 
   const originalRecipe = originalRecipeDoc.data();
   const originalAuthorId = originalRecipe.authorId;
+
+  const creatorId = newRecipe.authorId;
+
+  if (originalAuthorId === creatorId) {
+    console.log("User duplicated their own recipe, no notification needed.");
+    return null;
+  }
+
   const userDoc = await admin
       .firestore()
       .collection("Users")
