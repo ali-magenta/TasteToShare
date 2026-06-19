@@ -88,56 +88,6 @@ fun NotificationScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("Send notifications", fontWeight = FontWeight.Bold)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        )
-        {
-            Button(
-                onClick = { sendRecommendationNotification() },
-                modifier = Modifier
-                    .height(56.dp)
-                    .weight(1f),
-                contentPadding = PaddingValues(horizontal = 4.dp)
-            ) {
-                Text(
-                    text = "Recommendation",
-                    textAlign = TextAlign.Center,
-                    fontSize = 12.sp,
-                    maxLines = 1
-                )
-            }
-            Button(
-                onClick = { sendReviewNotification() },
-                modifier = Modifier
-                    .height(56.dp)
-                    .weight(1f),
-                contentPadding = PaddingValues(horizontal = 4.dp)
-            ) {
-                Text(
-                    "Review",
-                    textAlign = TextAlign.Center,
-                    fontSize = 12.sp,
-                    maxLines = 1
-                )
-            }
-            Button(
-                onClick = { sendDuplicateNotification() },
-                modifier = Modifier
-                    .height(56.dp)
-                    .weight(1f),
-                contentPadding = PaddingValues(horizontal = 4.dp)
-            ) {
-                Text(
-                    "Duplicate",
-                    textAlign = TextAlign.Center,
-                    fontSize = 12.sp,
-                    maxLines = 1
-                )
-            }
-        }
         if (notifications.isNotEmpty()) {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),

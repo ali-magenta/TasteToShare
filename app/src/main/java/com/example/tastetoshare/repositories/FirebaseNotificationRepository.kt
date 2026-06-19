@@ -29,12 +29,13 @@ class FirebaseNotificationRepository(
         }
     }
     override fun getNotifications(userId: String): Flow<List<Notification>> {
-        return notificationCollection
-            .whereEqualTo("userId", userId)
-            .orderBy("creationDate", Query.Direction.DESCENDING)
-            .snapshots()
+        return notificationCollection.snapshots()
             .map { snapshot ->
                 snapshot.toObjects(Notification::class.java)
+            }.map { notifications ->
+                notifications
+                    .filter { it.userId == userId }
+                    .sortedByDescending { it.creationDate }
             }
     }
 
