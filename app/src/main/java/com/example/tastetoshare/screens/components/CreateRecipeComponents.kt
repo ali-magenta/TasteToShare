@@ -153,7 +153,7 @@ fun <T> AutocompleteSearchBar(
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = Color(0xFFF5F5F6),
                 focusedContainerColor = Color.White,
-                unfocusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
                 focusedBorderColor = MaterialTheme.colorScheme.primary
             )
         )
