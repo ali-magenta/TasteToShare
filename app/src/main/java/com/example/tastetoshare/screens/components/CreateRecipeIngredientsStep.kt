@@ -215,12 +215,14 @@ fun IngredientsStep(
         }
 
         uiState.recipeIngredients.forEach({ ingredient ->
+            val displayUnit = if (ingredient.customUnitOfMeasurement == "NO UNIT") "" else ingredient.customUnitOfMeasurement
+            val formattedQty = java.text.DecimalFormat("#.##").format(ingredient.quantity)
             item{
                 IngredientItem(
                     name = ingredient.ingredient.name,
-                    quantity = ingredient.quantity.toString(),
+                    quantity = formattedQty,
                     imageUrl = ingredient.ingredient.photoURL,
-                    unit = ingredient.customUnitOfMeasurement,
+                    unit = displayUnit,
                     onDeleteClick = { onDeleteClick(ingredient.recipeIngredientId) }
                 )
             }
